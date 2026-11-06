@@ -2,6 +2,7 @@ import Dexie, { Table } from 'dexie';
 import {
   WorkspaceEntity,
   LayoutPresetEntity,
+  WidgetLayoutEntity,
   WidgetInstanceEntity,
   TodoEntity,
   NoteEntity,
@@ -19,6 +20,7 @@ import {
 export class NookSpaceDB extends Dexie {
   workspaces!: Table<WorkspaceEntity, string>;
   layouts!: Table<LayoutPresetEntity, string>;
+  widgetLayouts!: Table<WidgetLayoutEntity, string>;
   widgetInstances!: Table<WidgetInstanceEntity, string>;
   todos!: Table<TodoEntity, string>;
   notes!: Table<NoteEntity, string>;
@@ -35,6 +37,7 @@ export class NookSpaceDB extends Dexie {
   constructor() {
     super('NookSpaceDB');
 
+    // Version 1 Schema
     this.version(1).stores({
       workspaces: 'id, isDefault, order',
       layouts: 'id, workspaceId, isDefault',
@@ -51,6 +54,55 @@ export class NookSpaceDB extends Dexie {
       calendarEvents: 'id, workspaceId, startDate, endDate',
       settings: 'id',
     });
+
+    // Version 2 Schema: Granular Breakpoint-based Widget Layout Architecture
+    this.version(2)
+      .stores({
+        widgetLayouts: 'id, [workspaceId+breakpoint], workspaceId, widgetInstanceId, breakpoint',
+      })
+      .upgrade(async (tx) => {
+        try {
+          const oldLayoutsTable = tx.table('layouts');
+          const count = await oldLayoutsTable.count();
+          if (count > 0) {
+            const oldLayouts = await oldLayoutsTable.toArray();
+            const newRecords: WidgetLayoutEntity[] = [];
+            const now = Date.now();
+
+            for (const layout of oldLayouts) {
+              if (layout.items && Array.isArray(layout.items)) {
+                for (const item of layout.items) {
+                  if (item.widgetInstanceId) {
+                    newRecords.push({
+                      id: `${layout.workspaceId}_${item.widgetInstanceId}_lg`,
+                      workspaceId: layout.workspaceId,
+                      widgetInstanceId: item.widgetInstanceId,
+                      breakpoint: 'lg',
+                      x: item.x ?? 0,
+                      y: item.y ?? 0,
+                      w: item.w ?? 4,
+                      h: item.h ?? 3,
+                      minW: item.minW,
+                      minH: item.minH,
+                      maxW: item.maxW,
+                      maxH: item.maxH,
+                      isDefault: Boolean(layout.isDefault),
+                      createdAt: layout.createdAt || now,
+                      updatedAt: layout.updatedAt || now,
+                    });
+                  }
+                }
+              }
+            }
+
+            if (newRecords.length > 0) {
+              await tx.table('widgetLayouts').bulkPut(newRecords);
+            }
+          }
+        } catch (err) {
+          console.warn('[NookSpaceDB] Migration v1 -> v2 warning:', err);
+        }
+      });
   }
 
   async seedInitialData(): Promise<void> {
@@ -162,6 +214,84 @@ export class NookSpaceDB extends Dexie {
       },
     ];
 
+    const initialLayouts: WidgetLayoutEntity[] = [
+      {
+        id: 'ws-default-personal_widget-clock-default_lg',
+        workspaceId: 'ws-default-personal',
+        widgetInstanceId: 'widget-clock-default',
+        breakpoint: 'lg',
+        x: 0,
+        y: 0,
+        w: 4,
+        h: 2,
+        minW: 3,
+        minH: 2,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'ws-default-personal_widget-links-default_lg',
+        workspaceId: 'ws-default-personal',
+        widgetInstanceId: 'widget-links-default',
+        breakpoint: 'lg',
+        x: 4,
+        y: 0,
+        w: 4,
+        h: 3,
+        minW: 3,
+        minH: 2,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'ws-default-personal_widget-todo-default_lg',
+        workspaceId: 'ws-default-personal',
+        widgetInstanceId: 'widget-todo-default',
+        breakpoint: 'lg',
+        x: 8,
+        y: 0,
+        w: 4,
+        h: 3,
+        minW: 3,
+        minH: 2,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'ws-default-personal_widget-notes-default_lg',
+        workspaceId: 'ws-default-personal',
+        widgetInstanceId: 'widget-notes-default',
+        breakpoint: 'lg',
+        x: 0,
+        y: 2,
+        w: 4,
+        h: 3,
+        minW: 3,
+        minH: 2,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'ws-default-personal_widget-cal-default_lg',
+        workspaceId: 'ws-default-personal',
+        widgetInstanceId: 'widget-cal-default',
+        breakpoint: 'lg',
+        x: 4,
+        y: 3,
+        w: 4,
+        h: 3,
+        minW: 3,
+        minH: 2,
+        isDefault: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+
     const defaultSettings: AppSettingsEntity = {
       id: 'current_settings',
       theme: 'dark',
@@ -177,11 +307,16 @@ export class NookSpaceDB extends Dexie {
       updatedAt: now,
     };
 
-    await this.transaction('rw', [this.workspaces, this.widgetInstances, this.settings], async () => {
-      await this.workspaces.bulkAdd(defaultWorkspaces);
-      await this.widgetInstances.bulkAdd(initialWidgets);
-      await this.settings.put(defaultSettings);
-    });
+    await this.transaction(
+      'rw',
+      [this.workspaces, this.widgetInstances, this.widgetLayouts, this.settings],
+      async () => {
+        await this.workspaces.bulkAdd(defaultWorkspaces);
+        await this.widgetInstances.bulkAdd(initialWidgets);
+        await this.widgetLayouts.bulkAdd(initialLayouts);
+        await this.settings.put(defaultSettings);
+      }
+    );
   }
 }
 

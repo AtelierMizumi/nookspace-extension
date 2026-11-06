@@ -78,13 +78,19 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
 - [x] Vitest unit & component test suite expanded to 51 passing tests (100% pass rate).
 - [x] Verified Chromium and Firefox production builds.
 
-### Phase 4: Customization Studio & Grid Engine
-- [ ] Integrate `react-grid-layout` with responsive 12-column grid.
-- [ ] Implement `EditModeToggle` state in Zustand.
-- [ ] Visual edit-mode overlay (bounding guides, drag handles, resize corners).
-- [ ] Layout persistence in IndexedDB.
-- [ ] Save & Cancel transaction rollback logic.
-- [ ] Appearance Studio panel (theme selection, accent color picker, opacity slider, background chooser).
+### Phase 3: Customization Studio & Grid Engine (In Progress)
+- [x] **Milestone 0**: Technical audit & dependency verification (`react-grid-layout@1.5.4` on React 18 LTS).
+- [x] **Milestone 1**: Layout Data Architecture:
+  - Breakpoint-based layout data model (`WidgetLayoutEntity`) with natural key `${workspaceId}_${widgetInstanceId}_${breakpoint}`.
+  - Dexie Schema Version 2 migration with upgrade handler preserving legacy layouts.
+  - Zod validation schema (`WidgetLayoutInputSchema`) with dimension clamping and max column checks.
+  - `LayoutRepository` with full CRUD, atomic transaction saving, and reset without touching widget configurations.
+  - Idempotent `synchronizeLayout` packing algorithm handling new widgets and orphan purging.
+  - Comprehensive unit test suite with 16 tests covering all 15 required scenarios (67/67 tests passing).
+- [ ] **Milestone 2**: Grid Engine Core (`react-grid-layout` integration, drag & drop, resize handles, responsive breakpoints).
+- [ ] **Milestone 3**: Customization Studio & Edit Mode (Visual guides, customization toolbar, save/cancel rollback, reset layout confirmation).
+- [ ] **Milestone 4**: Testing & Reliability (Cross-browser verification, breakpoint transitions, reliability under stress).
+- [ ] **Milestone 5**: Documentation & Final Review.
 
 ### Phase 5: Productivity Suite
 - [ ] **Pomodoro Timer Widget**:

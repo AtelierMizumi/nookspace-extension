@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.4] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 1) Layout Data Architecture:
+  - Granular Breakpoint-based Widget Layout entity model (`WidgetLayoutEntity`) supporting `lg`, `md`, `sm`, `xs`, `xxs`.
+  - Dexie Schema Version 2 migration (`widgetLayouts` table with `[workspaceId+breakpoint]` compound index and automated v1->v2 data upgrade).
+  - Strict Zod validation (`WidgetLayoutInputSchema`) verifying coordinates, positive dimensions, max columns per breakpoint, and `minW <= maxW` / `minH <= maxH`.
+  - `LayoutRepository` providing atomic transaction persistence (`saveLayouts`), query by workspace/instance, orphan cleanup, and layout reset without modifying widget configuration.
+  - Deterministic and idempotent `synchronizeLayout` algorithm with 2D occupancy grid packing and automatic orphan pruning.
+  - Comprehensive unit test suite covering all 15 required layout data scenarios (67/67 tests passing).
+
 ## [0.1.0-alpha.3] - 2026-11-07
 
 ### Added

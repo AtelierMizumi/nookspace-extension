@@ -1,3 +1,13 @@
+export type Breakpoint = 'lg' | 'md' | 'sm' | 'xs' | 'xxs';
+
+export const BREAKPOINT_COLUMNS: Record<Breakpoint, number> = {
+  lg: 12,
+  md: 10,
+  sm: 6,
+  xs: 4,
+  xxs: 2,
+};
+
 export interface WorkspaceEntity {
   id: string;
   name: string;
@@ -9,6 +19,25 @@ export interface WorkspaceEntity {
   updatedAt: number;
 }
 
+export interface WidgetLayoutEntity {
+  id: string; // Primary Key: `${workspaceId}_${widgetInstanceId}_${breakpoint}`
+  workspaceId: string;
+  widgetInstanceId: string;
+  breakpoint: Breakpoint;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
+  isDefault: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Deprecated legacy layout preset entity kept for backward-compatible migration
 export interface LayoutItem {
   widgetInstanceId: string;
   x: number;

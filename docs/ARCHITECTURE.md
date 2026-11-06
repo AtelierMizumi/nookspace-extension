@@ -277,12 +277,45 @@ export interface AppSettingsEntity {
 }
 ```
 
-### 3.2 Dexie Database Versioning Strategy
+### 3.1 Entities & Tables
+
+```typescript
+// Breakpoints & Layout Architecture
+export type Breakpoint = 'lg' | 'md' | 'sm' | 'xs' | 'xxs';
+
+export const BREAKPOINT_COLUMNS: Record<Breakpoint, number> = {
+  lg: 12,
+  md: 10,
+  sm: 6,
+  xs: 4,
+  xxs: 2,
+};
+
+export interface WidgetLayoutEntity {
+  id: string; // Primary Key: `${workspaceId}_${widgetInstanceId}_${breakpoint}`
+  workspaceId: string;
+  widgetInstanceId: string;
+  breakpoint: Breakpoint;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
+  isDefault: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+```
+
+### 3.2 Dexie Database Versioning & Migration Strategy
 - Database class: `NookSpaceDB extends Dexie`
-- Version 1 schema definition with primary keys and compound indexes:
+- **Version 1 Schema**:
   - `workspaces: 'id, isDefault, order'`
   - `layouts: 'id, workspaceId, isDefault'`
-  - `widgetInstances: 'id, workspaceId, widgetType'`
+  - `widgetInstances: 'id, workspaceId, widgetType, isEnabled, order'`
   - `todos: 'id, workspaceId, completed, priority, dueDate, category, order'`
   - `notes: 'id, workspaceId, isPinned, *tags, updatedAt'`
   - `stickyNotes: 'id, workspaceId'`
@@ -294,6 +327,9 @@ export interface AppSettingsEntity {
   - `dailyGoals: 'id, workspaceId, dateString'`
   - `calendarEvents: 'id, workspaceId, startDate, endDate'`
   - `settings: 'id'`
+- **Version 2 Schema (Milestone 1 — Granular Breakpoint Layout Architecture)**:
+  - `widgetLayouts: 'id, [workspaceId+breakpoint], workspaceId, widgetInstanceId, breakpoint'`
+  - Upgrade Migration Handler: Automatically extracts legacy records from `layouts` table, converts them to `widgetLayouts` records with `breakpoint: 'lg'`, and preserves all data with zero loss.
 
 ### 3.3 Data Layer Conventions & Repository Pattern
 - All data access is wrapped in domain repository classes (`src/services/database/repositories/`):
