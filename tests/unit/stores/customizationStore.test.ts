@@ -4,13 +4,18 @@ import { layoutRepo } from '../../../src/services/database/repositories/layoutRe
 import { widgetInstanceRepo } from '../../../src/services/database/repositories/widgetInstanceRepository';
 import { Breakpoint, WidgetLayoutEntity } from '../../../src/types/database';
 
-vi.mock('../../../src/services/database/repositories/layoutRepository', () => ({
-  layoutRepo: {
-    getAllLayoutsGrouped: vi.fn(),
-    saveLayouts: vi.fn(),
-    deleteLayout: vi.fn(),
-  },
-}));
+vi.mock('../../../src/services/database/repositories/layoutRepository', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/services/database/repositories/layoutRepository')>();
+  return {
+    ...actual,
+    layoutRepo: {
+      ...actual.layoutRepo,
+      getAllLayoutsGrouped: vi.fn(),
+      saveLayouts: vi.fn(),
+      deleteLayout: vi.fn(),
+    },
+  };
+});
 
 vi.mock('../../../src/services/database/repositories/widgetInstanceRepository', () => ({
   widgetInstanceRepo: {

@@ -18,6 +18,7 @@ import { cn } from '../../utils/cn';
 import { useCustomizationStore } from '../../stores/customizationStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { useWidgetStore } from '../../stores/widgetStore';
+import { useLayoutStore } from '../../stores/layoutStore';
 import { synchronizeLayout } from './layoutUtils';
 import { Breakpoint, WidgetLayoutEntity } from '../../types/database';
 
@@ -104,7 +105,11 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
     if (props.onDone) {
       props.onDone();
     } else if (activeWorkspaceId) {
-      await commitEditModeStore(activeWorkspaceId);
+      const success = await commitEditModeStore(activeWorkspaceId);
+      if (success) {
+        await useWidgetStore.getState().loadWidgets(activeWorkspaceId);
+        await useLayoutStore.getState().loadLayouts(activeWorkspaceId, storeBreakpoint);
+      }
     }
   };
 

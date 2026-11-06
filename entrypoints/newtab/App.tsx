@@ -14,8 +14,9 @@ import { useWorkspaceStore } from '../../src/stores/workspaceStore';
 import { useWidgetStore } from '../../src/stores/widgetStore';
 import { useLayoutStore } from '../../src/stores/layoutStore';
 import { useCustomizationStore } from '../../src/stores/customizationStore';
+import { widgetRegistry } from '../../src/features/widget-system/WidgetRegistry';
 import { synchronizeLayout } from '../../src/features/layout-editor/layoutUtils';
-import { Breakpoint, WidgetLayoutEntity } from '../../src/types/database';
+import { Breakpoint, WidgetLayoutEntity, WidgetInstanceEntity } from '../../src/types/database';
 // Ensure all initial widgets are registered
 import '../../src/widgets';
 
@@ -40,6 +41,7 @@ export const App: React.FC = () => {
   const updateEditingLayouts = useCustomizationStore((s) => s.updateEditingLayouts);
   const stageDeleteWidget = useCustomizationStore((s) => s.stageDeleteWidget);
   const stageAddWidget = useCustomizationStore((s) => s.stageAddWidget);
+  const stagedAddedInstances = useCustomizationStore((s) => s.stagedAddedInstances);
   const isWidgetStagedForDeletion = useCustomizationStore((s) => s.isWidgetStagedForDeletion);
 
   const currentWorkspace = getActiveWorkspace();
@@ -52,21 +54,39 @@ export const App: React.FC = () => {
   }, [activeWorkspaceId, instances.length, currentBreakpoint, loadLayouts, isEditMode]);
 
   const handleAddWidget = async (type: string) => {
-    const created = await addWidget(activeWorkspaceId, type);
     if (isEditMode) {
+      const definition = widgetRegistry.get(type);
+      const instanceId =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `wi-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+      const newInstance: WidgetInstanceEntity = {
+        id: instanceId,
+        workspaceId: activeWorkspaceId,
+        widgetType: type,
+        title: definition?.name || type,
+        config: definition?.defaultConfig || {},
+        isEnabled: true,
+        order: instances.length + stagedAddedInstances.length,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
       // Allocate initial layout across 5 breakpoints and stage addition
       const breakpoints: Breakpoint[] = ['lg', 'md', 'sm', 'xs', 'xxs'];
       const defaultLayouts: Partial<Record<Breakpoint, WidgetLayoutEntity>> = {};
-      const allInstances = [...instances, created];
+      const allInstances = [...instances, ...stagedAddedInstances, newInstance];
 
       for (const bp of breakpoints) {
         const packed = synchronizeLayout(activeWorkspaceId, bp, allInstances, []);
-        const item = packed.find((p) => p.widgetInstanceId === created.id);
+        const item = packed.find((p) => p.widgetInstanceId === instanceId);
         if (item) defaultLayouts[bp] = item;
       }
 
-      stageAddWidget(created.id, defaultLayouts);
+      stageAddWidget(instanceId, defaultLayouts, newInstance);
     } else {
+      await addWidget(activeWorkspaceId, type);
       await loadLayouts(activeWorkspaceId, currentBreakpoint);
     }
   };
@@ -84,6 +104,7 @@ export const App: React.FC = () => {
     if (isEditMode) {
       const success = await commitEditMode(activeWorkspaceId);
       if (success) {
+        await useWidgetStore.getState().loadWidgets(activeWorkspaceId);
         await loadLayouts(activeWorkspaceId, currentBreakpoint);
       }
     } else {
@@ -92,7 +113,7 @@ export const App: React.FC = () => {
   };
 
   const visibleInstances = isEditMode
-    ? instances.filter((inst) => !isWidgetStagedForDeletion(inst.id))
+    ? [...instances, ...stagedAddedInstances].filter((inst) => !isWidgetStagedForDeletion(inst.id))
     : instances;
 
   const activeLayouts = isEditMode ? currentEditingLayouts : layouts;

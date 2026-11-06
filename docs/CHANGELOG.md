@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.7] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 3.3) Save Transaction & Data Integrity:
+  - Atomic multi-table Dexie transaction (`[widgetInstances, widgetLayouts]`) guaranteeing all-or-nothing commits across additions, deletions, and 5 responsive breakpoints.
+  - In-memory staged instance management (`stagedAddedInstances`) ensuring newly added widgets never touch IndexedDB until explicit commit.
+  - Complete rollback on failure injection: simulated disk quota, database lock, or network errors result in 0 partial writes.
+  - Strict pre-transaction Zod validation (`WidgetLayoutInputSchema`) preventing malformed or out-of-bounds coordinates from entering the database.
+  - Workspace isolation security checks blocking any cross-workspace widget mutation or deletion.
+  - Double-click / concurrent commit prevention (`isSaving` mutex).
+  - Clean no-op commit when `hasUnsavedChanges === false`.
+  - Comprehensive unit test suite with 8 failure injection & transaction tests (`saveTransaction.test.ts`), expanding test coverage to 105 tests across 19 suites (100% pass rate).
+
 ## [0.1.0-alpha.6] - 2026-11-07
 
 ### Added

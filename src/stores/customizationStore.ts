@@ -1,6 +1,10 @@
 import { create } from 'zustand';
-import { Breakpoint, WidgetLayoutEntity } from '../types/database';
-import { layoutRepo } from '../services/database/repositories/layoutRepository';
+import { Breakpoint, WidgetLayoutEntity, WidgetInstanceEntity } from '../types/database';
+import { db } from '../services/database/db';
+import {
+  layoutRepo,
+  WidgetLayoutInputSchema,
+} from '../services/database/repositories/layoutRepository';
 import { widgetInstanceRepo } from '../services/database/repositories/widgetInstanceRepository';
 
 /**
@@ -79,6 +83,7 @@ export interface CustomizationState {
   // Staged modifications (Staged additions & Staged deletions)
   stagedDeletedWidgetIds: string[];
   stagedAddedWidgetIds: string[];
+  stagedAddedInstances: WidgetInstanceEntity[];
 
   // Change tracking & Persistence Status
   hasUnsavedChanges: boolean;
@@ -96,7 +101,8 @@ export interface CustomizationState {
   stageDeleteWidget: (widgetInstanceId: string) => void;
   stageAddWidget: (
     widgetInstanceId: string,
-    layoutsByBreakpoint: Partial<Record<Breakpoint, WidgetLayoutEntity>>
+    layoutsByBreakpoint: Partial<Record<Breakpoint, WidgetLayoutEntity>>,
+    instance?: WidgetInstanceEntity
   ) => void;
   resetEditingLayouts: (defaultLayouts: Record<Breakpoint, WidgetLayoutEntity[]>) => void;
   cancelEditMode: () => {
@@ -124,6 +130,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
 
   stagedDeletedWidgetIds: [],
   stagedAddedWidgetIds: [],
+  stagedAddedInstances: [],
 
   hasUnsavedChanges: false,
   isSaving: false,
@@ -156,6 +163,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
       currentLayouts: deepClone(snapshot[breakpoint] || []),
       stagedDeletedWidgetIds: [],
       stagedAddedWidgetIds: [],
+      stagedAddedInstances: [],
       hasUnsavedChanges: false,
       isSaving: false,
       saveError: null,
@@ -215,13 +223,15 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
     const {
       stagedDeletedWidgetIds,
       stagedAddedWidgetIds,
+      stagedAddedInstances,
       editingLayoutsByBreakpoint,
       currentBreakpoint,
     } = get();
 
     // If widget was added during this edit session, remove from stagedAdded and discard layout
     const wasAddedInSession = stagedAddedWidgetIds.includes(widgetInstanceId);
-    const updatedAdded = stagedAddedWidgetIds.filter((id) => id !== widgetInstanceId);
+    const updatedAddedIds = stagedAddedWidgetIds.filter((id) => id !== widgetInstanceId);
+    const updatedAddedInstances = stagedAddedInstances.filter((inst) => inst.id !== widgetInstanceId);
     const updatedDeleted = wasAddedInSession
       ? stagedDeletedWidgetIds
       : Array.from(new Set([...stagedDeletedWidgetIds, widgetInstanceId]));
@@ -236,7 +246,8 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
     };
 
     set({
-      stagedAddedWidgetIds: updatedAdded,
+      stagedAddedWidgetIds: updatedAddedIds,
+      stagedAddedInstances: updatedAddedInstances,
       stagedDeletedWidgetIds: updatedDeleted,
       editingLayoutsByBreakpoint: updatedMap,
       currentLayouts: updatedMap[currentBreakpoint] || [],
@@ -249,16 +260,21 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
    */
   stageAddWidget: (
     widgetInstanceId: string,
-    layoutsByBreakpoint: Partial<Record<Breakpoint, WidgetLayoutEntity>>
+    layoutsByBreakpoint: Partial<Record<Breakpoint, WidgetLayoutEntity>>,
+    instance?: WidgetInstanceEntity
   ) => {
     const {
       stagedAddedWidgetIds,
+      stagedAddedInstances,
       stagedDeletedWidgetIds,
       editingLayoutsByBreakpoint,
       currentBreakpoint,
     } = get();
 
-    const updatedAdded = Array.from(new Set([...stagedAddedWidgetIds, widgetInstanceId]));
+    const updatedAddedIds = Array.from(new Set([...stagedAddedWidgetIds, widgetInstanceId]));
+    const updatedAddedInstances = instance
+      ? [...stagedAddedInstances.filter((inst) => inst.id !== widgetInstanceId), instance]
+      : stagedAddedInstances;
     const updatedDeleted = stagedDeletedWidgetIds.filter((id) => id !== widgetInstanceId);
 
     const breakpoints: Breakpoint[] = ['lg', 'md', 'sm', 'xs', 'xxs'];
@@ -275,7 +291,8 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
     }
 
     set({
-      stagedAddedWidgetIds: updatedAdded,
+      stagedAddedWidgetIds: updatedAddedIds,
+      stagedAddedInstances: updatedAddedInstances,
       stagedDeletedWidgetIds: updatedDeleted,
       editingLayoutsByBreakpoint: updatedMap,
       currentLayouts: updatedMap[currentBreakpoint] || [],
@@ -323,6 +340,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
       snapshotWorkspaceId: null,
       stagedDeletedWidgetIds: [],
       stagedAddedWidgetIds: [],
+      stagedAddedInstances: [],
       hasUnsavedChanges: false,
       saveError: null,
       isUnsavedPromptOpen: false,
@@ -337,19 +355,27 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
   },
 
   /**
-   * Commits Edit Mode: saves all modified breakpoints to IndexedDB within transactions,
-   * performs permanent deletion of staged deleted widgets, and clears snapshot.
+   * Commits Edit Mode: validates all layouts against Zod schemas, saves all modified
+   * breakpoints within an atomic IndexedDB transaction, permanently deletes staged items,
+   * releases snapshot, and transitions to View Mode.
    */
-  commitEditMode: async (workspaceId: string) => {
+  commitEditMode: async (workspaceId: string): Promise<boolean> => {
     const {
       editingLayoutsByBreakpoint,
       stagedDeletedWidgetIds,
       hasUnsavedChanges,
+      isSaving,
     } = get();
 
-    if (!workspaceId) return false;
+    if (!workspaceId) {
+      set({ saveError: 'Cannot save: workspace ID is required.' });
+      return false;
+    }
 
-    // If no changes, exit cleanly without database writes
+    // Prevent concurrent commit operations
+    if (isSaving) return false;
+
+    // 1. If no unsaved changes, exit cleanly to View Mode without writing to IndexedDB
     if (!hasUnsavedChanges) {
       set({
         isEditMode: false,
@@ -366,20 +392,55 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
     set({ isSaving: true, saveError: null });
 
     try {
-      // 1. Permanently delete staged deleted widgets from widget repository
-      for (const instanceId of stagedDeletedWidgetIds) {
-        await widgetInstanceRepo.delete(instanceId);
-        await layoutRepo.deleteLayout(instanceId);
-      }
-
-      // 2. Persist updated layouts for each breakpoint
       const breakpoints: Breakpoint[] = ['lg', 'md', 'sm', 'xs', 'xxs'];
+
+      // 2. Validate all layout entities against Zod schema before starting database transaction
       for (const bp of breakpoints) {
         const items = editingLayoutsByBreakpoint[bp] || [];
-        await layoutRepo.saveLayouts(workspaceId, bp, items);
+        for (const item of items) {
+          WidgetLayoutInputSchema.parse({
+            ...item,
+            workspaceId,
+            breakpoint: bp,
+          });
+        }
       }
 
-      // 3. Reset editing state and exit edit mode on success
+      // 3. Execute atomic transaction spanning widget instances and widget layouts
+      await db.transaction('rw', [db.widgetInstances, db.widgetLayouts], async () => {
+        // 3a. Insert staged added widget instances (if any) with workspace isolation verification
+        const { stagedAddedInstances } = get();
+        if (stagedAddedInstances.length > 0) {
+          for (const inst of stagedAddedInstances) {
+            if (inst.workspaceId !== workspaceId) {
+              throw new Error(
+                `Security Violation: Staged widget ${inst.id} belongs to ${inst.workspaceId}, not ${workspaceId}`
+              );
+            }
+          }
+          await db.widgetInstances.bulkPut(stagedAddedInstances);
+        }
+
+        // 3b. Permanently delete staged deleted widgets from database with workspace verification
+        for (const instanceId of stagedDeletedWidgetIds) {
+          const existingInst = await db.widgetInstances.get(instanceId);
+          if (existingInst && existingInst.workspaceId !== workspaceId) {
+            throw new Error(
+              `Security Violation: Cannot delete widget ${instanceId} belonging to another workspace (${existingInst.workspaceId})`
+            );
+          }
+          await widgetInstanceRepo.delete(instanceId);
+          await layoutRepo.deleteLayout(instanceId);
+        }
+
+        // 3c. Persist layouts for each of the 5 responsive breakpoints
+        for (const bp of breakpoints) {
+          const items = editingLayoutsByBreakpoint[bp] || [];
+          await layoutRepo.saveLayouts(workspaceId, bp, items);
+        }
+      });
+
+      // 4. On transaction success: clear snapshot, clear staging, and exit Edit Mode
       set({
         isEditMode: false,
         isSaving: false,
@@ -387,6 +448,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
         snapshotWorkspaceId: null,
         stagedDeletedWidgetIds: [],
         stagedAddedWidgetIds: [],
+        stagedAddedInstances: [],
         hasUnsavedChanges: false,
         saveError: null,
       });
@@ -394,7 +456,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
       return true;
     } catch (err: any) {
       console.error('[customizationStore] Failed to commit layout changes:', err);
-      // Keep Edit Mode open and retain editing state on error
+      // Defensive: preserve Edit Mode, draft layouts, and snapshot; present error to user
       set({
         isSaving: false,
         saveError: err?.message || 'Failed to save changes. Please try again.',
@@ -423,6 +485,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
         snapshotWorkspaceId: null,
         stagedDeletedWidgetIds: [],
         stagedAddedWidgetIds: [],
+        stagedAddedInstances: [],
         hasUnsavedChanges: false,
         saveError: null,
       });
@@ -449,6 +512,7 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
       snapshotWorkspaceId: null,
       stagedDeletedWidgetIds: [],
       stagedAddedWidgetIds: [],
+      stagedAddedInstances: [],
       hasUnsavedChanges: false,
       saveError: null,
       isUnsavedPromptOpen: false,
