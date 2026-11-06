@@ -1,14 +1,14 @@
 # NookSpace — Project Context
 
-## Current Status: Phase 0 — Project Foundation Complete & Verified
+## Current Status: Phase 1 — Design System & Primitives Complete & Verified
 
 - **Repository**: `nookspace-extension`
-- **Current Milestone**: Phase 0 — Foundation & Build Pipeline Complete
+- **Current Milestone**: Phase 1 — Design System & UI Primitives Complete
 - **Status Date**: November 2026
 - **Build Status**:
-  - Chromium MV3: `.output/chrome-mv3` (Compiled successfully, 174 kB)
-  - Firefox MV2/MV3: `.output/firefox-mv2` (Compiled successfully, 174 kB)
-  - Vitest Unit Tests: 7 passed (100% pass rate)
+  - Chromium MV3: `.output/chrome-mv3` (Compiled successfully, 230 kB)
+  - Firefox MV2/MV3: `.output/firefox-mv2` (Compiled successfully, 230 kB)
+  - Vitest Unit Tests: 36 passed (100% pass rate across 9 test suites)
   - TypeScript: Strict compilation verified (0 errors)
 
 ---
@@ -22,18 +22,21 @@
 ---
 
 ## Active Decisions
-1. **Extension Framework**: Selected **WXT** for seamless cross-browser packaging and Vite compilation. Multi-target manifests defined with Firefox Gecko ID (`nookspace@local-dev`) and Chromium MV3 Service Worker.
-2. **React Version Locked to React 18 LTS**: Selected `react@^18.3.1` to guarantee 100% peer-dependency stability with `react-grid-layout`, `react-resizable`, and `react-draggable` (avoiding React 19 peer-dependency conflicts).
-3. **Permission Minimization**: Strictly limited to `["storage", "alarms", "notifications"]`. Dropped `unlimitedStorage` (IndexedDB provides generous quota automatically, avoiding store review warnings). Zero host or history permissions.
-4. **Data Architecture**: IndexedDB with Dexie.js as sole primary database. Layered repository pattern with Zod runtime validation. Atomic Dexie transactions and automated pre-import safety backups. Zero entity storage in `localStorage`.
-5. **Deterministic Timer Reliability**: Decoupled from `setInterval`. Timer state stores epoch timestamps (`targetEndTime`). Background alarms (`browser.alarms`) ensure notification delivery even when tabs are closed or service workers suspend.
-6. **Layout Engine**: `react-grid-layout` for the 12-column widget grid; separate floating canvas layer for sticky notes.
-7. **Cross-Browser Strategy**: All browser APIs encapsulated in `src/services/browser` to guarantee zero direct `chrome.*` or `browser.*` leaks in presentation components.
+1. **Design System Tokens**: Fully tokenized CSS Variables in `src/styles/globals.css` with semantic light, dark, and system modes.
+2. **Zero White Flash**: Pre-render inline anti-flash script in `entrypoints/newtab/index.html` reading `nookspace_theme_mode` synchronously before DOM paints.
+3. **UI Component Library**: Standardized, Notion/Linear inspired accessible UI primitives created in `src/components/ui/` (`Button`, `IconButton`, `Input`, `Textarea`, `Checkbox`, `Switch`, `Slider`, `Separator`, `Badge`, `Card`, `IconContainer`, `EmptyState`, `Skeleton`, `Tooltip`, `Dropdown`, `Modal`, `Popover`, `Tabs`).
+4. **Application Shell**: Modular layout shell created in `src/components/layout/` (`AppShell`, `TopNav`, `WorkspaceHeader`).
+5. **Extension Framework**: Selected **WXT** for seamless cross-browser packaging and Vite compilation. Multi-target manifests defined with Firefox Gecko ID (`nookspace@local-dev`) and Chromium MV3 Service Worker.
+6. **React Version Locked to React 18 LTS**: Selected `react@^18.3.1` to guarantee 100% peer-dependency stability with `react-grid-layout`, `react-resizable`, and `react-draggable`.
+7. **Permission Minimization**: Strictly limited to `["storage", "alarms", "notifications"]`. Dropped `unlimitedStorage`. Zero host or history permissions.
+8. **Data Architecture**: IndexedDB with Dexie.js as sole primary database. Layered repository pattern with Zod runtime validation.
+9. **Deterministic Timer Reliability**: Decoupled from `setInterval`. Timer state stores epoch timestamps (`targetEndTime`).
 
 ---
 
 ## Next Steps
-Awaiting User Review of Phase 0 Foundation. Upon approval, begin **Phase 1 — Design System & Primitives**:
-1. Build foundational UI primitives (`Button`, `IconButton`, `Input`, `Card`, `Modal / Dialog`, `DropdownMenu`, `Tabs`, `Badge`, `Switch / Toggle`, `Tooltip`).
-2. Implement CSS variables theme system (Dark & Light tokens, Accent palettes).
-3. Add unit tests for design system primitives.
+Awaiting User Review of Phase 1 Design System. Upon approval, begin **Phase 2 — Main Dashboard**:
+1. Implement Navigation & Workspace Switcher state.
+2. Integrate Dexie `NookSpaceDB` database initialization.
+3. Build Workspace repository and default workspace seeding.
+4. Prepare widget container viewport for Widget System integration.

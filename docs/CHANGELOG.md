@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.2] - 2026-11-07
+
+### Added
+- Complete Notion/Linear inspired Design System and Design Tokens in `src/styles/globals.css`.
+- Theme management system (`useThemeStore`) supporting Light, Dark, and System modes with anti-flash script in `entrypoints/newtab/index.html`.
+- Accessible, typed UI Component Library in `src/components/ui/`:
+  - `Button` & `IconButton` (5 variants, 3 sizes, loading and disabled states).
+  - `Input` & `Textarea` (with error states and custom left/right icon support).
+  - `Checkbox`, `Switch`, `Slider`, `Separator`.
+  - `Badge` (semantic states: default, secondary, outline, success, warning, destructive).
+  - `Card` compound components (`CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`).
+  - `IconContainer` for bookmark monograms and widget badges.
+  - `EmptyState` and animated `Skeleton` shimmer for asynchronous states.
+  - Floating overlays: `Tooltip`, `Dropdown` menu, `Modal` / `Dialog`, `Popover`, and `Tabs`.
+- Modular Application Shell in `src/components/layout/`:
+  - `AppShell`: Viewport container with theme initialization.
+  - `TopNav`: Header with workspace switcher, search shortcut, theme selector, and customization mode trigger.
+  - `WorkspaceHeader`: Time, greeting, and date banner.
+- Interactive Design System showcase integrated into `entrypoints/newtab/App.tsx`.
+- Vitest component tests achieving 36/36 passing tests across 9 suites.
+
 ## [0.1.0-alpha] - 2026-11-06
 
 ### Added

@@ -43,16 +43,21 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
 - [x] Create functional minimal New Tab entrypoint with React root and theme support.
 - [x] Verify both Chromium and Firefox builds pass without warnings or errors.
 
-### Phase 1: Design System & Tokens
-- [ ] Define CSS variable color tokens and dark/light mode palette.
-- [ ] Implement foundational UI primitives:
+### Phase 1: Design System & Tokens (Completed & Verified)
+- [x] Define CSS variable color tokens and dynamic dark/light/system theme palette.
+- [x] Implement anti-flash theme script in `entrypoints/newtab/index.html`.
+- [x] Create centralized Zustand theme store (`src/stores/themeStore.ts`) with OS media query listener.
+- [x] Implement foundational UI primitives with strict TypeScript interfaces:
   - `Button`, `IconButton`
   - `Input`, `Textarea`
-  - `Card`, `Modal / Dialog`
-  - `DropdownMenu`, `Tabs`
-  - `Badge`, `Switch / Toggle`
-  - `Tooltip`
-- [ ] Unit test primitive components.
+  - `Checkbox`, `Switch`, `Slider`, `Separator`
+  - `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`
+  - `Badge`, `IconContainer`
+  - `EmptyState`, `Skeleton`
+  - `Tooltip`, `DropdownMenu`, `Modal / Dialog`, `Popover`, `Tabs`
+- [x] Build modular Application Shell (`AppShell`, `TopNav`, `WorkspaceHeader`).
+- [x] Comprehensive component unit testing (36/36 tests passing in Vitest).
+- [x] Verify Chromium and Firefox production builds.
 
 ### Phase 2: Core Dashboard Shell
 - [ ] Global Top Navigation header (Logo, Workspace Switcher trigger, Customize toggle, Settings button).
