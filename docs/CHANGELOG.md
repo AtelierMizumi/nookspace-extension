@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.9] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 3.5) Add Widget Integration:
+  - Staged addition in Edit Mode keeping newly added widget instances and layouts in-memory without early IndexedDB commits.
+  - Automatic non-overlapping layout allocation using `synchronizeLayout` occupancy packing across all 5 responsive breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`).
+  - Seamless integration with `WidgetLibraryModal` featuring search by title/description, category filtering, and real-time added badges.
+  - Rollback fidelity: cancelling an edit session completely purges staged instances with 0 orphan records.
+  - Comprehensive unit test suite (`addWidgetIntegration.test.ts`), expanding test coverage to 118 passing tests across 21 test suites (100% pass rate).
+
 ## [0.1.0-alpha.8] - 2026-11-07
 
 ### Added

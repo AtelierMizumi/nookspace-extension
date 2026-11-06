@@ -78,8 +78,12 @@ export const App: React.FC = () => {
       const defaultLayouts: Partial<Record<Breakpoint, WidgetLayoutEntity>> = {};
       const allInstances = [...instances, ...stagedAddedInstances, newInstance];
 
+      const editingLayoutsByBreakpoint =
+        useCustomizationStore.getState().editingLayoutsByBreakpoint;
+
       for (const bp of breakpoints) {
-        const packed = synchronizeLayout(activeWorkspaceId, bp, allInstances, []);
+        const existingForBp = editingLayoutsByBreakpoint[bp] || [];
+        const packed = synchronizeLayout(activeWorkspaceId, bp, allInstances, existingForBp);
         const item = packed.find((p) => p.widgetInstanceId === instanceId);
         if (item) defaultLayouts[bp] = item;
       }
