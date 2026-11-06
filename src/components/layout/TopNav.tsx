@@ -17,6 +17,7 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { useThemeStore } from '../../stores/themeStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
+import { useCustomizationStore } from '../../stores/customizationStore';
 
 export interface TopNavProps {
   isEditMode?: boolean;
@@ -33,6 +34,7 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const { resolvedTheme, setTheme } = useThemeStore();
   const { workspaces, activeWorkspaceId, setActiveWorkspace, createWorkspace } = useWorkspaceStore();
+  const requestWorkspaceSwitch = useCustomizationStore((s) => s.requestWorkspaceSwitch);
   const [isNewWsModalOpen, setIsNewWsModalOpen] = useState(false);
   const [newWsName, setNewWsName] = useState('');
 
@@ -46,12 +48,19 @@ export const TopNav: React.FC<TopNavProps> = ({
     setIsNewWsModalOpen(false);
   };
 
+  const handleSelectWorkspace = (workspaceId: string) => {
+    const result = requestWorkspaceSwitch(workspaceId);
+    if (result === 'ALLOW') {
+      setActiveWorkspace(workspaceId);
+    }
+  };
+
   const workspaceDropdownItems: DropdownItem[] = [
     ...workspaces.map((ws) => ({
       id: ws.id,
       label: ws.name,
       icon: <LayoutGrid className="h-4 w-4 text-primary" />,
-      onClick: () => setActiveWorkspace(ws.id),
+      onClick: () => handleSelectWorkspace(ws.id),
     })),
     {
       id: 'create-new-workspace',

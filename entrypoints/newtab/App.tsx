@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Plus, LayoutGrid } from 'lucide-react';
+import { Plus, LayoutGrid } from 'lucide-react';
 import { AppShell } from '../../src/components/layout/AppShell';
 import { WorkspaceHeader } from '../../src/components/layout/WorkspaceHeader';
 import { GridLayoutEngine } from '../../src/features/layout-editor/GridLayoutEngine';
+import { CustomizationToolbar } from '../../src/features/layout-editor/CustomizationToolbar';
 import { WidgetLibraryModal } from '../../src/features/widget-system/WidgetLibraryModal';
 import { Button } from '../../src/components/ui/Button';
 import { EmptyState } from '../../src/components/ui/EmptyState';
@@ -12,11 +13,13 @@ import { Switch } from '../../src/components/ui/Switch';
 import { useWorkspaceStore } from '../../src/stores/workspaceStore';
 import { useWidgetStore } from '../../src/stores/widgetStore';
 import { useLayoutStore } from '../../src/stores/layoutStore';
+import { useCustomizationStore } from '../../src/stores/customizationStore';
+import { synchronizeLayout } from '../../src/features/layout-editor/layoutUtils';
+import { Breakpoint, WidgetLayoutEntity } from '../../src/types/database';
 // Ensure all initial widgets are registered
 import '../../src/widgets';
 
 export const App: React.FC = () => {
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
 
@@ -30,62 +33,88 @@ export const App: React.FC = () => {
     debouncedSaveLayouts,
   } = useLayoutStore();
 
+  const isEditMode = useCustomizationStore((s) => s.isEditMode);
+  const currentEditingLayouts = useCustomizationStore((s) => s.currentLayouts);
+  const enterEditMode = useCustomizationStore((s) => s.enterEditMode);
+  const commitEditMode = useCustomizationStore((s) => s.commitEditMode);
+  const updateEditingLayouts = useCustomizationStore((s) => s.updateEditingLayouts);
+  const stageDeleteWidget = useCustomizationStore((s) => s.stageDeleteWidget);
+  const stageAddWidget = useCustomizationStore((s) => s.stageAddWidget);
+  const isWidgetStagedForDeletion = useCustomizationStore((s) => s.isWidgetStagedForDeletion);
+
   const currentWorkspace = getActiveWorkspace();
 
   // Load layout whenever active workspace or instances change
   useEffect(() => {
-    if (activeWorkspaceId && instances.length > 0) {
+    if (activeWorkspaceId && instances.length > 0 && !isEditMode) {
       loadLayouts(activeWorkspaceId, currentBreakpoint);
     }
-  }, [activeWorkspaceId, instances.length, currentBreakpoint, loadLayouts]);
+  }, [activeWorkspaceId, instances.length, currentBreakpoint, loadLayouts, isEditMode]);
 
   const handleAddWidget = async (type: string) => {
-    await addWidget(activeWorkspaceId, type);
-    await loadLayouts(activeWorkspaceId, currentBreakpoint);
+    const created = await addWidget(activeWorkspaceId, type);
+    if (isEditMode) {
+      // Allocate initial layout across 5 breakpoints and stage addition
+      const breakpoints: Breakpoint[] = ['lg', 'md', 'sm', 'xs', 'xxs'];
+      const defaultLayouts: Partial<Record<Breakpoint, WidgetLayoutEntity>> = {};
+      const allInstances = [...instances, created];
+
+      for (const bp of breakpoints) {
+        const packed = synchronizeLayout(activeWorkspaceId, bp, allInstances, []);
+        const item = packed.find((p) => p.widgetInstanceId === created.id);
+        if (item) defaultLayouts[bp] = item;
+      }
+
+      stageAddWidget(created.id, defaultLayouts);
+    } else {
+      await loadLayouts(activeWorkspaceId, currentBreakpoint);
+    }
   };
 
   const handleRemoveWidget = async (id: string) => {
-    await removeWidget(id, activeWorkspaceId);
-    await loadLayouts(activeWorkspaceId, currentBreakpoint);
+    if (isEditMode) {
+      stageDeleteWidget(id);
+    } else {
+      await removeWidget(id, activeWorkspaceId);
+      await loadLayouts(activeWorkspaceId, currentBreakpoint);
+    }
   };
+
+  const handleToggleEditMode = async () => {
+    if (isEditMode) {
+      const success = await commitEditMode(activeWorkspaceId);
+      if (success) {
+        await loadLayouts(activeWorkspaceId, currentBreakpoint);
+      }
+    } else {
+      await enterEditMode(activeWorkspaceId, currentBreakpoint);
+    }
+  };
+
+  const visibleInstances = isEditMode
+    ? instances.filter((inst) => !isWidgetStagedForDeletion(inst.id))
+    : instances;
+
+  const activeLayouts = isEditMode ? currentEditingLayouts : layouts;
 
   return (
     <AppShell
       isEditMode={isEditMode}
-      onToggleEditMode={() => setIsEditMode(!isEditMode)}
+      onToggleEditMode={handleToggleEditMode}
       onOpenSettings={() => setIsSettingsOpen(true)}
     >
       {/* Workspace Header (Time & Dynamic Greeting) */}
       <WorkspaceHeader userName="Architect" />
 
-      {/* Edit Mode Notification Banner */}
-      {isEditMode && (
-        <div className="w-full mb-6 p-3 rounded-lg border border-primary/30 bg-primary/10 text-primary flex items-center justify-between text-xs animate-in fade-in duration-150 shadow-xs">
-          <div className="flex items-center gap-2 font-medium">
-            <Sparkles className="h-4 w-4 shrink-0" />
-            <span>
-              Edit Mode Active: Drag widgets by their top handle to reposition. Drag corners to resize.
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsLibraryOpen(true)}
-              leftIcon={<Plus className="h-3 w-3" />}
-            >
-              Add Widget
-            </Button>
-            <Button size="sm" variant="primary" onClick={() => setIsEditMode(false)}>
-              Done Editing
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Notion/Linear Style Customization Toolbar */}
+      <CustomizationToolbar
+        onAddWidget={() => setIsLibraryOpen(true)}
+        activeBreakpoint={currentBreakpoint}
+      />
 
       {/* Grid Engine Dashboard Viewport */}
       <section className="flex-1 w-full pb-8">
-        {instances.length === 0 ? (
+        {visibleInstances.length === 0 ? (
           <EmptyState
             icon={<LayoutGrid className="h-6 w-6 text-primary" />}
             title="Your Workspace is Empty"
@@ -105,15 +134,23 @@ export const App: React.FC = () => {
         ) : (
           <GridLayoutEngine
             workspaceId={activeWorkspaceId}
-            widgets={instances}
-            layouts={layouts}
+            widgets={visibleInstances}
+            layouts={activeLayouts}
             currentBreakpoint={currentBreakpoint}
             isDraggable={isEditMode}
             isResizable={isEditMode}
             isEditMode={isEditMode}
-            onLayoutChange={updateLayoutsInMemory}
-            onDragStop={() => debouncedSaveLayouts(activeWorkspaceId)}
-            onResizeStop={() => debouncedSaveLayouts(activeWorkspaceId)}
+            onLayoutChange={isEditMode ? updateEditingLayouts : updateLayoutsInMemory}
+            onDragStop={() => {
+              if (!isEditMode) {
+                debouncedSaveLayouts(activeWorkspaceId);
+              }
+            }}
+            onResizeStop={() => {
+              if (!isEditMode) {
+                debouncedSaveLayouts(activeWorkspaceId);
+              }
+            }}
             onBreakpointChange={(newBp) => loadLayouts(activeWorkspaceId, newBp)}
             onUpdateConfig={(instanceId, newConfig) =>
               updateConfig(instanceId, newConfig, activeWorkspaceId)
@@ -134,7 +171,7 @@ export const App: React.FC = () => {
         isOpen={isLibraryOpen}
         onClose={() => setIsLibraryOpen(false)}
         workspaceId={activeWorkspaceId}
-        activeInstances={instances}
+        activeInstances={visibleInstances}
         onAddWidget={handleAddWidget}
         onRemoveWidget={handleRemoveWidget}
       />

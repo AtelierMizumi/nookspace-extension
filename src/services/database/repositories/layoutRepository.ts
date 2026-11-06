@@ -72,6 +72,35 @@ export class LayoutRepository {
   }
 
   /**
+   * Retrieves all layout items for a workspace grouped across all 5 breakpoints.
+   */
+  async getAllLayoutsGrouped(
+    workspaceId: string
+  ): Promise<Record<Breakpoint, WidgetLayoutEntity[]>> {
+    const grouped: Record<Breakpoint, WidgetLayoutEntity[]> = {
+      lg: [],
+      md: [],
+      sm: [],
+      xs: [],
+      xxs: [],
+    };
+    if (!workspaceId) return grouped;
+
+    const all = await this.database.widgetLayouts
+      .where('workspaceId')
+      .equals(workspaceId)
+      .toArray();
+
+    for (const item of all) {
+      if (grouped[item.breakpoint]) {
+        grouped[item.breakpoint].push(item);
+      }
+    }
+
+    return grouped;
+  }
+
+  /**
    * Retrieves all layout items for a specific widget instance across all breakpoints.
    */
   async getLayoutsByWidgetInstance(widgetInstanceId: string): Promise<WidgetLayoutEntity[]> {

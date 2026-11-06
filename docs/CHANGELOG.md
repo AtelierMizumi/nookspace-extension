@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.6] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 3.1 & 3.2) Customization Studio State & Toolbar:
+  - Centralized `useCustomizationStore` managing complete separation between Persisted State (IndexedDB) and In-Memory Editing Draft.
+  - Deep clone multi-breakpoint snapshot (`originalLayoutsSnapshot`) captured at `enterEditMode` with zero DB writes on entry.
+  - Staged deletion (`stageDeleteWidget`) and staged addition (`stageAddWidget`) mechanisms protecting against premature deletion and orphaned layouts on Cancel.
+  - Granular coordinate comparison algorithm determining `hasUnsavedChanges` with exact dirty-state tracking.
+  - Workspace navigation safety checks (`requestWorkspaceSwitch` and `forceDiscardAndSwitchWorkspace`) preventing cross-workspace snapshot leakage.
+  - Notion/Linear styled `CustomizationToolbar.tsx` with View Mode toggle and Edit Mode controls (Add Widget, Reset Layout, Cancel, Done).
+  - Accessible confirmation modals for Discard Changes on Cancel, Reset Layout to Default, and Workspace Switch with Unsaved Changes.
+  - Keyboard accessibility with `Escape` key shortcut to initiate Cancel workflow.
+  - Unit and component tests expanded to 97 passing tests across 18 test suites.
+
 ## [0.1.0-alpha.5] - 2026-11-07
 
 ### Added

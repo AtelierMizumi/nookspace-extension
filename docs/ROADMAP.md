@@ -94,7 +94,14 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - Zero DB writes per drag frame: instant Zustand memory updates with 400ms debounced persistence on drag/resize release.
   - Custom Notion/Linear drag handles and theme-aware accent corner resizers (`src/styles/grid.css`).
   - Unit & component tests expanded to 75 passing tests (100% pass rate).
-- [ ] **Milestone 3**: Customization Studio & Edit Mode (Visual guides, customization toolbar, save/cancel rollback, reset layout confirmation).
+- [ ] **Milestone 3**: Customization Studio & Edit Mode:
+  - [x] **Milestone 3.1**: Centralized Customization Studio State Architecture (`customizationStore.ts`), deep clone multi-breakpoint snapshot, staged deletion/addition, dirty state comparison, workspace isolation.
+  - [x] **Milestone 3.2**: Notion/Linear styled `CustomizationToolbar.tsx` with View Mode toggle and Edit Mode controls (Add Widget, Reset Layout, Cancel, Done), confirmation dialogs, and Escape key handling.
+  - [ ] **Milestone 3.3**: Done / Save Changes flow verification & validation.
+  - [ ] **Milestone 3.4**: Cancel & Snapshot Rollback edge-case testing.
+  - [ ] **Milestone 3.5**: Add Widget staged integration.
+  - [ ] **Milestone 3.6**: Reset Layout end-to-end flow.
+  - [ ] **Milestone 3.7**: Milestone 3 test consolidation.
 - [ ] **Milestone 4**: Testing & Reliability (Cross-browser verification, breakpoint transitions, reliability under stress).
 - [ ] **Milestone 5**: Documentation & Final Review.
 
