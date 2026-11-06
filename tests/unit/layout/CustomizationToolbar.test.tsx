@@ -188,4 +188,19 @@ describe('Milestone 3.2 — Customization Studio Toolbar', () => {
     expect(screen.getByRole('button', { name: /discard & switch/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /keep editing/i })).toBeInTheDocument();
   });
+
+  it('14. pressing Escape when confirmation modal is open closes the modal without re-triggering cancel', () => {
+    const onCancel = vi.fn();
+    render(<CustomizationToolbar isEditMode={true} hasUnsavedChanges={true} onCancel={onCancel} />);
+
+    // Open discard confirmation modal
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.getByText(/discard changes\?/i)).toBeInTheDocument();
+
+    // Pressing Escape now should dismiss the modal
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.queryByText(/discard changes\?/i)).not.toBeInTheDocument();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
 });

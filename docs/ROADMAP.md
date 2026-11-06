@@ -98,7 +98,7 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - [x] **Milestone 3.1**: Centralized Customization Studio State Architecture (`customizationStore.ts`), deep clone multi-breakpoint snapshot, staged deletion/addition, dirty state comparison, workspace isolation.
   - [x] **Milestone 3.2**: Notion/Linear styled `CustomizationToolbar.tsx` with View Mode toggle and Edit Mode controls (Add Widget, Reset Layout, Cancel, Done), confirmation dialogs, and Escape key handling.
   - [x] **Milestone 3.3**: Save Transaction & Data Integrity (`commitEditMode` with atomic `[widgetInstances, widgetLayouts]` Dexie transaction, Zod pre-validation, failure injection rollback, workspace security checks, and 0 partial writes).
-  - [ ] **Milestone 3.4**: Cancel & Snapshot Rollback edge-case testing.
+  - [x] **Milestone 3.4**: Cancel & Snapshot Rollback (Multi-breakpoint rollback, staged addition/deletion restoration, reset layout rollback, cancel idempotency, and modal Escape safety).
   - [ ] **Milestone 3.5**: Add Widget staged integration.
   - [ ] **Milestone 3.6**: Reset Layout end-to-end flow.
   - [ ] **Milestone 3.7**: Milestone 3 test consolidation.

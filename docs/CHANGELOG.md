@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.8] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 3.4) Cancel & Snapshot Rollback:
+  - Deep clone snapshot isolation verifying zero shared references between `originalLayoutsSnapshot` and in-memory editing drafts.
+  - Full multi-breakpoint rollback across all 5 responsive breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`).
+  - Staged addition rollback ensuring zero orphan widget instances or layouts in IndexedDB.
+  - Staged deletion rollback ensuring 100% data fidelity without loss of tasks, notes, or widget configurations.
+  - Safe handling of complex composite scenarios: Add, Delete, Reset Layout, and Multi-breakpoint edits combined rollback to exact initial state.
+  - Cancel idempotency: consecutive calls and out-of-edit-mode calls are completely side-effect free.
+  - Modal keyboard hierarchy: `Escape` key prioritizes dismissing open confirmation dialogs before triggering edit mode cancellation.
+  - Unit test suite expanded to 114 passing tests across 20 test suites (100% pass rate).
+
 ## [0.1.0-alpha.7] - 2026-11-07
 
 ### Added

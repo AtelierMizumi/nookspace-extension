@@ -90,12 +90,10 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
     if (props.onCancel) {
       props.onCancel();
     } else {
-      const rollback = cancelEditModeStore();
-      // Clean up any staged added widgets that were cancelled
-      if (rollback.stagedAddedToRemove.length > 0 && activeWorkspaceId) {
-        for (const addedId of rollback.stagedAddedToRemove) {
-          removeWidget(addedId, activeWorkspaceId);
-        }
+      cancelEditModeStore();
+      if (activeWorkspaceId) {
+        useWidgetStore.getState().loadWidgets(activeWorkspaceId);
+        useLayoutStore.getState().loadLayouts(activeWorkspaceId, storeBreakpoint);
       }
     }
   };
@@ -151,6 +149,11 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
     if (!isEditMode) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // If any dialog is already open, allow the dialog's own handler to dismiss it
+      if (isDiscardConfirmOpen || isResetConfirmOpen || isUnsavedPromptOpen) {
+        return;
+      }
+
       if (e.key === 'Escape') {
         e.preventDefault();
         handleCancelClick();
@@ -159,7 +162,7 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditMode, hasUnsavedChanges]);
+  }, [isEditMode, hasUnsavedChanges, isDiscardConfirmOpen, isResetConfirmOpen, isUnsavedPromptOpen]);
 
   // --- VIEW MODE ---
   if (!isEditMode) {

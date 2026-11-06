@@ -328,7 +328,15 @@ export const useCustomizationStore = create<CustomizationState>((set, get) => ({
       stagedDeletedWidgetIds,
     } = get();
 
-    const rolledBack = originalLayoutsSnapshot ? deepClone(originalLayoutsSnapshot) : null;
+    const rolledBack: Record<Breakpoint, WidgetLayoutEntity[]> | null = originalLayoutsSnapshot
+      ? {
+          lg: deepClone(originalLayoutsSnapshot.lg || []),
+          md: deepClone(originalLayoutsSnapshot.md || []),
+          sm: deepClone(originalLayoutsSnapshot.sm || []),
+          xs: deepClone(originalLayoutsSnapshot.xs || []),
+          xxs: deepClone(originalLayoutsSnapshot.xxs || []),
+        }
+      : null;
     const addedToRemove = [...stagedAddedWidgetIds];
     const deletedToRestore = [...stagedDeletedWidgetIds];
 
