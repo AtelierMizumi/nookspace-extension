@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.5] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 2) Grid Engine Core:
+  - Built independent `GridLayoutEngine.tsx` component integrating `react-grid-layout@1.5.4` (`Responsive` + `WidthProvider`).
+  - Seamlessly connected with Phase 2 `WidgetRenderer` without code duplication.
+  - Responsive column mapping across 5 distinct breakpoints (`lg: 12`, `md: 10`, `sm: 6`, `xs: 4`, `xxs: 2`).
+  - Vertical compaction (`compactType="vertical"`) with collision-reflow preventing unintended widget overlaps.
+  - Zero DB writes per drag frame: instant Zustand memory updates with 400ms debounced persistence on drag/resize release (`debouncedSaveLayouts`).
+  - Custom Notion/Linear styled drag handles and theme-aware accent corner resizers (`src/styles/grid.css`).
+  - Unit and component tests expanded to 75 passing tests across 16 test suites.
+
 ## [0.1.0-alpha.4] - 2026-11-07
 
 ### Added

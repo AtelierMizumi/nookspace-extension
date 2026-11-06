@@ -1,0 +1,81 @@
+/* React Grid Layout & Resizable Styles */
+@import 'react-grid-layout/css/styles.css';
+@import 'react-resizable/css/styles.css';
+
+/* Custom Notion/Linear Grid Styling */
+.react-grid-layout {
+  position: relative;
+  transition: height 200ms ease;
+}
+
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+
+.react-grid-item.resizing {
+  z-index: 100;
+  will-change: width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 100;
+  will-change: transform;
+  opacity: 0.92;
+  box-shadow: var(--shadow-elevation, 0 10px 25px -5px rgba(0, 0, 0, 0.4));
+  cursor: grabbing !important;
+}
+
+/* Sleek Drag Placeholder */
+.react-grid-placeholder {
+  background: hsl(var(--primary) / 0.08) !important;
+  border: 1.5px dashed hsl(var(--primary) / 0.4) !important;
+  border-radius: var(--radius, 0.75rem) !important;
+  opacity: 1 !important;
+  transition-duration: 100ms;
+  z-index: 2;
+  user-select: none;
+}
+
+/* Custom Resize Handle */
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  bottom: 3px;
+  right: 3px;
+  cursor: se-resize;
+  z-index: 20;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid hsl(var(--muted-foreground) / 0.6);
+  border-bottom: 2px solid hsl(var(--muted-foreground) / 0.6);
+  border-radius: 1px;
+  transition: border-color 150ms ease;
+}
+
+.react-grid-item:hover > .react-resizable-handle::after {
+  border-color: hsl(var(--foreground) / 0.8);
+}
+
+/* Drag Handle Trigger Area */
+.widget-drag-handle {
+  cursor: grab;
+  user-select: none;
+}
+
+.widget-drag-handle:active {
+  cursor: grabbing;
+}

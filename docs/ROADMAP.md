@@ -86,8 +86,14 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - Zod validation schema (`WidgetLayoutInputSchema`) with dimension clamping and max column checks.
   - `LayoutRepository` with full CRUD, atomic transaction saving, and reset without touching widget configurations.
   - Idempotent `synchronizeLayout` packing algorithm handling new widgets and orphan purging.
-  - Comprehensive unit test suite with 16 tests covering all 15 required scenarios (67/67 tests passing).
-- [ ] **Milestone 2**: Grid Engine Core (`react-grid-layout` integration, drag & drop, resize handles, responsive breakpoints).
+  - Comprehensive unit test suite with 16 tests covering all 15 required scenarios.
+- [x] **Milestone 2**: Grid Engine Core:
+  - Independent `GridLayoutEngine.tsx` component powered by `react-grid-layout@1.5.4` with `WidthProvider(Responsive)`.
+  - Responsive column mapping across 5 breakpoints (`lg: 12`, `md: 10`, `sm: 6`, `xs: 4`, `xxs: 2`).
+  - Vertical compaction (`compactType="vertical"`) with collision-reflow.
+  - Zero DB writes per drag frame: instant Zustand memory updates with 400ms debounced persistence on drag/resize release.
+  - Custom Notion/Linear drag handles and theme-aware accent corner resizers (`src/styles/grid.css`).
+  - Unit & component tests expanded to 75 passing tests (100% pass rate).
 - [ ] **Milestone 3**: Customization Studio & Edit Mode (Visual guides, customization toolbar, save/cancel rollback, reset layout confirmation).
 - [ ] **Milestone 4**: Testing & Reliability (Cross-browser verification, breakpoint transitions, reliability under stress).
 - [ ] **Milestone 5**: Documentation & Final Review.

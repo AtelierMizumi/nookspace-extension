@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Plus, LayoutGrid } from 'lucide-react';
 import { AppShell } from '../../src/components/layout/AppShell';
 import { WorkspaceHeader } from '../../src/components/layout/WorkspaceHeader';
-import { WidgetRenderer } from '../../src/features/widget-system/WidgetRenderer';
+import { GridLayoutEngine } from '../../src/features/layout-editor/GridLayoutEngine';
 import { WidgetLibraryModal } from '../../src/features/widget-system/WidgetLibraryModal';
 import { Button } from '../../src/components/ui/Button';
 import { EmptyState } from '../../src/components/ui/EmptyState';
@@ -11,6 +11,7 @@ import { Input } from '../../src/components/ui/Input';
 import { Switch } from '../../src/components/ui/Switch';
 import { useWorkspaceStore } from '../../src/stores/workspaceStore';
 import { useWidgetStore } from '../../src/stores/widgetStore';
+import { useLayoutStore } from '../../src/stores/layoutStore';
 // Ensure all initial widgets are registered
 import '../../src/widgets';
 
@@ -21,8 +22,32 @@ export const App: React.FC = () => {
 
   const { activeWorkspaceId, getActiveWorkspace } = useWorkspaceStore();
   const { instances, addWidget, removeWidget, toggleWidget, updateConfig } = useWidgetStore();
+  const {
+    layouts,
+    currentBreakpoint,
+    loadLayouts,
+    updateLayoutsInMemory,
+    debouncedSaveLayouts,
+  } = useLayoutStore();
 
   const currentWorkspace = getActiveWorkspace();
+
+  // Load layout whenever active workspace or instances change
+  useEffect(() => {
+    if (activeWorkspaceId && instances.length > 0) {
+      loadLayouts(activeWorkspaceId, currentBreakpoint);
+    }
+  }, [activeWorkspaceId, instances.length, currentBreakpoint, loadLayouts]);
+
+  const handleAddWidget = async (type: string) => {
+    await addWidget(activeWorkspaceId, type);
+    await loadLayouts(activeWorkspaceId, currentBreakpoint);
+  };
+
+  const handleRemoveWidget = async (id: string) => {
+    await removeWidget(id, activeWorkspaceId);
+    await loadLayouts(activeWorkspaceId, currentBreakpoint);
+  };
 
   return (
     <AppShell
@@ -39,21 +64,26 @@ export const App: React.FC = () => {
           <div className="flex items-center gap-2 font-medium">
             <Sparkles className="h-4 w-4 shrink-0" />
             <span>
-              Edit Mode: Customize your dashboard widgets. Drag-and-drop 12-column grid engine launches in Phase 3.
+              Edit Mode Active: Drag widgets by their top handle to reposition. Drag corners to resize.
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setIsLibraryOpen(true)} leftIcon={<Plus className="h-3 w-3" />}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsLibraryOpen(true)}
+              leftIcon={<Plus className="h-3 w-3" />}
+            >
               Add Widget
             </Button>
             <Button size="sm" variant="primary" onClick={() => setIsEditMode(false)}>
-              Save Layout
+              Done Editing
             </Button>
           </div>
         </div>
       )}
 
-      {/* Responsive Dashboard Grid Area */}
+      {/* Grid Engine Dashboard Viewport */}
       <section className="flex-1 w-full pb-8">
         {instances.length === 0 ? (
           <EmptyState
@@ -73,23 +103,29 @@ export const App: React.FC = () => {
             className="my-12 py-16"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
-            {instances.map((instance) => (
-              <div key={instance.id} className="min-h-[190px]">
-                <WidgetRenderer
-                  instance={instance}
-                  isEditMode={isEditMode}
-                  onUpdateConfig={(newConfig) =>
-                    updateConfig(instance.id, newConfig, activeWorkspaceId)
-                  }
-                  onRemove={() => removeWidget(instance.id, activeWorkspaceId)}
-                  onToggleEnabled={() =>
-                    toggleWidget(instance.id, !instance.isEnabled, activeWorkspaceId)
-                  }
-                />
-              </div>
-            ))}
-          </div>
+          <GridLayoutEngine
+            workspaceId={activeWorkspaceId}
+            widgets={instances}
+            layouts={layouts}
+            currentBreakpoint={currentBreakpoint}
+            isDraggable={isEditMode}
+            isResizable={isEditMode}
+            isEditMode={isEditMode}
+            onLayoutChange={updateLayoutsInMemory}
+            onDragStop={() => debouncedSaveLayouts(activeWorkspaceId)}
+            onResizeStop={() => debouncedSaveLayouts(activeWorkspaceId)}
+            onBreakpointChange={(newBp) => loadLayouts(activeWorkspaceId, newBp)}
+            onUpdateConfig={(instanceId, newConfig) =>
+              updateConfig(instanceId, newConfig, activeWorkspaceId)
+            }
+            onRemove={handleRemoveWidget}
+            onToggleEnabled={(instanceId) => {
+              const target = instances.find((i) => i.id === instanceId);
+              if (target) {
+                toggleWidget(instanceId, !target.isEnabled, activeWorkspaceId);
+              }
+            }}
+          />
         )}
       </section>
 
@@ -99,8 +135,8 @@ export const App: React.FC = () => {
         onClose={() => setIsLibraryOpen(false)}
         workspaceId={activeWorkspaceId}
         activeInstances={instances}
-        onAddWidget={(type) => addWidget(activeWorkspaceId, type)}
-        onRemoveWidget={(id) => removeWidget(id, activeWorkspaceId)}
+        onAddWidget={handleAddWidget}
+        onRemoveWidget={handleRemoveWidget}
       />
 
       {/* Preferences Dialog */}
@@ -121,8 +157,8 @@ export const App: React.FC = () => {
             <Input value={currentWorkspace?.name || 'Personal Space'} readOnly disabled />
           </div>
           <div>
-            <label className="font-medium text-foreground block mb-1">Total Installed Widgets</label>
-            <Input value={`${instances.length} active instances`} readOnly disabled />
+            <label className="font-medium text-foreground block mb-1">Grid Breakpoint</label>
+            <Input value={`Current: ${currentBreakpoint.toUpperCase()}`} readOnly disabled />
           </div>
           <div className="pt-2">
             <Switch

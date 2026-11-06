@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpCircle, Trash2, Settings, EyeOff } from 'lucide-react';
+import { HelpCircle, Trash2, Settings, EyeOff, GripVertical } from 'lucide-react';
 import { widgetRegistry } from './WidgetRegistry';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { WidgetInstanceEntity } from '../../types/database';
@@ -69,7 +69,11 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({
       >
         {/* Edit Mode Top Toolbar Overlay */}
         {isEditMode && (
-          <div className="absolute -top-3 right-2 z-30 flex items-center gap-1 bg-popover/90 backdrop-blur-md px-1.5 py-0.5 rounded-lg border border-border shadow-md animate-in fade-in duration-100">
+          <>
+            <div className="absolute -top-3 left-2 z-30 flex items-center bg-popover/90 backdrop-blur-md px-1.5 py-0.5 rounded-lg border border-border shadow-md animate-in fade-in duration-100 widget-drag-handle">
+              <GripVertical className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </div>
+            <div className="absolute -top-3 right-2 z-30 flex items-center gap-1 bg-popover/90 backdrop-blur-md px-1.5 py-0.5 rounded-lg border border-border shadow-md animate-in fade-in duration-100">
             {SettingsComponent && (
               <IconButton
                 size="sm"
@@ -102,6 +106,7 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({
               <Trash2 className="h-3 w-3" />
             </IconButton>
           </div>
+          </>
         )}
 
         {/* Concrete Widget Component */}
