@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.12] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.1) Productivity Data Layer & Zod Validation:
+  - Strong domain models and Zod runtime schemas (`TodoEntitySchema`, `TodoCreateSchema`, `TodoUpdateSchema`, `TodoFilterSchema`, `FocusSessionEntitySchema`, `FocusSessionCreateSchema`, `FocusSessionUpdateSchema`).
+  - `TodoRepository` implementing complete CRUD operations, strict workspace isolation ownership checks, multi-attribute filtering (completed, category, priority, date, searchQuery), atomic reordering, and bulk clearing.
+  - `FocusSessionRepository` implementing focus session persistence, duration and timestamp verification (`completedAt >= startedAt`), duplicate completion protection, date range queries, and aggregated stats calculation.
+  - `migrateLegacyTodos` migration engine safely transitioning legacy tasks from `WidgetInstanceEntity.config.tasks` to Dexie `todos` table with all-or-nothing transaction atomicity, idempotency, and source backup preservation.
+  - Comprehensive unit test suites expanding total test coverage to 147 passing tests across 26 test suites (100% pass rate).
+  - Multi-target builds verified: Chromium MV3 (526.3 kB) and Firefox MV2 (526.4 kB).
+
 ## [0.1.0-alpha.11] - 2026-11-07
 
 ### Added

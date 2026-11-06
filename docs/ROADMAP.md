@@ -103,21 +103,18 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - [x] **Milestone 3.6**: Reset Layout end-to-end flow (Confirmation modal, default packing across 5 breakpoints, zero data loss, and rollback fidelity).
   - [x] **Milestone 3.7**: Testing Consolidation, Cross-Scenario Lifecycle E2E Suite, and Final Phase 3 Review (126/126 tests passing across 23 test suites, 0 TypeScript errors, both Chromium & Firefox builds clean).
 
-### Phase 5: Productivity Suite
-- [ ] **Pomodoro Timer Widget**:
-  - Focus (25m), Short Break (5m), Long Break (15m).
-  - Background audio chime / alarm notifications.
-  - Focus session history tracking in Dexie.
-- [ ] **Study Tracker / Stopwatch Widget**:
-  - Start/pause/stop tracker with topic tags (Coding, Math, Reading).
-  - Daily & weekly aggregate study hours chart/metric.
-- [ ] **Todo List Widget**:
-  - Task CRUD, priority badges, due dates, categories, active/completed filters.
-- [ ] **Daily Goals & Streak Widget**:
-  - Goal completion checklist with percentage progress bar.
-  - Mathematically sound daily streak calculator based on actual activity logs.
-- [ ] **Calendar Widget**:
-  - Month and week agenda views with local event scheduling.
+### Phase 5: Productivity Suite (In Progress)
+- [x] **Milestone 5.1**: Productivity Data Layer & Zod Validation:
+  - Strong domain models and Zod schemas (`TodoEntitySchema`, `TodoCreateSchema`, `TodoUpdateSchema`, `TodoFilterSchema`, `FocusSessionEntitySchema`, `FocusSessionCreateSchema`, `FocusSessionUpdateSchema`).
+  - `TodoRepository` with full CRUD, workspace isolation enforcement, multi-criteria filtering, search, date-based queries, and atomic reordering.
+  - `FocusSessionRepository` with duration validation, timestamp consistency (`completedAt >= startedAt`), duplicate completion protection, date range queries, and aggregated stats breakdown.
+  - `migrateLegacyTodos` database migration safely transferring tasks from `WidgetInstanceEntity.config.tasks` to Dexie `todos` table with atomicity, idempotency, and source backup preservation.
+  - Unit & integration test suites (`todoRepository.test.ts`, `focusSessionRepository.test.ts`, `legacyTodoMigration.test.ts`) expanding test coverage to 147 passing tests across 26 test suites.
+- [ ] **Milestone 5.2**: Advanced Todo List Widget (Task CRUD, priority badges, due dates, categories, active/completed filters, inline creation).
+- [ ] **Milestone 5.3**: Pomodoro Timer & Background Alarm Service (25m Focus / 5m Break, `browserApi.alarms`, background notifications, session logging).
+- [ ] **Milestone 5.4**: Study Tracker & Stopwatch Widget (Topic tags, live stopwatch, daily/weekly aggregated charts).
+- [ ] **Milestone 5.5**: Daily Goals, Streak Calculator & Calendar Widget (Deterministic streak engine, daily progress bar, calendar month view & local events).
+- [ ] **Milestone 5.6**: Test Consolidation, Build Verification & Final Phase 5 Review.
 
 ### Phase 6: Smart Bookmarks
 - [ ] Bookmark Group management (Add group, change color/icon, reorder).
