@@ -110,7 +110,13 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - `FocusSessionRepository` with duration validation, timestamp consistency (`completedAt >= startedAt`), duplicate completion protection, date range queries, and aggregated stats breakdown.
   - `migrateLegacyTodos` database migration safely transferring tasks from `WidgetInstanceEntity.config.tasks` to Dexie `todos` table with atomicity, idempotency, and source backup preservation.
   - Unit & integration test suites (`todoRepository.test.ts`, `focusSessionRepository.test.ts`, `legacyTodoMigration.test.ts`) expanding test coverage to 147 passing tests across 26 test suites.
-- [ ] **Milestone 5.2**: Advanced Todo List Widget (Task CRUD, priority badges, due dates, categories, active/completed filters, inline creation).
+- [x] **Milestone 5.2**: Advanced Todo Widget & Legacy Data Integration:
+  - Hardened legacy migration distinguishing `completed`, `partial`, and `failed` status, ensuring 0 data loss and idempotent retries.
+  - Concurrency-safe `migrationCoordinator.ts` ensuring migration runs before initial query without blocking New Tab dashboard.
+  - Zustand `useTodoStore` managing UI state, status transitions, workspace switching, filtering, and search.
+  - Modern Notion/Linear-inspired `TodoWidget.tsx` with quick inline task creation, 4 filter tabs (*All*, *Active*, *Completed*, *Today*), priority badges, due date indicators, and category tags.
+  - Proven Data Invariant: tasks belong to the user in Dexie `todos` table and are NEVER deleted when the widget instance is removed from the dashboard.
+  - Full suite of unit & lifecycle tests (`todoStore.test.ts`, `TodoWidgetLifecycle.test.tsx`) expanding test coverage to 157 passing tests across 28 test suites (100% pass rate).
 - [ ] **Milestone 5.3**: Pomodoro Timer & Background Alarm Service (25m Focus / 5m Break, `browserApi.alarms`, background notifications, session logging).
 - [ ] **Milestone 5.4**: Study Tracker & Stopwatch Widget (Topic tags, live stopwatch, daily/weekly aggregated charts).
 - [ ] **Milestone 5.5**: Daily Goals, Streak Calculator & Calendar Widget (Deterministic streak engine, daily progress bar, calendar month view & local events).

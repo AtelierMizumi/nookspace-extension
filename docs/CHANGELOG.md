@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.13] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.2) Advanced Todo Widget & Legacy Data Integration:
+  - Hardened `legacyTodoMigration.ts` with explicit `completed`, `partial`, and `failed` status tracking, preventing premature completion flags when tasks are skipped.
+  - Concurrency-safe `migrationCoordinator.ts` coordinating initialization across multiple concurrent New Tab windows.
+  - Centralized `useTodoStore` managing UI state (`idle`, `loading`, `success`, `error`), active workspace isolation, and reactive filter/search updates.
+  - Notion/Linear styled `TodoWidget.tsx` supporting task CRUD, inline <kbd>Enter</kbd> creation, priority badges (`urgent`, `high`, `medium`, `low`), due date badges ("Today", "Tomorrow", "Overdue"), and 4 navigation tabs (*All*, *Active*, *Completed*, *Today*).
+  - Data safety verified: removing a Todo Widget from the dashboard preserves 100% of tasks in Dexie `todos` table for future re-hydration.
+  - Unit and lifecycle test suites expanding total test coverage to 157 passing tests across 28 test suites (100% pass rate).
+  - Multi-target builds verified: Chromium MV3 (548.5 kB) and Firefox MV2 (548.6 kB).
+
 ## [0.1.0-alpha.12] - 2026-11-07
 
 ### Added

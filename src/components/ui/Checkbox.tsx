@@ -9,6 +9,7 @@ export interface CheckboxProps {
   label?: React.ReactNode;
   id?: string;
   className?: string;
+  'aria-label'?: string;
 }
 
 export const Checkbox: React.FC<CheckboxProps> = ({
@@ -18,6 +19,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   label,
   id,
   className,
+  'aria-label': ariaLabel,
 }) => {
   const generatedId = React.useId();
   const checkboxId = id || generatedId;
@@ -37,6 +39,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
         role="checkbox"
         id={checkboxId}
         aria-checked={checked}
+        aria-label={ariaLabel}
         disabled={disabled}
         onClick={() => !disabled && onCheckedChange(!checked)}
         onKeyDown={handleKeyDown}

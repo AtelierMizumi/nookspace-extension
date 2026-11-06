@@ -4,6 +4,7 @@ import { GreetingWidget } from './GreetingWidget';
 import { CalendarOverviewWidget } from './CalendarOverviewWidget';
 import { QuickLinksWidget } from './QuickLinksWidget';
 import { SimpleTodoWidget } from './SimpleTodoWidget';
+import { TodoWidget } from './TodoWidget';
 import { QuickNotesWidget } from './QuickNotesWidget';
 
 export function registerInitialWidgets(): void {
@@ -12,6 +13,7 @@ export function registerInitialWidgets(): void {
   widgetRegistry.register(CalendarOverviewWidget);
   widgetRegistry.register(QuickLinksWidget);
   widgetRegistry.register(SimpleTodoWidget);
+  widgetRegistry.register(TodoWidget);
   widgetRegistry.register(QuickNotesWidget);
 }
 
@@ -24,5 +26,6 @@ export {
   CalendarOverviewWidget,
   QuickLinksWidget,
   SimpleTodoWidget,
+  TodoWidget,
   QuickNotesWidget,
 };

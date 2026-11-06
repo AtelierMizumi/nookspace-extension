@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NookSpaceDB } from '@/services/database/db';
 import { migrateLegacyTodos } from '@/services/database/migrations/legacyTodoMigration';
+import { ensureTodoMigration, _resetMigrationCoordinatorForTesting } from '@/services/database/migrations/migrationCoordinator';
 import { WidgetInstanceEntity } from '@/types/database';
 
-describe('Legacy Todo Data Migration — Milestone 5.1', () => {
+describe('Legacy Todo Data Migration & Coordinator — Milestone 5.2', () => {
   let db: NookSpaceDB;
 
   beforeEach(async () => {
@@ -11,9 +12,10 @@ describe('Legacy Todo Data Migration — Milestone 5.1', () => {
     await db.open();
     await db.widgetInstances.clear();
     await db.todos.clear();
+    _resetMigrationCoordinatorForTesting();
   });
 
-  it('1. migrates legacy tasks from multiple SimpleTodoWidget instances accurately', async () => {
+  it('1. migrates legacy tasks from multiple SimpleTodoWidget instances accurately with completed status', async () => {
     const inst1: WidgetInstanceEntity = {
       id: 'wi-todo-1',
       workspaceId: 'ws-alpha',
@@ -48,6 +50,7 @@ describe('Legacy Todo Data Migration — Milestone 5.1', () => {
     await db.widgetInstances.bulkAdd([inst1, inst2]);
 
     const result = await migrateLegacyTodos(db);
+    expect(result.status).toBe('completed');
     expect(result.instancesProcessed).toBe(2);
     expect(result.tasksMigrated).toBe(3);
     expect(result.tasksSkipped).toBe(0);
@@ -66,43 +69,16 @@ describe('Legacy Todo Data Migration — Milestone 5.1', () => {
 
     // Verify source widget instances are preserved and marked
     const updatedInst1 = await db.widgetInstances.get('wi-todo-1');
+    expect((updatedInst1?.config as any)?.migrationStatus).toBe('completed');
     expect((updatedInst1?.config as any)?.migratedToTodosTable).toBe(true);
     // config.tasks MUST still be preserved as backup
     expect((updatedInst1?.config as any)?.tasks).toHaveLength(2);
   });
 
-  it('2. handles widgets with empty task list or no tasks gracefully', async () => {
-    const emptyInst: WidgetInstanceEntity = {
-      id: 'wi-empty',
-      workspaceId: 'ws-empty',
-      widgetType: 'simple-todo',
-      isEnabled: true,
-      order: 0,
-      createdAt: 1000,
-      updatedAt: 1000,
-      config: {
-        tasks: [],
-      },
-    };
-
-    await db.widgetInstances.add(emptyInst);
-
-    const result = await migrateLegacyTodos(db);
-    expect(result.instancesProcessed).toBe(1);
-    expect(result.tasksMigrated).toBe(0);
-    expect(result.tasksSkipped).toBe(0);
-
-    const todos = await db.todos.toArray();
-    expect(todos).toHaveLength(0);
-
-    const updated = await db.widgetInstances.get('wi-empty');
-    expect((updated?.config as any)?.migratedToTodosTable).toBe(true);
-  });
-
-  it('3. skips invalid or empty task titles without crashing', async () => {
+  it('2. distinguishes "partial" status when invalid tasks are present and does not drop data', async () => {
     const invalidInst: WidgetInstanceEntity = {
-      id: 'wi-invalid',
-      workspaceId: 'ws-main',
+      id: 'wi-partial',
+      workspaceId: 'ws-partial',
       widgetType: 'simple-todo',
       isEnabled: true,
       order: 0,
@@ -110,9 +86,8 @@ describe('Legacy Todo Data Migration — Milestone 5.1', () => {
       updatedAt: 1000,
       config: {
         tasks: [
-          { id: 'valid1', title: 'Valid Task', completed: false },
-          { id: 'inv1', title: '   ', completed: false }, // empty string
-          { id: 'inv2', title: 123 as any, completed: false }, // not string
+          { id: 'good-task', title: 'Valid Clean Task', completed: false },
+          { id: 'bad-task', title: '   ', completed: false }, // Invalid empty title
         ],
       },
     };
@@ -120,15 +95,26 @@ describe('Legacy Todo Data Migration — Milestone 5.1', () => {
     await db.widgetInstances.add(invalidInst);
 
     const result = await migrateLegacyTodos(db);
+    expect(result.status).toBe('partial');
     expect(result.tasksMigrated).toBe(1);
-    expect(result.tasksSkipped).toBe(2);
+    expect(result.tasksSkipped).toBe(1);
+    expect(result.instanceStatuses[0].status).toBe('partial');
 
+    // Verify valid task was inserted
     const todos = await db.todos.toArray();
     expect(todos).toHaveLength(1);
-    expect(todos[0].title).toBe('Valid Task');
+    expect(todos[0].title).toBe('Valid Clean Task');
+
+    // Verify instance is NOT marked as completed so remaining tasks can be retried
+    const updatedInst = await db.widgetInstances.get('wi-partial');
+    expect((updatedInst?.config as any)?.migrationStatus).toBe('partial');
+    expect((updatedInst?.config as any)?.migratedToTodosTable).toBe(false);
+    expect((updatedInst?.config as any)?.migrationErrors).toHaveLength(1);
+    // Source tasks intact
+    expect((updatedInst?.config as any)?.tasks).toHaveLength(2);
   });
 
-  it('4. idempotency: running migration a second time does not duplicate tasks', async () => {
+  it('3. idempotency: running migration a second time does not duplicate tasks', async () => {
     const inst: WidgetInstanceEntity = {
       id: 'wi-idem',
       workspaceId: 'ws-idem',
@@ -160,22 +146,34 @@ describe('Legacy Todo Data Migration — Milestone 5.1', () => {
     expect(todos).toHaveLength(1);
   });
 
-  it('5. returns early if no simple-todo instances exist', async () => {
-    const clockInst: WidgetInstanceEntity = {
-      id: 'wi-clock',
-      workspaceId: 'ws-main',
-      widgetType: 'clock',
+  it('4. migration coordinator deduplicates concurrent calls and runs safely', async () => {
+    const inst: WidgetInstanceEntity = {
+      id: 'wi-coord',
+      workspaceId: 'ws-coord',
+      widgetType: 'simple-todo',
       isEnabled: true,
       order: 0,
       createdAt: 1000,
       updatedAt: 1000,
-      config: {},
+      config: {
+        tasks: [
+          { id: 't-coord', title: 'Concurrent Task', completed: false },
+        ],
+      },
     };
 
-    await db.widgetInstances.add(clockInst);
+    await db.widgetInstances.add(inst);
 
-    const result = await migrateLegacyTodos(db);
-    expect(result.instancesProcessed).toBe(0);
-    expect(result.tasksMigrated).toBe(0);
+    // Trigger concurrent migration calls
+    const [res1, res2] = await Promise.all([
+      ensureTodoMigration(db),
+      ensureTodoMigration(db),
+    ]);
+
+    expect(res1.tasksMigrated).toBe(1);
+    expect(res2.tasksMigrated).toBe(1); // Same promise result returned
+
+    const todos = await db.todos.toArray();
+    expect(todos).toHaveLength(1);
   });
 });

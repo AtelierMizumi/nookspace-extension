@@ -204,6 +204,10 @@ export class TodoRepository {
   }
 
   async reorder(workspaceId: string | undefined, orderedIds: string[]): Promise<void> {
+    if (new Set(orderedIds).size !== orderedIds.length) {
+      throw new Error('Invalid reorder request: Duplicate IDs detected in orderedIds');
+    }
+
     await this.database.transaction('rw', this.database.todos, async () => {
       for (let i = 0; i < orderedIds.length; i++) {
         const id = orderedIds[i];
@@ -221,7 +225,10 @@ export class TodoRepository {
     });
   }
 
-  async clearCompleted(workspaceId?: string): Promise<number> {
+  async clearCompleted(workspaceId: string): Promise<number> {
+    if (!workspaceId || !workspaceId.trim()) {
+      throw new Error('Workspace ID is required to clear completed tasks');
+    }
     const completedItems = await this.getByWorkspace(workspaceId, { completed: true });
     const ids = completedItems.map((item) => item.id);
     await this.database.todos.bulkDelete(ids);
