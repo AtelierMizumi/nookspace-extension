@@ -59,20 +59,24 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
 - [x] Comprehensive component unit testing (36/36 tests passing in Vitest).
 - [x] Verify Chromium and Firefox production builds.
 
-### Phase 2: Core Dashboard Shell
-- [ ] Global Top Navigation header (Logo, Workspace Switcher trigger, Customize toggle, Settings button).
-- [ ] Live Digital Clock & Day/Date component.
-- [ ] Time-aware Dynamic Greeting component ("Good morning, Alex").
-- [ ] Main responsive viewport container.
-
-### Phase 3: Widget Engine & Registry
-- [ ] Define `WidgetDefinition` and `WidgetProps` TypeScript interfaces.
-- [ ] Implement `WidgetRegistry` singleton/service.
-- [ ] Create `WidgetRenderer` with `WidgetErrorBoundary` wrapper.
-- [ ] Implement `WidgetLibraryModal` with category filtering and instant preview.
-- [ ] Implement basic starter widgets:
-  - Clock & Greeting Widget
-  - Quick Memo Widget
+### Phase 2: Main Dashboard & Widget System (Completed & Verified)
+- [x] Initialized Dexie IndexedDB with 14 strongly typed entity tables.
+- [x] Built domain repositories with Zod schema validation: `WorkspaceRepository` and `WidgetInstanceRepository`.
+- [x] Built `WidgetRegistry` singleton managing typed `WidgetDefinition` contracts.
+- [x] Implemented `WidgetErrorBoundary` isolating runtime errors to individual widget cards.
+- [x] Built `WidgetRenderer` with fallback handling for deprecated or unknown widget types.
+- [x] Built `WidgetLibraryModal` with category filtering, search, and dynamic add/remove/toggle actions.
+- [x] Implemented 6 foundation widgets:
+  - `Digital Clock` (12/24h options, seconds toggle).
+  - `Personal Greeting` (customizable name, dynamic day/evening greeting).
+  - `Calendar Overview` (month view, current date badge).
+  - `Quick Links` (website shortcuts with deterministic HSL monograms and browser tab launcher).
+  - `Task List Preview` (checkable interactive tasks with persistent updates).
+  - `Quick Notes` (autosaving local scratchpad).
+- [x] Created `useWorkspaceStore` and `useWidgetStore` for seamless reactive data binding.
+- [x] Responsive Dashboard layout with empty state fallback when all widgets are removed.
+- [x] Vitest unit & component test suite expanded to 51 passing tests (100% pass rate).
+- [x] Verified Chromium and Firefox production builds.
 
 ### Phase 4: Customization Studio & Grid Engine
 - [ ] Integrate `react-grid-layout` with responsive 12-column grid.

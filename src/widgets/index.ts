@@ -1,0 +1,28 @@
+import { widgetRegistry } from '../features/widget-system/WidgetRegistry';
+import { ClockWidget } from './ClockWidget';
+import { GreetingWidget } from './GreetingWidget';
+import { CalendarOverviewWidget } from './CalendarOverviewWidget';
+import { QuickLinksWidget } from './QuickLinksWidget';
+import { SimpleTodoWidget } from './SimpleTodoWidget';
+import { QuickNotesWidget } from './QuickNotesWidget';
+
+export function registerInitialWidgets(): void {
+  widgetRegistry.register(ClockWidget);
+  widgetRegistry.register(GreetingWidget);
+  widgetRegistry.register(CalendarOverviewWidget);
+  widgetRegistry.register(QuickLinksWidget);
+  widgetRegistry.register(SimpleTodoWidget);
+  widgetRegistry.register(QuickNotesWidget);
+}
+
+// Auto-register on import
+registerInitialWidgets();
+
+export {
+  ClockWidget,
+  GreetingWidget,
+  CalendarOverviewWidget,
+  QuickLinksWidget,
+  SimpleTodoWidget,
+  QuickNotesWidget,
+};

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.3] - 2026-11-07
+
+### Added
+- Dexie.js (IndexedDB) database layer with schema versioning and automatic default data seeding (`NookSpaceDB`).
+- Domain repositories: `WorkspaceRepository` and `WidgetInstanceRepository` with Zod schema validation.
+- Extensible `WidgetRegistry` singleton managing typed `WidgetDefinition` specifications.
+- `WidgetErrorBoundary` ensuring single widget failures never crash the dashboard.
+- `WidgetRenderer` with fallback card for unknown or removed widget types.
+- 6 Initial Foundation Widgets:
+  - `Digital Clock` (12/24h format, toggle seconds, live date).
+  - `Personal Greeting` (customizable user display name, dynamic morning/afternoon/evening greetings).
+  - `Calendar Overview` (monthly agenda grid with today marker).
+  - `Quick Links` (website shortcuts with offline domain monogram badges and new tab launcher).
+  - `Task List Preview` (interactive checkable priorities with persistent storage).
+  - `Quick Notes` (autosaving local scratchpad).
+- Searchable and categorized `WidgetLibraryModal` supporting Add, Remove, and Enable/Disable widget actions.
+- Zustand stores: `useWorkspaceStore` and `useWidgetStore` managing multi-workspace and widget lifecycles.
+- Unit and integration tests expanded to 51 passing tests across 13 test suites.
+
 ## [0.1.0-alpha.2] - 2026-11-07
 
 ### Added
