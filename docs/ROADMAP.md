@@ -100,7 +100,7 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - [x] **Milestone 3.3**: Save Transaction & Data Integrity (`commitEditMode` with atomic `[widgetInstances, widgetLayouts]` Dexie transaction, Zod pre-validation, failure injection rollback, workspace security checks, and 0 partial writes).
   - [x] **Milestone 3.4**: Cancel & Snapshot Rollback (Multi-breakpoint rollback, staged addition/deletion restoration, reset layout rollback, cancel idempotency, and modal Escape safety).
   - [x] **Milestone 3.5**: Add Widget staged integration (`WidgetLibraryModal` connectivity, non-overlapping occupancy packing, and staged memory-only instances).
-  - [ ] **Milestone 3.6**: Reset Layout end-to-end flow.
+  - [x] **Milestone 3.6**: Reset Layout end-to-end flow (Confirmation modal, default packing across 5 breakpoints, zero data loss, and rollback fidelity).
   - [ ] **Milestone 3.7**: Milestone 3 test consolidation.
 - [ ] **Milestone 4**: Testing & Reliability (Cross-browser verification, breakpoint transitions, reliability under stress).
 - [ ] **Milestone 5**: Documentation & Final Review.

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.10] - 2026-11-07
+
+### Added
+- Phase 3 (Milestone 3.6) Reset Layout End-to-End Flow:
+  - Accessible Reset Layout confirmation modal clearly communicating zero data loss and scope of layout rearrangement.
+  - Deterministic default packing across all 5 responsive breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`) using `synchronizeLayout`.
+  - In-memory draft updates: sets `hasUnsavedChanges = true` with zero immediate IndexedDB writes.
+  - Seamless inclusion of staged added widgets and exclusion of staged deleted widgets during layout recalculation.
+  - Absolute data preservation: zero widget instances deleted, zero loss of notes, tasks, or configuration values.
+  - Snapshot rollback fidelity: clicking Cancel after Reset Layout accurately reverts positions to pre-edit custom coordinates.
+  - Unit test suite (`resetLayoutFlow.test.ts`) expanding test coverage to 123 passing tests across 22 test suites (100% pass rate).
+
 ## [0.1.0-alpha.9] - 2026-11-07
 
 ### Added

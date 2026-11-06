@@ -129,8 +129,14 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
         xxs: [],
       };
 
+      const stagedAdded = useCustomizationStore.getState().stagedAddedInstances;
+      const isStagedDeleted = useCustomizationStore.getState().isWidgetStagedForDeletion;
+      const allActiveInstances = [...instances, ...stagedAdded].filter(
+        (i) => !isStagedDeleted(i.id)
+      );
+
       for (const bp of breakpoints) {
-        defaultMap[bp] = synchronizeLayout(activeWorkspaceId, bp, instances, []);
+        defaultMap[bp] = synchronizeLayout(activeWorkspaceId, bp, allActiveInstances, []);
       }
 
       resetEditingLayoutsStore(defaultMap);
