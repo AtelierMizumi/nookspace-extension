@@ -129,8 +129,15 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - Live data synchronization via `nookspace_pomodoro_last_drained_at` ensuring statistics refresh strictly after Dexie transactions commit.
   - `StudyTrackerWidget` presenting clean metric summaries, bar chart trends, empty states, and resilient error recovery.
   - Full automated test suite expanded to 189 passing tests across 34 test suites.
-- [ ] **Milestone 5.5**: Daily Goals, Streak Calculator & Calendar Widget (Deterministic streak engine, daily progress bar, calendar month view & local events).
-- [ ] **Milestone 5.6**: Test Consolidation, Build Verification & Final Phase 5 Review.
+- [x] **Milestone 5.5**: Daily Goals & Targets:
+  - Local-first `DailyGoalRepository` managing persistent goals in Dexie `dailyGoals` table with Zod schema validation and workspace isolation.
+  - `DailyGoalsService` deriving actual progress from verified source-of-truth focus sessions and completed tasks (excluding breaks and cancellations).
+  - Centralized `useDailyGoalsStore` managing UI state, goal targets, and race condition defense against stale async responses.
+  - Linear/Notion-styled `DailyGoalsWidget` with progress bars, celebratory achievement banners, and inline target configuration.
+  - Live data synchronization via `nookspace_pomodoro_last_drained_at` storage event.
+  - Unit and integration tests expanded to 210 passing tests across 38 test suites.
+- [ ] **Milestone 5.6**: Streak Calculator & Calendar Widget (Deterministic streak engine, daily progress bar, calendar month view & local events).
+- [ ] **Milestone 5.7**: Test Consolidation, Build Verification & Final Phase 5 Review.
 
 ### Phase 6: Smart Bookmarks
 - [ ] Bookmark Group management (Add group, change color/icon, reorder).

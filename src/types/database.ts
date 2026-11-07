@@ -78,6 +78,7 @@ export interface TodoEntity {
   title: string;
   description?: string;
   completed: boolean;
+  completedAt?: number;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   dueDate?: number;
   category?: string;

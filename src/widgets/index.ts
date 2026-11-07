@@ -8,6 +8,7 @@ import { TodoWidget } from './TodoWidget';
 import { QuickNotesWidget } from './QuickNotesWidget';
 import { PomodoroWidget } from './PomodoroWidget';
 import { StudyTrackerWidget } from './StudyTrackerWidget';
+import { DailyGoalsWidget } from './DailyGoalsWidget';
 
 export function registerInitialWidgets(): void {
   widgetRegistry.register(ClockWidget);
@@ -19,6 +20,7 @@ export function registerInitialWidgets(): void {
   widgetRegistry.register(QuickNotesWidget);
   widgetRegistry.register(PomodoroWidget);
   widgetRegistry.register(StudyTrackerWidget);
+  widgetRegistry.register(DailyGoalsWidget);
 }
 
 // Auto-register on import
@@ -34,4 +36,5 @@ export {
   QuickNotesWidget,
   PomodoroWidget,
   StudyTrackerWidget,
+  DailyGoalsWidget,
 };

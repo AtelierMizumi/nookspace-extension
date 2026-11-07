@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NookSpaceDB } from '@/services/database/db';
-import { TodoRepository } from '@/services/database/repositories/todoRepository';
+import { TodoRepository, STORAGE_KEY_TODO_LAST_UPDATED_AT } from '@/services/database/repositories/todoRepository';
+import { browserApi } from '@/services/browser';
 
 describe('TodoRepository — Milestone 5.1', () => {
   let db: NookSpaceDB;
@@ -165,5 +166,39 @@ describe('TodoRepository — Milestone 5.1', () => {
     expect(ordered[0].id).toBe(t3.id);
     expect(ordered[1].id).toBe(t2.id);
     expect(ordered[2].id).toBe(t1.id);
+  });
+
+  it('10. setCompleted records completedAt timestamp and clears it upon reopening', async () => {
+    const beforeTime = Date.now() - 10;
+    const task = await repo.create({ workspaceId: 'ws-main', title: 'Timestamp Task' });
+    expect(task.completedAt).toBeUndefined();
+
+    // Mark completed
+    const completed = await repo.setCompleted(task.id, true);
+    expect(completed.completed).toBe(true);
+    expect(completed.completedAt).toBeDefined();
+    expect(completed.completedAt).toBeGreaterThanOrEqual(beforeTime);
+
+    // Reopen task
+    const reopened = await repo.setCompleted(task.id, false);
+    expect(reopened.completed).toBe(false);
+    expect(reopened.completedAt).toBeUndefined();
+  });
+
+  it('11. Failed persistence does not trigger successful storage update signal', async () => {
+    const storageSpy = vi.spyOn(browserApi.storage.local, 'set');
+    storageSpy.mockClear();
+
+    // Attempt invalid create (title empty)
+    await expect(repo.create({ title: '   ' })).rejects.toThrow();
+
+    // Signal must NOT be dispatched
+    expect(storageSpy).not.toHaveBeenCalled();
+
+    // Attempt invalid update on non-existent task
+    await expect(repo.update('non-existent-id', { title: 'New Title' })).rejects.toThrow();
+    expect(storageSpy).not.toHaveBeenCalled();
+
+    storageSpy.mockRestore();
   });
 });

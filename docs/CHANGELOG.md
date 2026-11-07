@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.16] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.5) Daily Goals & Targets:
+  - Local-first `DailyGoalRepository` managing persistent goals in Dexie `dailyGoals` table with Zod schema validation and workspace isolation.
+  - `DailyGoalsService` deriving actual progress from verified source-of-truth focus sessions and completed tasks (excluding breaks and cancellations).
+  - Centralized `useDailyGoalsStore` managing UI state, goal targets, and race condition defense against stale async responses.
+  - Linear/Notion-styled `DailyGoalsWidget` with progress bars, celebratory achievement banners, and inline target configuration.
+  - Live data synchronization via `nookspace_pomodoro_last_drained_at` storage event.
+  - Full automated test suite expanded to 210 passing tests across 38 test suites.
+  - Multi-target builds verified: Chromium MV3 (797.83 kB) and Firefox MV2 (797.92 kB).
+
 ## [0.1.0-alpha.15] - 2026-11-07
 
 ### Added

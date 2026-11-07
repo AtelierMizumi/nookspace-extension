@@ -1,6 +1,19 @@
 import { z } from 'zod';
 import { db, NookSpaceDB } from '../db';
 import { TodoEntity } from '../../../types/database';
+import { browserApi } from '../../browser';
+
+export const STORAGE_KEY_TODO_LAST_UPDATED_AT = 'nookspace_todo_last_updated_at';
+
+async function notifyTodoUpdated(): Promise<void> {
+  try {
+    await browserApi.storage.local.set({
+      [STORAGE_KEY_TODO_LAST_UPDATED_AT]: Date.now(),
+    });
+  } catch {
+    // Non-blocking in headless/test environments
+  }
+}
 
 export const PrioritySchema = z.enum(['low', 'medium', 'high', 'urgent']);
 export type TodoPriority = z.infer<typeof PrioritySchema>;
@@ -11,6 +24,7 @@ export const TodoEntitySchema = z.object({
   title: z.string().trim().min(1, 'Title cannot be empty').max(300, 'Title cannot exceed 300 characters'),
   description: z.string().max(2000).optional(),
   completed: z.boolean(),
+  completedAt: z.number().int().positive().optional(),
   priority: PrioritySchema,
   dueDate: z.number().int().positive().optional(),
   category: z.string().trim().max(50).optional(),
@@ -24,6 +38,7 @@ export const TodoCreateSchema = z.object({
   title: z.string().trim().min(1, 'Title cannot be empty').max(300, 'Title cannot exceed 300 characters'),
   description: z.string().max(2000).optional(),
   completed: z.boolean().default(false),
+  completedAt: z.number().int().positive().optional(),
   priority: PrioritySchema.default('medium'),
   dueDate: z.number().int().positive().optional(),
   category: z.string().trim().max(50).optional(),
@@ -36,6 +51,7 @@ export const TodoUpdateSchema = z.object({
   title: z.string().trim().min(1, 'Title cannot be empty').max(300, 'Title cannot exceed 300 characters').optional(),
   description: z.string().max(2000).nullable().optional(),
   completed: z.boolean().optional(),
+  completedAt: z.number().int().positive().nullable().optional(),
   priority: PrioritySchema.optional(),
   dueDate: z.number().int().positive().nullable().optional(),
   category: z.string().trim().max(50).nullable().optional(),
@@ -146,6 +162,7 @@ export class TodoRepository {
       title: validated.title,
       description: validated.description,
       completed: validated.completed,
+      completedAt: validated.completed ? validated.completedAt || now : undefined,
       priority: validated.priority,
       dueDate: validated.dueDate,
       category: validated.category,
@@ -158,6 +175,7 @@ export class TodoRepository {
     TodoEntitySchema.parse(entity);
 
     await this.database.todos.add(entity);
+    await notifyTodoUpdated();
     return entity;
   }
 
@@ -170,11 +188,27 @@ export class TodoRepository {
       throw new Error(`Workspace Isolation Violation: Cannot update todo belonging to workspace "${existing.workspaceId}" from "${expectedWorkspaceId}"`);
     }
 
+    const nextCompleted = validated.completed ?? existing.completed;
+    let nextCompletedAt: number | undefined = existing.completedAt;
+
+    if (validated.completed !== undefined) {
+      if (validated.completed && !existing.completed) {
+        // Transition from incomplete -> completed
+        nextCompletedAt = validated.completedAt ?? Date.now();
+      } else if (!validated.completed && existing.completed) {
+        // Transition from completed -> reopened
+        nextCompletedAt = undefined;
+      }
+    } else if (validated.completedAt !== undefined) {
+      nextCompletedAt = validated.completedAt === null ? undefined : validated.completedAt;
+    }
+
     const updatedEntity: TodoEntity = {
       ...existing,
       title: validated.title ?? existing.title,
       description: validated.description === null ? undefined : validated.description ?? existing.description,
-      completed: validated.completed ?? existing.completed,
+      completed: nextCompleted,
+      completedAt: nextCompletedAt,
       priority: validated.priority ?? existing.priority,
       dueDate: validated.dueDate === null ? undefined : validated.dueDate ?? existing.dueDate,
       category: validated.category === null ? undefined : validated.category ?? existing.category,
@@ -185,11 +219,12 @@ export class TodoRepository {
     TodoEntitySchema.parse(updatedEntity);
 
     await this.database.todos.put(updatedEntity);
+    await notifyTodoUpdated();
     return updatedEntity;
   }
 
   async setCompleted(id: string, completed: boolean, expectedWorkspaceId?: string): Promise<TodoEntity> {
-    return this.update(id, { completed }, expectedWorkspaceId);
+    return this.update(id, { completed, completedAt: completed ? Date.now() : null }, expectedWorkspaceId);
   }
 
   async delete(id: string, expectedWorkspaceId?: string): Promise<void> {
@@ -201,6 +236,7 @@ export class TodoRepository {
     }
 
     await this.database.todos.delete(id);
+    await notifyTodoUpdated();
   }
 
   async reorder(workspaceId: string | undefined, orderedIds: string[]): Promise<void> {
@@ -223,6 +259,7 @@ export class TodoRepository {
         }
       }
     });
+    await notifyTodoUpdated();
   }
 
   async clearCompleted(workspaceId: string): Promise<number> {
@@ -231,7 +268,10 @@ export class TodoRepository {
     }
     const completedItems = await this.getByWorkspace(workspaceId, { completed: true });
     const ids = completedItems.map((item) => item.id);
-    await this.database.todos.bulkDelete(ids);
+    if (ids.length > 0) {
+      await this.database.todos.bulkDelete(ids);
+      await notifyTodoUpdated();
+    }
     return ids.length;
   }
 }
