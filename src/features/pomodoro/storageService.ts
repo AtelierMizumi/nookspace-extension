@@ -15,6 +15,7 @@ import { browserApi } from '../../services/browser';
 export const STORAGE_KEY_ENVELOPE = 'nookspace_pomodoro_envelope';
 export const STORAGE_KEY_RECOVERY_MARKER = 'nookspace_pomodoro_recovery_marker';
 export const STORAGE_KEY_DEAD_LETTER = 'nookspace_pomodoro_dead_letter';
+export const STORAGE_KEY_LAST_DRAINED_AT = 'nookspace_pomodoro_last_drained_at';
 
 export const DEFAULT_ENVELOPE: PomodoroStorageEnvelope = {
   schemaVersion: 1,

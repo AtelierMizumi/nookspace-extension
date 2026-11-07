@@ -117,8 +117,18 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - Modern Notion/Linear-inspired `TodoWidget.tsx` with quick inline task creation, 4 filter tabs (*All*, *Active*, *Completed*, *Today*), priority badges, due date indicators, and category tags.
   - Proven Data Invariant: tasks belong to the user in Dexie `todos` table and are NEVER deleted when the widget instance is removed from the dashboard.
   - Full suite of unit & lifecycle tests (`todoStore.test.ts`, `TodoWidgetLifecycle.test.tsx`) expanding test coverage to 157 passing tests across 28 test suites (100% pass rate).
-- [ ] **Milestone 5.3**: Pomodoro Timer & Background Alarm Service (25m Focus / 5m Break, `browserApi.alarms`, background notifications, session logging).
-- [ ] **Milestone 5.4**: Study Tracker & Stopwatch Widget (Topic tags, live stopwatch, daily/weekly aggregated charts).
+- [x] **Milestone 5.3**: Pomodoro Timer & Background Alarm Service:
+  - Background Service Worker alarm scheduler using `browserApi.alarms` with millisecond-exact `targetEndTime` validation and persistent storage envelope.
+  - Two-phase coordinator with outbox drain and dead-letter queue for rock-solid Dexie session persistence.
+  - Recovery marker and quarantine isolation for crash resilience across browser shutdowns and service worker sleep cycles.
+  - Modern Pomodoro widget with circular ring timer, quick presets (Focus 25m, Short Break 5m, Long Break 15m), cycle tracking, and recovery banner.
+  - Comprehensive unit test suite (`coordinator.test.ts`, `stateMachine.test.ts`, `pomodoroStore.test.ts`, `PomodoroWidget.test.tsx`) reaching 185 tests.
+- [x] **Milestone 5.4**: Study Tracker & Analytics Widget:
+  - `StudyTrackerService` computing total focus minutes, completed sessions, average session duration, and daily activity trends.
+  - Range selection (7D, 14D, 30D) with local-date aggregation preventing timezone skew.
+  - Live data synchronization via `nookspace_pomodoro_last_drained_at` ensuring statistics refresh strictly after Dexie transactions commit.
+  - `StudyTrackerWidget` presenting clean metric summaries, bar chart trends, empty states, and resilient error recovery.
+  - Full automated test suite expanded to 189 passing tests across 34 test suites.
 - [ ] **Milestone 5.5**: Daily Goals, Streak Calculator & Calendar Widget (Deterministic streak engine, daily progress bar, calendar month view & local events).
 - [ ] **Milestone 5.6**: Test Consolidation, Build Verification & Final Phase 5 Review.
 

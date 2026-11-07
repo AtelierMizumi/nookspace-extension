@@ -1,7 +1,8 @@
 import { FocusSessionRepository } from '../../services/database/repositories/focusSessionRepository';
 import { OutboxSessionEntry, DeadLetterSessionEntry } from '../../types/pomodoro';
-import { storageService } from './storageService';
+import { storageService, STORAGE_KEY_LAST_DRAINED_AT } from './storageService';
 import { db } from '../../services/database/db';
+import { browserApi } from '../../services/browser';
 
 export class OutboxService {
   constructor(
@@ -132,6 +133,13 @@ export class OutboxService {
       pendingOutbox: remainingOutbox,
     });
 
+    // Notify listeners that Dexie insertion has completed
+    if (drainedCount > 0) {
+      await browserApi.storage.local.set({
+        [STORAGE_KEY_LAST_DRAINED_AT]: Date.now(),
+      });
+    }
+
     return { drainedCount, failedCount };
   }
 
@@ -164,6 +172,11 @@ export class OutboxService {
     }
 
     await this.storage.saveDeadLetter(remaining);
+    if (drainedCount > 0) {
+      await browserApi.storage.local.set({
+        [STORAGE_KEY_LAST_DRAINED_AT]: Date.now(),
+      });
+    }
     return { drainedCount };
   }
 }

@@ -3,7 +3,7 @@ import { PomodoroCoordinator } from '../../../src/features/pomodoro/coordinator'
 import { StorageService } from '../../../src/features/pomodoro/storageService';
 import { OutboxService } from '../../../src/features/pomodoro/outboxService';
 import { createMockBrowser } from '../../mocks/browser';
-import { DEFAULT_ENVELOPE } from '../../../src/features/pomodoro/storageService';
+import { DEFAULT_ENVELOPE, STORAGE_KEY_LAST_DRAINED_AT } from '../../../src/features/pomodoro/storageService';
 import { PomodoroStorageEnvelope } from '../../../src/types/pomodoro';
 
 describe('Pomodoro Coordinator & Alarm Lifecycle — Milestone 5.3.2', () => {
@@ -216,6 +216,9 @@ describe('Pomodoro Coordinator & Alarm Lifecycle — Milestone 5.3.2', () => {
     expect((env.activeTimerState as any).sessionId).toBe(sessionId);
     // Dexie must contain this session
     expect(fakeDexieItems.some((s) => s.type === 'pomodoro')).toBe(true);
+
+    // Dexie drain must have signalled STORAGE_KEY_LAST_DRAINED_AT
+    expect(mockBrowser.storageData.get(STORAGE_KEY_LAST_DRAINED_AT)).toBeDefined();
 
     vi.useRealTimers();
   });

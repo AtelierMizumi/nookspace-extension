@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.15] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.4) Study Tracker & Analytics Widget:
+  - `StudyTrackerService` computing total focus minutes, completed sessions, average session duration, and daily activity trends.
+  - Granular time range selection (7D, 14D, 30D) with local-date aggregation preventing timezone skew.
+  - Live data synchronization via `nookspace_pomodoro_last_drained_at` ensuring statistics refresh strictly after Dexie transactions commit.
+  - `StudyTrackerWidget` presenting clean metric summaries, bar chart trends, empty states, and resilient error recovery.
+  - Full automated test suite expanded to 189 passing tests across 34 test suites.
+  - Multi-target builds verified: Chromium MV3 (783.57 kB) and Firefox MV2 (783.66 kB).
+
+## [0.1.0-alpha.14] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.3) Pomodoro Timer & Background Alarm Service:
+  - Background Service Worker alarm scheduler using `browserApi.alarms` with millisecond-exact `targetEndTime` validation and persistent storage envelope.
+  - Two-phase coordinator with outbox drain and dead-letter queue for rock-solid Dexie session persistence.
+  - Recovery marker and quarantine isolation for crash resilience across browser shutdowns and service worker sleep cycles.
+  - Pomodoro widget with circular ring timer, quick presets (Focus 25m, Short Break 5m, Long Break 15m), cycle tracking, and recovery banner.
+
 ## [0.1.0-alpha.13] - 2026-11-07
 
 ### Added
