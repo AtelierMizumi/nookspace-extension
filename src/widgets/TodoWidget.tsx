@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { WidgetDefinition, WidgetProps } from '../features/widget-system/types';
 import { useTodoStore, TodoFilterType } from '../features/todo/todoStore';
-import { TodoPriority } from '../services/database/repositories/todoRepository';
+import { TodoPriority, STORAGE_KEY_TODO_LAST_UPDATED_AT } from '../services/database/repositories/todoRepository';
 import { Checkbox } from '../components/ui/Checkbox';
 import { IconButton, Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -83,6 +83,30 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
       initialize(workspaceId);
     }
   }, [workspaceId, initialize]);
+
+  // Live synchronization:
+  // Listens to STORAGE_KEY_TODO_LAST_UPDATED_AT to reload tasks when changes occur in other tabs
+  useEffect(() => {
+    const ext =
+      typeof browser !== 'undefined' && browser.storage?.onChanged
+        ? browser
+        : typeof chrome !== 'undefined' && chrome.storage?.onChanged
+        ? chrome
+        : null;
+
+    if (!ext || !workspaceId) return;
+
+    const handleStorageChange = (changes: Record<string, any>, areaName: string) => {
+      if (areaName === 'local' && changes[STORAGE_KEY_TODO_LAST_UPDATED_AT]) {
+        loadTasks(workspaceId);
+      }
+    };
+
+    ext.storage.onChanged.addListener(handleStorageChange);
+    return () => {
+      ext.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, [loadTasks, workspaceId]);
 
   // Set default filter from config if provided
   useEffect(() => {

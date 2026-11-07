@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { db } from '@/services/database/db';
-import { todoRepo } from '@/services/database/repositories/todoRepository';
+import { todoRepo, STORAGE_KEY_TODO_LAST_UPDATED_AT } from '@/services/database/repositories/todoRepository';
 import { widgetInstanceRepo } from '@/services/database/repositories/widgetInstanceRepository';
 import { TodoWidgetComponent } from '@/widgets/TodoWidget';
 import { useTodoStore } from '@/features/todo/todoStore';
@@ -165,6 +165,55 @@ describe('TodoWidget Lifecycle & Data Safety — Milestone 5.2', () => {
     await waitFor(() => {
       // Completed task should be visible again
       expect(screen.getByText('Write Comprehensive Tests')).toBeDefined();
+    });
+  });
+
+  it('Test E: Live synchronization reloads tasks when STORAGE_KEY_TODO_LAST_UPDATED_AT event arrives', async () => {
+    let storageCallback: ((changes: Record<string, any>, areaName: string) => void) | null = null;
+    (globalThis as any).browser = {
+      storage: {
+        onChanged: {
+          addListener: (cb: any) => {
+            storageCallback = cb;
+          },
+          removeListener: () => {
+            storageCallback = null;
+          },
+        },
+      },
+    };
+
+    render(
+      <TodoWidgetComponent
+        instanceId="inst-sync-test"
+        workspaceId="ws-sync"
+        isEditMode={false}
+        config={{ defaultFilter: 'all' }}
+        onUpdateConfig={() => {}}
+        onRemove={() => {}}
+      />
+    );
+
+    // Initial state: empty
+    await waitFor(() => {
+      expect(screen.getByText('No tasks found.')).toBeDefined();
+    });
+
+    // Simulate task added in another tab directly to Dexie
+    await todoRepo.create({
+      workspaceId: 'ws-sync',
+      title: 'Task Created From Other Tab',
+      priority: 'high',
+      completed: false,
+    });
+
+    // Trigger storage event
+    expect(storageCallback).toBeDefined();
+    storageCallback!({ [STORAGE_KEY_TODO_LAST_UPDATED_AT]: { newValue: Date.now() } }, 'local');
+
+    // Verify task appears in this tab's TodoWidget
+    await waitFor(() => {
+      expect(screen.getByText('Task Created From Other Tab')).toBeDefined();
     });
   });
 });

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.18] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.7) Productivity Suite Integration & Final Review:
+  - Cross-module integration test suite (`productivitySuiteIntegration.test.ts`) validating 8 comprehensive lifecycle scenarios (Pomodoro $\to$ Study Tracker, Pomodoro $\to$ Daily Goals, Todo $\to$ Daily Goals, Todo $\to$ Calendar & Streak, Combined Activity, Workspace Isolation, Restart Recovery, Multi-tab Synchronization).
+  - Cross-tab live synchronization for `TodoWidget.tsx` listening to `STORAGE_KEY_TODO_LAST_UPDATED_AT`, ensuring multi-tab task status parity.
+  - Regression test suite expanded in `TodoWidgetLifecycle.test.tsx` verifying reactive task hydration across tabs.
+  - Total test coverage consolidated to 264 passing tests across 43 test suites (100% pass rate).
+  - Multi-target builds verified: Chromium MV3 (812.24 kB) and Firefox MV2 (812.33 kB). Entire Phase 5 Productivity Suite successfully sealed.
+
 ## [0.1.0-alpha.17] - 2026-11-07
 
 ### Added
