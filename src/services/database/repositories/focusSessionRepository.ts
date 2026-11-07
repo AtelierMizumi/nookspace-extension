@@ -20,6 +20,7 @@ export const FocusSessionEntitySchema = z.object({
 });
 
 export const FocusSessionCreateSchema = z.object({
+  id: z.string().min(1).optional(),
   workspaceId: z.string().min(1).optional(),
   type: FocusSessionTypeSchema.default('pomodoro'),
   category: z.string().trim().max(50).optional(),
@@ -141,7 +142,7 @@ export class FocusSessionRepository {
   async create(input: FocusSessionCreateInput): Promise<FocusSessionEntity> {
     const validated = FocusSessionCreateSchema.parse(input);
     const now = Date.now();
-    const id = `fs-${now}-${Math.random().toString(36).substring(2, 7)}`;
+    const id = validated.id || `fs-${now}-${Math.random().toString(36).substring(2, 7)}`;
 
     const entity: FocusSessionEntity = {
       id,
