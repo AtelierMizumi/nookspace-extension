@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-alpha.17] - 2026-11-07
+
+### Added
+- Phase 5 (Milestone 5.6) Streak Calculator, Study Calendar & Activity Heatmap:
+  - Deterministic `streakCalculator.ts` implementing DST-immune UTC date-only ordinal arithmetic (`Math.floor(Date.UTC(y, m-1, d) / 86400000)`), computing current streak with pending-today tolerance and all-time best streak across complete user history.
+  - Active Study Day rules combining completed Pomodoro focus sessions (`completed && type in ['pomodoro', 'study']`), completed tasks with explicit `completedAt` timestamps, and reached daily goals (`currentValue >= targetValue`).
+  - GitHub-style Activity Heatmap (7-week matrix, 5 distinct intensity levels strictly derived from focus minutes) and Sunday-aligned Calendar Month Glance with active-day indicators.
+  - Centralized Zustand store (`calendarTrackerStore.ts`) with request token race-condition prevention, view mode toggle (`month` vs `heatmap`), month navigation, and selected day drill-down inspection.
+  - Upgraded `CalendarOverviewWidget.tsx` (aliased as `StudyCalendarWidget`) integrating live synchronization via `STORAGE_KEY_LAST_DRAINED_AT` and `STORAGE_KEY_TODO_LAST_UPDATED_AT`.
+  - Comprehensive unit and widget test suite expanding test coverage to 255 passing tests across 42 test suites (100% pass rate).
+  - Multi-target builds verified: Chromium MV3 (811.91 kB) and Firefox MV2 (812 kB).
+
 ## [0.1.0-alpha.16] - 2026-11-07
 
 ### Added

@@ -1,14 +1,14 @@
 # NookSpace — Project Context
 
-## Current Status: Phase 5 (Milestone 5.5 — Daily Goals & Targets Complete)
+## Current Status: Phase 5 (Milestone 5.6 — Streak Calculator, Study Calendar & Activity Heatmap Complete)
 
 - **Repository**: `nookspace-extension`
-- **Current Milestone**: Phase 5 (Milestone 5.5 — Daily Goals & Targets Complete)
+- **Current Milestone**: Phase 5 (Milestone 5.6 — Streak Calculator, Study Calendar & Activity Heatmap Complete)
 - **Status Date**: November 2026
 - **Build Status**:
-  - Chromium MV3: `.output/chrome-mv3` (Compiled successfully, 797.83 kB)
-  - Firefox MV2/MV3: `.output/firefox-mv2` (Compiled successfully, 797.92 kB)
-  - Vitest Unit & Integration Tests: 210 passed (100% pass rate across 38 test suites)
+  - Chromium MV3: `.output/chrome-mv3` (Compiled successfully, 811.91 kB)
+  - Firefox MV2/MV3: `.output/firefox-mv2` (Compiled successfully, 812 kB)
+  - Vitest Unit & Integration Tests: 255 passed (100% pass rate across 42 test suites)
   - TypeScript: Strict compilation verified (0 errors)
 
 ---
@@ -55,8 +55,14 @@
 7. **Extension Framework & Permissions**:
    - WXT framework with minimal permissions: `["storage", "alarms", "notifications"]`.
    - Cross-browser abstraction layer (`browserApi`) seamlessly supporting Chromium MV3 and Firefox MV2/MV3.
+8. **Deterministic Streak Engine & Study Calendar Architecture**:
+   - DST-immune Day Ordinal arithmetic (`toDayOrdinal = Math.floor(Date.UTC(y, m-1, d) / 86400000)`) preventing clock-shift calculation bugs.
+   - Dynamic streak computation derived on-the-fly from verified Dexie tables (`focusSessions`, `todos`, `dailyGoals`); zero persistent streak counters that can desynchronize.
+   - Active Study Day evaluation combining focus sessions, completed tasks, and reached goals.
+   - Heatmap intensity strictly derived from Focus Minutes (Level 0: 0m, Level 1: 1–29m, Level 2: 30–59m, Level 3: 60–119m, Level 4: >= 120m).
+   - Live synchronization reacting to background timer drains and todo updates.
 
 ---
 
 ## Next Steps
-Awaiting User Review and Official Approval of Phase 3. Upon approval, begin **Phase 4** / **Phase 5 — Productivity Suite** (Pomodoro Timer, Study Tracker, Todo List, Daily Goals & Streak, Calendar widgets).
+Phase 5 Milestones 5.1 through 5.6 completed. Proceed to **Milestone 5.7: Test Consolidation, Build Verification & Final Phase 5 Review**.

@@ -1,7 +1,7 @@
 import { widgetRegistry } from '../features/widget-system/WidgetRegistry';
 import { ClockWidget } from './ClockWidget';
 import { GreetingWidget } from './GreetingWidget';
-import { CalendarOverviewWidget } from './CalendarOverviewWidget';
+import { CalendarOverviewWidget, StudyCalendarWidget } from './CalendarOverviewWidget';
 import { QuickLinksWidget } from './QuickLinksWidget';
 import { SimpleTodoWidget } from './SimpleTodoWidget';
 import { TodoWidget } from './TodoWidget';
@@ -30,6 +30,7 @@ export {
   ClockWidget,
   GreetingWidget,
   CalendarOverviewWidget,
+  StudyCalendarWidget,
   QuickLinksWidget,
   SimpleTodoWidget,
   TodoWidget,

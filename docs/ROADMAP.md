@@ -136,7 +136,13 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - Linear/Notion-styled `DailyGoalsWidget` with progress bars, celebratory achievement banners, and inline target configuration.
   - Live data synchronization via `nookspace_pomodoro_last_drained_at` storage event.
   - Unit and integration tests expanded to 210 passing tests across 38 test suites.
-- [ ] **Milestone 5.6**: Streak Calculator & Calendar Widget (Deterministic streak engine, daily progress bar, calendar month view & local events).
+- [x] **Milestone 5.6**: Streak Calculator, Study Calendar & Activity Heatmap:
+  - Deterministic Streak Engine (`streakCalculator.ts`) implementing DST-immune UTC date-only ordinal arithmetic (`Math.floor(Date.UTC(y, m-1, d) / 86400000)`), computing current streak with pending-today tolerance and all-time best streak across complete user history.
+  - Active Study Day evaluation combining verified Pomodoro focus sessions (`completed && type in ['pomodoro', 'study']`), completed tasks with explicit `completedAt` timestamps, and reached daily targets (`currentValue >= targetValue`).
+  - GitHub-style Activity Heatmap (7-week matrix, 5 distinct intensity levels strictly derived from focus minutes) and Sunday-aligned Calendar Month Glance with active-day indicators.
+  - Centralized Zustand store (`calendarTrackerStore.ts`) with request token race-condition prevention, view mode toggle (`month` vs `heatmap`), month navigation, and selected day drill-down inspection.
+  - Upgraded `CalendarOverviewWidget.tsx` (aliased as `StudyCalendarWidget`) integrating live synchronization via `STORAGE_KEY_LAST_DRAINED_AT` and `STORAGE_KEY_TODO_LAST_UPDATED_AT`.
+  - Comprehensive unit and widget test suite expanding test coverage to 255 passing tests across 42 test suites.
 - [ ] **Milestone 5.7**: Test Consolidation, Build Verification & Final Phase 5 Review.
 
 ### Phase 6: Smart Bookmarks

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { ClockWidgetComponent } from '@/widgets/ClockWidget';
 import { GreetingWidgetComponent } from '@/widgets/GreetingWidget';
@@ -37,7 +37,7 @@ describe('Initial Foundation Widgets', () => {
     expect(screen.getByText('Developer')).toBeInTheDocument();
   });
 
-  it('renders CalendarOverviewWidgetComponent with day labels', () => {
+  it('renders CalendarOverviewWidgetComponent with day labels', async () => {
     render(
       <CalendarOverviewWidgetComponent
         instanceId="inst-3"
@@ -48,8 +48,10 @@ describe('Initial Foundation Widgets', () => {
         onRemove={() => {}}
       />
     );
-    expect(screen.getByText('Local Agenda')).toBeInTheDocument();
-    expect(screen.getByText('Mo')).toBeInTheDocument();
+    expect(screen.getByText('Study Calendar')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Mo')).toBeInTheDocument();
+    });
   });
 
   it('renders QuickLinksWidgetComponent and adds a new shortcut', () => {
