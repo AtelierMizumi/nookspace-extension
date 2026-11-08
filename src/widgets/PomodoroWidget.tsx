@@ -21,7 +21,7 @@ import { Modal } from '../components/ui/Modal';
 import { Switch } from '../components/ui/Switch';
 import { Input } from '../components/ui/Input';
 
-export const PomodoroWidgetComponent: React.FC<WidgetProps> = () => {
+export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) => {
   usePomodoroSync();
 
   const {
@@ -257,7 +257,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = () => {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => startTimer(activeTimerState.nextSuggestedMode)}
+                onClick={() => startTimer(activeTimerState.nextSuggestedMode, undefined, workspaceId)}
                 disabled={isLoading}
                 className="gap-1.5"
               >
@@ -278,7 +278,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = () => {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => startTimer(currentMode)}
+                onClick={() => startTimer(currentMode, undefined, workspaceId)}
                 disabled={isLoading}
                 className="gap-1.5 px-6"
               >

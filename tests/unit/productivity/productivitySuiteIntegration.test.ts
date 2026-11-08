@@ -117,7 +117,9 @@ describe('Productivity Suite Cross-Module Integration — Milestone 5.7', () => 
       expect(focusSessionsGoal?.currentValue).toBe(0);
 
       // 2. Complete a 50m Focus Session via outbox
-      const now = Date.now();
+      const startOfToday = new Date();
+      startOfToday.setHours(12, 0, 0, 0);
+      const now = startOfToday.getTime();
       const entry: OutboxSessionEntry = {
         sessionId: 'session-pom-2',
         workspaceId: 'ws-integ',
@@ -279,7 +281,9 @@ describe('Productivity Suite Cross-Module Integration — Milestone 5.7', () => 
 
   describe('Scenario 6 — Workspace Isolation', () => {
     it('enforces total data separation across workspaces A and B', async () => {
-      const now = Date.now();
+      const startOfToday = new Date();
+      startOfToday.setHours(12, 0, 0, 0);
+      const now = startOfToday.getTime();
 
       // Workspace A: 2 todos, 25m focus
       await todoRepo.create({ workspaceId: 'ws-A', title: 'Task A1', completed: true, completedAt: now });

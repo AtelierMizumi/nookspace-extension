@@ -9,6 +9,8 @@ import { QuickNotesWidget } from './QuickNotesWidget';
 import { PomodoroWidget } from './PomodoroWidget';
 import { StudyTrackerWidget } from './StudyTrackerWidget';
 import { DailyGoalsWidget } from './DailyGoalsWidget';
+import { SmartBookmarksWidget } from './SmartBookmarksWidget';
+import { NotesWidget } from './NotesWidget';
 
 export function registerInitialWidgets(): void {
   widgetRegistry.register(ClockWidget);
@@ -21,6 +23,8 @@ export function registerInitialWidgets(): void {
   widgetRegistry.register(PomodoroWidget);
   widgetRegistry.register(StudyTrackerWidget);
   widgetRegistry.register(DailyGoalsWidget);
+  widgetRegistry.register(SmartBookmarksWidget);
+  widgetRegistry.register(NotesWidget);
 }
 
 // Auto-register on import
@@ -38,4 +42,6 @@ export {
   PomodoroWidget,
   StudyTrackerWidget,
   DailyGoalsWidget,
+  SmartBookmarksWidget,
+  NotesWidget,
 };

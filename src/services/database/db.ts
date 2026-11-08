@@ -6,6 +6,9 @@ import {
   WidgetInstanceEntity,
   TodoEntity,
   NoteEntity,
+  NoteCollectionEntity,
+  NoteTagEntity,
+  NoteBookmarkLinkEntity,
   StickyNoteEntity,
   BookmarkGroupEntity,
   BookmarkEntity,
@@ -24,6 +27,9 @@ export class NookSpaceDB extends Dexie {
   widgetInstances!: Table<WidgetInstanceEntity, string>;
   todos!: Table<TodoEntity, string>;
   notes!: Table<NoteEntity, string>;
+  noteCollections!: Table<NoteCollectionEntity, string>;
+  noteTags!: Table<NoteTagEntity, string>;
+  noteBookmarkLinks!: Table<NoteBookmarkLinkEntity, string>;
   stickyNotes!: Table<StickyNoteEntity, string>;
   bookmarkGroups!: Table<BookmarkGroupEntity, string>;
   bookmarks!: Table<BookmarkEntity, string>;
@@ -34,8 +40,8 @@ export class NookSpaceDB extends Dexie {
   calendarEvents!: Table<CalendarEventEntity, string>;
   settings!: Table<AppSettingsEntity, string>;
 
-  constructor() {
-    super('NookSpaceDB');
+  constructor(dbName: string = 'NookSpaceDB') {
+    super(dbName);
 
     // Version 1 Schema
     this.version(1).stores({
@@ -101,6 +107,127 @@ export class NookSpaceDB extends Dexie {
           }
         } catch (err) {
           console.warn('[NookSpaceDB] Migration v1 -> v2 warning:', err);
+        }
+      });
+
+    // Version 3 Schema: Index workspaceId on bookmarks for high-performance workspace-isolated queries
+    this.version(3)
+      .stores({
+        bookmarks: 'id, workspaceId, groupId, isFavorite, order',
+        bookmarkGroups: 'id, workspaceId, order',
+      })
+      .upgrade(async (tx) => {
+        const bookmarksTable = tx.table('bookmarks');
+        const count = await bookmarksTable.count();
+        if (count > 0) {
+          // Resolve default workspace dynamically from existing workspaces/settings
+          let targetWorkspaceId = 'ws-default-personal';
+          const workspacesTable = tx.table('workspaces');
+          let defaultWs: any;
+          try {
+            defaultWs = await workspacesTable.where('isDefault').equals(1 as any).first();
+          } catch {}
+          if (!defaultWs) {
+            try {
+              const allWs = await workspacesTable.toArray();
+              defaultWs = allWs.find((w: any) => Boolean(w.isDefault)) || allWs[0];
+            } catch {}
+          }
+
+          if (defaultWs && defaultWs.id) {
+            targetWorkspaceId = defaultWs.id;
+          } else {
+            const settingsTable = tx.table('settings');
+            const settings = await settingsTable.get('current_settings');
+            if (settings && settings.activeWorkspaceId) {
+              targetWorkspaceId = settings.activeWorkspaceId;
+            }
+          }
+
+          const allBookmarks = await bookmarksTable.toArray();
+          for (const bm of allBookmarks) {
+            // Only assign fallback workspace if bookmark lacks a valid workspaceId
+            if (
+              !bm.workspaceId ||
+              typeof bm.workspaceId !== 'string' ||
+              bm.workspaceId.trim() === ''
+            ) {
+              await bookmarksTable.update(bm.id, { workspaceId: targetWorkspaceId });
+            }
+          }
+        }
+      });
+
+    // Version 4 Schema: Notes & Knowledge System (Collections, Normalized Tags, Bookmark Links, Enhanced Notes)
+    this.version(4)
+      .stores({
+        notes: 'id, workspaceId, collectionId, isPinned, isFavorite, isArchived, *tags, order, updatedAt',
+        noteCollections: 'id, workspaceId, order',
+        noteTags: 'id, workspaceId, name',
+        noteBookmarkLinks: 'id, workspaceId, noteId, bookmarkId, [noteId+bookmarkId]',
+      })
+      .upgrade(async (tx) => {
+        const notesTable = tx.table('notes');
+        const count = await notesTable.count();
+        if (count > 0) {
+          // Resolve default workspace dynamically
+          let targetWorkspaceId = 'ws-default-personal';
+          const workspacesTable = tx.table('workspaces');
+          let defaultWs: any;
+          try {
+            defaultWs = await workspacesTable.where('isDefault').equals(1 as any).first();
+          } catch {}
+          if (!defaultWs) {
+            try {
+              const allWs = await workspacesTable.toArray();
+              defaultWs = allWs.find((w: any) => Boolean(w.isDefault)) || allWs[0];
+            } catch {}
+          }
+
+          if (defaultWs && defaultWs.id) {
+            targetWorkspaceId = defaultWs.id;
+          } else {
+            const settingsTable = tx.table('settings');
+            const settings = await settingsTable.get('current_settings');
+            if (settings && settings.activeWorkspaceId) {
+              targetWorkspaceId = settings.activeWorkspaceId;
+            }
+          }
+
+          const allNotes = await notesTable.toArray();
+          for (const note of allNotes) {
+            const updates: Record<string, unknown> = {};
+            if (!note.workspaceId || typeof note.workspaceId !== 'string' || note.workspaceId.trim() === '') {
+              updates.workspaceId = targetWorkspaceId;
+            }
+            if (note.collectionId === undefined) {
+              updates.collectionId = null;
+            }
+            if (note.isPinned === undefined) {
+              updates.isPinned = false;
+            }
+            if (note.isFavorite === undefined) {
+              updates.isFavorite = false;
+            }
+            if (note.isArchived === undefined) {
+              updates.isArchived = false;
+            }
+            if (!Array.isArray(note.tags)) {
+              updates.tags = [];
+            }
+            if (typeof note.order !== 'number') {
+              updates.order = 0;
+            }
+            if (note.excerpt === undefined) {
+              const content = note.content || '';
+              const plain = content.replace(/[#*`_~>[\]!]/g, ' ').replace(/\s+/g, ' ').trim();
+              updates.excerpt = plain.slice(0, 300);
+            }
+
+            if (Object.keys(updates).length > 0) {
+              await notesTable.update(note.id, updates);
+            }
+          }
         }
       });
   }

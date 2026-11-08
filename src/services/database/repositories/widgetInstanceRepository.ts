@@ -47,9 +47,14 @@ export class WidgetInstanceRepository {
     return entity;
   }
 
-  async updateConfig(id: string, config: Record<string, unknown>): Promise<void> {
+  async updateConfig(id: string, config: Record<string, unknown>, workspaceId?: string): Promise<void> {
     const existing = await this.database.widgetInstances.get(id);
     if (!existing) throw new Error(`Widget instance with id ${id} not found`);
+    if (workspaceId && existing.workspaceId !== workspaceId) {
+      throw new Error(
+        `Security Violation: Widget instance ${id} belongs to ${existing.workspaceId}, not ${workspaceId}`
+      );
+    }
 
     await this.database.widgetInstances.update(id, {
       config: { ...existing.config, ...config },
@@ -57,9 +62,14 @@ export class WidgetInstanceRepository {
     });
   }
 
-  async toggleEnabled(id: string, isEnabled: boolean): Promise<void> {
+  async toggleEnabled(id: string, isEnabled: boolean, workspaceId?: string): Promise<void> {
     const existing = await this.database.widgetInstances.get(id);
     if (!existing) throw new Error(`Widget instance with id ${id} not found`);
+    if (workspaceId && existing.workspaceId !== workspaceId) {
+      throw new Error(
+        `Security Violation: Widget instance ${id} belongs to ${existing.workspaceId}, not ${workspaceId}`
+      );
+    }
 
     await this.database.widgetInstances.update(id, {
       isEnabled,
@@ -67,7 +77,15 @@ export class WidgetInstanceRepository {
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, workspaceId?: string): Promise<void> {
+    if (workspaceId) {
+      const existing = await this.database.widgetInstances.get(id);
+      if (existing && existing.workspaceId !== workspaceId) {
+        throw new Error(
+          `Security Violation: Cannot delete widget ${id} belonging to another workspace (${existing.workspaceId})`
+        );
+      }
+    }
     await this.database.widgetInstances.delete(id);
   }
 

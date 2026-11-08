@@ -12,6 +12,8 @@ export interface StudyTrackerStoreState {
   fetchStats: (workspaceId?: string) => Promise<void>;
 }
 
+let latestRequestId = 0;
+
 export const useStudyTrackerStore = create<StudyTrackerStoreState>((set, get) => ({
   stats: null,
   timeRange: '7D',
@@ -24,15 +26,20 @@ export const useStudyTrackerStore = create<StudyTrackerStoreState>((set, get) =>
   },
 
   fetchStats: async (workspaceId) => {
+    const requestId = ++latestRequestId;
     set({ isLoading: true, error: null });
     try {
       const stats = await studyTrackerService.getStudyStats(workspaceId, get().timeRange);
-      set({ stats, isLoading: false, error: null });
+      if (requestId === latestRequestId) {
+        set({ stats, isLoading: false, error: null });
+      }
     } catch (err: any) {
-      set({
-        isLoading: false,
-        error: err?.message || 'Failed to fetch study statistics',
-      });
+      if (requestId === latestRequestId) {
+        set({
+          isLoading: false,
+          error: err?.message || 'Failed to fetch study statistics',
+        });
+      }
     }
   },
 }));

@@ -8,16 +8,9 @@ export const BREAKPOINT_COLUMNS: Record<Breakpoint, number> = {
   xxs: 2,
 };
 
-export interface WorkspaceEntity {
-  id: string;
-  name: string;
-  icon: string; // Lucide icon identifier or emoji
-  color?: string;
-  isDefault: boolean;
-  order: number;
-  createdAt: number;
-  updatedAt: number;
-}
+export type {
+  WorkspaceEntity,
+} from './workspaces';
 
 export interface WidgetLayoutEntity {
   id: string; // Primary Key: `${workspaceId}_${widgetInstanceId}_${breakpoint}`
@@ -87,17 +80,12 @@ export interface TodoEntity {
   updatedAt: number;
 }
 
-export interface NoteEntity {
-  id: string;
-  workspaceId?: string;
-  title: string;
-  content: string;
-  isPinned: boolean;
-  color?: string;
-  tags: string[];
-  createdAt: number;
-  updatedAt: number;
-}
+export type {
+  NoteEntity,
+  NoteCollectionEntity,
+  NoteTagEntity,
+  NoteBookmarkLinkEntity,
+} from './notes';
 
 export interface StickyNoteEntity {
   id: string;
@@ -115,7 +103,7 @@ export interface StickyNoteEntity {
 
 export interface BookmarkGroupEntity {
   id: string;
-  workspaceId?: string;
+  workspaceId: string;
   title: string;
   icon?: string;
   color?: string;
@@ -126,9 +114,11 @@ export interface BookmarkGroupEntity {
 
 export interface BookmarkEntity {
   id: string;
-  groupId: string;
+  workspaceId: string;
+  groupId: string | null;
   title: string;
   url: string;
+  description?: string;
   iconUrl?: string;
   customColor?: string;
   isFavorite: boolean;

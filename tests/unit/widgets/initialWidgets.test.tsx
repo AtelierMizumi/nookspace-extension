@@ -7,6 +7,8 @@ import { CalendarOverviewWidgetComponent } from '@/widgets/CalendarOverviewWidge
 import { QuickLinksWidgetComponent } from '@/widgets/QuickLinksWidget';
 import { SimpleTodoWidgetComponent } from '@/widgets/SimpleTodoWidget';
 import { QuickNotesWidgetComponent } from '@/widgets/QuickNotesWidget';
+import { SmartBookmarksWidgetComponent } from '@/widgets/SmartBookmarksWidget';
+import { NotesWidgetComponent } from '@/widgets/NotesWidget';
 
 describe('Initial Foundation Widgets', () => {
   it('renders ClockWidgetComponent with local time and date label', () => {
@@ -108,5 +110,35 @@ describe('Initial Foundation Widgets', () => {
     const textarea = screen.getByDisplayValue('Initial Note');
     fireEvent.change(textarea, { target: { value: 'Updated Note' } });
     expect(handleUpdate).toHaveBeenCalledWith({ content: 'Updated Note' });
+  });
+
+  it('renders SmartBookmarksWidgetComponent with title and empty or shortcut grid state', () => {
+    render(
+      <SmartBookmarksWidgetComponent
+        instanceId="inst-7"
+        workspaceId="ws-1"
+        isEditMode={false}
+        config={{ source: 'all' }}
+        onUpdateConfig={() => {}}
+        onRemove={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Smart Bookmarks')).toBeInTheDocument();
+  });
+
+  it('renders NotesWidgetComponent with title and recent notes state', () => {
+    render(
+      <NotesWidgetComponent
+        instanceId="inst-8"
+        workspaceId="ws-1"
+        isEditMode={false}
+        config={{ mode: 'recent' }}
+        onUpdateConfig={() => {}}
+        onRemove={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Notes & Knowledge')).toBeInTheDocument();
   });
 });

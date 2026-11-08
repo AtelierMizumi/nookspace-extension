@@ -21,7 +21,11 @@ export interface PomodoroStoreState {
 
   // Actions communicating via Runtime Messaging
   hydrateState: () => Promise<void>;
-  startTimer: (mode?: PomodoroMode, customDuration?: number) => Promise<boolean>;
+  startTimer: (
+    mode?: PomodoroMode,
+    customDuration?: number,
+    workspaceId?: string
+  ) => Promise<boolean>;
   pauseTimer: () => Promise<boolean>;
   resumeTimer: () => Promise<boolean>;
   cancelTimer: () => Promise<boolean>;
@@ -120,12 +124,13 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
     }
   },
 
-  startTimer: async (mode, customDuration) => {
+  startTimer: async (mode, customDuration, workspaceId) => {
     const currentState = get().activeTimerState;
     set({ isLoading: true, error: null });
     const res = await sendCommandToBackground('START', currentState.revision, {
       mode,
       customDurationMinutes: customDuration,
+      workspaceId,
     });
     if (res.success && res.state) {
       set({

@@ -143,7 +143,9 @@ describe('FocusSessionRepository — Milestone 5.1', () => {
   });
 
   it('6. calculates getTodayStats accurately with category breakdown', async () => {
-    const now = Date.now();
+    const startOfToday = new Date();
+    startOfToday.setHours(12, 0, 0, 0);
+    const now = startOfToday.getTime();
 
     await repo.create({
       workspaceId: 'ws-today',

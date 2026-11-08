@@ -10,6 +10,8 @@ export interface AppShellProps {
   isEditMode?: boolean;
   onToggleEditMode?: () => void;
   onOpenSettings?: () => void;
+  onOpenBookmarkManager?: () => void;
+  onOpenNotesManager?: () => void;
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
@@ -17,9 +19,11 @@ export const AppShell: React.FC<AppShellProps> = ({
   isEditMode,
   onToggleEditMode,
   onOpenSettings,
+  onOpenBookmarkManager,
+  onOpenNotesManager,
 }) => {
   const { initializeTheme } = useThemeStore();
-  const { initWorkspaces, activeWorkspaceId } = useWorkspaceStore();
+  const { initWorkspaces, activeWorkspaceId, isLoading: isWorkspaceLoading } = useWorkspaceStore();
   const { instances, loadWidgets, addWidget, removeWidget } = useWidgetStore();
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
@@ -29,10 +33,10 @@ export const AppShell: React.FC<AppShellProps> = ({
   }, [initializeTheme, initWorkspaces]);
 
   useEffect(() => {
-    if (activeWorkspaceId) {
+    if (activeWorkspaceId && !isWorkspaceLoading) {
       loadWidgets(activeWorkspaceId);
     }
-  }, [activeWorkspaceId, loadWidgets]);
+  }, [activeWorkspaceId, isWorkspaceLoading, loadWidgets]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors selection:bg-neutral-800 selection:text-white">
@@ -41,6 +45,8 @@ export const AppShell: React.FC<AppShellProps> = ({
         onToggleEditMode={onToggleEditMode}
         onOpenSettings={onOpenSettings}
         onOpenWidgetLibrary={() => setIsLibraryOpen(true)}
+        onOpenBookmarkManager={onOpenBookmarkManager}
+        onOpenNotesManager={onOpenNotesManager}
       />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col">

@@ -4,26 +4,30 @@ import {
   Moon,
   Monitor,
   LayoutGrid,
-  ChevronDown,
-  Search,
   Settings,
   Plus,
+  Bookmark,
+  FileText,
 } from 'lucide-react';
 import { Button, IconButton } from '../ui/Button';
 import { Dropdown, DropdownItem } from '../ui/Dropdown';
 import { Badge } from '../ui/Badge';
 import { Tooltip } from '../ui/Tooltip';
-import { Modal } from '../ui/Modal';
-import { Input } from '../ui/Input';
 import { useThemeStore } from '../../stores/themeStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
-import { useCustomizationStore } from '../../stores/customizationStore';
+import {
+  WorkspaceSwitcher,
+  WorkspaceManagerModal,
+  WorkspaceFormModal,
+} from '../../features/workspaces';
 
 export interface TopNavProps {
   isEditMode?: boolean;
   onToggleEditMode?: () => void;
   onOpenSettings?: () => void;
   onOpenWidgetLibrary?: () => void;
+  onOpenBookmarkManager?: () => void;
+  onOpenNotesManager?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -31,45 +35,33 @@ export const TopNav: React.FC<TopNavProps> = ({
   onToggleEditMode,
   onOpenSettings,
   onOpenWidgetLibrary,
+  onOpenBookmarkManager,
+  onOpenNotesManager,
 }) => {
   const { resolvedTheme, setTheme } = useThemeStore();
-  const { workspaces, activeWorkspaceId, setActiveWorkspace, createWorkspace } = useWorkspaceStore();
-  const requestWorkspaceSwitch = useCustomizationStore((s) => s.requestWorkspaceSwitch);
-  const [isNewWsModalOpen, setIsNewWsModalOpen] = useState(false);
-  const [newWsName, setNewWsName] = useState('');
+  const { createWorkspace, createWorkspaceFromPreset } = useWorkspaceStore();
 
-  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
+  const [isWorkspaceManagerOpen, setIsWorkspaceManagerOpen] = useState(false);
+  const [isWorkspaceCreateOpen, setIsWorkspaceCreateOpen] = useState(false);
 
-  const handleCreateWorkspace = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newWsName.trim()) return;
-    await createWorkspace(newWsName.trim());
-    setNewWsName('');
-    setIsNewWsModalOpen(false);
-  };
-
-  const handleSelectWorkspace = (workspaceId: string) => {
-    const result = requestWorkspaceSwitch(workspaceId);
-    if (result === 'ALLOW') {
-      setActiveWorkspace(workspaceId);
+  const handleCreateWorkspace = async (data: {
+    name: string;
+    icon: string;
+    color?: string;
+    presetId?: string | null;
+  }) => {
+    if (data.presetId) {
+      await createWorkspaceFromPreset({
+        presetId: data.presetId,
+        name: data.name,
+        icon: data.icon,
+        color: data.color,
+      });
+    } else {
+      await createWorkspace(data.name, data.icon, data.color);
     }
+    setIsWorkspaceCreateOpen(false);
   };
-
-  const workspaceDropdownItems: DropdownItem[] = [
-    ...workspaces.map((ws) => ({
-      id: ws.id,
-      label: ws.name,
-      icon: <LayoutGrid className="h-4 w-4 text-primary" />,
-      onClick: () => handleSelectWorkspace(ws.id),
-    })),
-    {
-      id: 'create-new-workspace',
-      label: 'Create Workspace...',
-      icon: <Plus className="h-4 w-4 text-muted-foreground" />,
-      separatorAfter: false,
-      onClick: () => setIsNewWsModalOpen(true),
-    },
-  ];
 
   const themeDropdownItems: DropdownItem[] = [
     {
@@ -94,49 +86,70 @@ export const TopNav: React.FC<TopNavProps> = ({
 
   return (
     <>
-      <header className="w-full flex items-center justify-between px-6 py-2.5 border-b border-border/60 bg-card/40 backdrop-blur-md sticky top-0 z-40 transition-colors">
+      <header className="w-full flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-border/60 bg-card/40 backdrop-blur-md sticky top-0 z-40 transition-colors">
         {/* Left: Brand & Live Workspace Switcher */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 pr-3 border-r border-border/50">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 border-r border-border/50 shrink-0">
             <div className="h-7 w-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm tracking-tight shadow-sm select-none">
               N
             </div>
-            <span className="text-sm font-semibold tracking-tight text-foreground select-none">
+            <span className="text-xs sm:text-sm font-semibold tracking-tight text-foreground select-none hidden xs:inline">
               NookSpace
             </span>
-            <Badge variant="secondary" size="sm" className="hidden sm:inline-flex text-[10px]">
+            <Badge variant="secondary" size="sm" className="hidden lg:inline-flex text-[10px]">
               v0.1.0
             </Badge>
           </div>
 
-          {/* Workspace Switcher Dropdown */}
-          <Dropdown
-            items={workspaceDropdownItems}
-            align="left"
-            trigger={
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-1.5 px-2 text-xs font-medium text-foreground hover:bg-secondary/70"
-              >
-                <span className="max-w-[140px] truncate">{activeWorkspace?.name || 'Personal Space'}</span>
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              </Button>
-            }
+          {/* Workspace Switcher */}
+          <WorkspaceSwitcher
+            onOpenManager={() => setIsWorkspaceManagerOpen(true)}
+            onOpenCreate={() => setIsWorkspaceCreateOpen(true)}
           />
         </div>
 
         {/* Right: Add Widget, Customize, Theme, Settings */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {onOpenNotesManager && (
+            <Tooltip content="Notes & Knowledge" position="bottom">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onOpenNotesManager}
+                aria-label="Notes & Knowledge"
+                leftIcon={<FileText className="h-3.5 w-3.5 text-primary" />}
+                className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+              >
+                <span className="hidden md:inline">Notes</span>
+              </Button>
+            </Tooltip>
+          )}
+
+          {onOpenBookmarkManager && (
+            <Tooltip content="Smart Bookmarks" position="bottom">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onOpenBookmarkManager}
+                aria-label="Smart Bookmarks"
+                leftIcon={<Bookmark className="h-3.5 w-3.5 text-primary" />}
+                className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+              >
+                <span className="hidden md:inline">Bookmarks</span>
+              </Button>
+            </Tooltip>
+          )}
+
           {onOpenWidgetLibrary && (
             <Button
               variant="secondary"
               size="sm"
               onClick={onOpenWidgetLibrary}
+              aria-label="Add Widget"
               leftIcon={<Plus className="h-3.5 w-3.5" />}
-              className="h-8 text-xs font-medium"
+              className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
             >
-              Add Widget
+              <span className="hidden sm:inline">Add Widget</span>
             </Button>
           )}
 
@@ -145,10 +158,11 @@ export const TopNav: React.FC<TopNavProps> = ({
               variant={isEditMode ? 'primary' : 'outline'}
               size="sm"
               onClick={onToggleEditMode}
+              aria-label={isEditMode ? 'Done Customizing' : 'Customize Workspace'}
               leftIcon={<LayoutGrid className="h-3.5 w-3.5" />}
-              className="h-8 text-xs font-medium"
+              className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
             >
-              {isEditMode ? 'Done' : 'Customize'}
+              <span className="hidden sm:inline">{isEditMode ? 'Done' : 'Customize'}</span>
             </Button>
           </Tooltip>
 
@@ -156,12 +170,13 @@ export const TopNav: React.FC<TopNavProps> = ({
           <Dropdown
             items={themeDropdownItems}
             align="right"
+            menuAriaLabel="Theme selection"
             trigger={
               <IconButton
                 size="sm"
                 variant="outline"
                 aria-label="Theme selector"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary"
               >
                 {resolvedTheme === 'dark' ? (
                   <Moon className="h-4 w-4 text-indigo-400" />
@@ -178,7 +193,7 @@ export const TopNav: React.FC<TopNavProps> = ({
               variant="outline"
               aria-label="Settings"
               onClick={onOpenSettings}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary"
             >
               <Settings className="h-4 w-4" />
             </IconButton>
@@ -186,35 +201,23 @@ export const TopNav: React.FC<TopNavProps> = ({
         </div>
       </header>
 
+      {/* Workspace Manager Modal */}
+      <WorkspaceManagerModal
+        isOpen={isWorkspaceManagerOpen}
+        onClose={() => setIsWorkspaceManagerOpen(false)}
+        onOpenCreate={() => {
+          setIsWorkspaceManagerOpen(false);
+          setIsWorkspaceCreateOpen(true);
+        }}
+      />
+
       {/* New Workspace Creation Modal */}
-      <Modal
-        isOpen={isNewWsModalOpen}
-        onClose={() => setIsNewWsModalOpen(false)}
-        title="Create New Workspace"
-        description="Add a dedicated space for studying, projects, or work."
-        footer={
-          <>
-            <Button variant="ghost" size="sm" onClick={() => setIsNewWsModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleCreateWorkspace}>
-              Create Workspace
-            </Button>
-          </>
-        }
-      >
-        <form onSubmit={handleCreateWorkspace} className="space-y-3 text-xs">
-          <div>
-            <label className="font-medium text-foreground block mb-1">Workspace Name</label>
-            <Input
-              autoFocus
-              placeholder="e.g. Japanese Study, Project Alpha, Work..."
-              value={newWsName}
-              onChange={(e) => setNewWsName(e.target.value)}
-            />
-          </div>
-        </form>
-      </Modal>
+      <WorkspaceFormModal
+        isOpen={isWorkspaceCreateOpen}
+        onClose={() => setIsWorkspaceCreateOpen(false)}
+        mode="create"
+        onSubmitCreate={handleCreateWorkspace}
+      />
     </>
   );
 };

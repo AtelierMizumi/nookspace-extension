@@ -45,4 +45,21 @@ describe('Theme Store', () => {
     expect(useThemeStore.getState().resolvedTheme).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
+
+  it('synchronizes theme from external tab via window storage event', async () => {
+    await useThemeStore.getState().initializeTheme();
+    expect(useThemeStore.getState().theme).toBe('dark');
+
+    // Simulate another tab switching theme to 'light'
+    const storageEvent = new StorageEvent('storage', {
+      key: 'nookspace_theme_mode',
+      newValue: 'light',
+    });
+    window.dispatchEvent(storageEvent);
+
+    expect(useThemeStore.getState().theme).toBe('light');
+    expect(useThemeStore.getState().resolvedTheme).toBe('light');
+    expect(document.documentElement.classList.contains('light')).toBe(true);
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+  });
 });

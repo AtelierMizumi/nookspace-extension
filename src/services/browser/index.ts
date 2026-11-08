@@ -46,15 +46,60 @@ function getExtensionGlobal(): any {
   return null;
 }
 
+/**
+ * Invokes a WebExtension API that may return a Promise (native Gecko / modern Chromium)
+ * or invoke a callback with runtime.lastError (Chromium legacy style).
+ */
+function callBrowserApi<T>(
+  fnWithCallback: (cb: (val: T) => void) => any,
+  fnPromiseOnly: () => Promise<T> | any,
+  defaultValue: T,
+  ext: any
+): Promise<T> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (val?: T) => {
+      if (!settled) {
+        settled = true;
+        if (ext?.runtime?.lastError) {
+          // Suppress unchecked lastError in Chromium
+        }
+        resolve(val !== undefined ? val : defaultValue);
+      }
+    };
+
+    try {
+      const res = fnWithCallback((val: T) => done(val));
+      if (res && typeof res.then === 'function') {
+        res.then((val: T) => done(val)).catch(() => done(defaultValue));
+      }
+    } catch {
+      try {
+        const res = fnPromiseOnly();
+        if (res && typeof res.then === 'function') {
+          res.then((val: T) => done(val)).catch(() => done(defaultValue));
+        } else {
+          done(defaultValue);
+        }
+      } catch {
+        done(defaultValue);
+      }
+    }
+  });
+}
+
 export const browserApi: BrowserApi = {
   storage: {
     local: {
       async get<T = Record<string, unknown>>(keys: string | string[]): Promise<T> {
         const ext = getExtensionGlobal();
         if (ext?.storage?.local) {
-          return new Promise((resolve) => {
-            ext.storage.local.get(keys, (res: T) => resolve(res || ({} as T)));
-          });
+          return callBrowserApi<T>(
+            (cb) => ext.storage.local.get(keys, cb),
+            () => ext.storage.local.get(keys),
+            {} as T,
+            ext
+          );
         }
         // Fallback to localStorage in non-extension environment
         const result: Record<string, unknown> = {};
@@ -74,9 +119,12 @@ export const browserApi: BrowserApi = {
       async set(items: Record<string, unknown>): Promise<void> {
         const ext = getExtensionGlobal();
         if (ext?.storage?.local) {
-          return new Promise((resolve) => {
-            ext.storage.local.set(items, () => resolve());
-          });
+          return callBrowserApi<void>(
+            (cb) => ext.storage.local.set(items, () => cb()),
+            () => ext.storage.local.set(items),
+            undefined,
+            ext
+          );
         }
         for (const [key, val] of Object.entries(items)) {
           localStorage.setItem(`nookspace:${key}`, JSON.stringify(val));
@@ -85,9 +133,12 @@ export const browserApi: BrowserApi = {
       async remove(keys: string | string[]): Promise<void> {
         const ext = getExtensionGlobal();
         if (ext?.storage?.local) {
-          return new Promise((resolve) => {
-            ext.storage.local.remove(keys, () => resolve());
-          });
+          return callBrowserApi<void>(
+            (cb) => ext.storage.local.remove(keys, () => cb()),
+            () => ext.storage.local.remove(keys),
+            undefined,
+            ext
+          );
         }
         const keyList = Array.isArray(keys) ? keys : [keys];
         for (const k of keyList) {
@@ -101,15 +152,25 @@ export const browserApi: BrowserApi = {
     async create(name: string, alarmInfo: AlarmOptions): Promise<void> {
       const ext = getExtensionGlobal();
       if (ext?.alarms?.create) {
-        ext.alarms.create(name, alarmInfo);
+        try {
+          const res = ext.alarms.create(name, alarmInfo);
+          if (res && typeof res.then === 'function') {
+            await res;
+          }
+        } catch {
+          // Silently handle error
+        }
       }
     },
     async clear(name: string): Promise<boolean> {
       const ext = getExtensionGlobal();
       if (ext?.alarms?.clear) {
-        return new Promise((resolve) => {
-          ext.alarms.clear(name, (wasCleared: boolean) => resolve(Boolean(wasCleared)));
-        });
+        return callBrowserApi<boolean>(
+          (cb) => ext.alarms.clear(name, (wasCleared: boolean) => cb(Boolean(wasCleared))),
+          () => ext.alarms.clear(name),
+          false,
+          ext
+        );
       }
       return false;
     },
@@ -130,17 +191,18 @@ export const browserApi: BrowserApi = {
     async create(options: NotificationOptions): Promise<string> {
       const ext = getExtensionGlobal();
       if (ext?.notifications?.create) {
-        return new Promise((resolve) => {
-          const notificationOptions = {
-            type: 'basic',
-            iconUrl: options.iconUrl || 'icon/128.png',
-            title: options.title,
-            message: options.message,
-          };
-          ext.notifications.create('', notificationOptions, (id: string) => {
-            resolve(id || 'notification-id');
-          });
-        });
+        const notificationOptions = {
+          type: 'basic',
+          iconUrl: options.iconUrl || 'icon/128.png',
+          title: options.title,
+          message: options.message,
+        };
+        return callBrowserApi<string>(
+          (cb) => ext.notifications.create('', notificationOptions, (id: string) => cb(id || 'notification-id')),
+          () => ext.notifications.create(notificationOptions),
+          'notification-id',
+          ext
+        );
       }
       // Fallback to Web Notification API if permitted
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
@@ -154,9 +216,12 @@ export const browserApi: BrowserApi = {
     async create(url: string): Promise<void> {
       const ext = getExtensionGlobal();
       if (ext?.tabs?.create) {
-        return new Promise((resolve) => {
-          ext.tabs.create({ url, active: true }, () => resolve());
-        });
+        return callBrowserApi<void>(
+          (cb) => ext.tabs.create({ url, active: true }, () => cb()),
+          () => ext.tabs.create({ url, active: true }),
+          undefined,
+          ext
+        );
       }
       if (typeof window !== 'undefined') {
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -168,9 +233,22 @@ export const browserApi: BrowserApi = {
     async getPlatform(): Promise<string> {
       const ext = getExtensionGlobal();
       if (ext?.runtime?.getPlatformInfo) {
-        return new Promise((resolve) => {
-          ext.runtime.getPlatformInfo((info: { os?: string }) => resolve(info?.os || 'unknown'));
-        });
+        const extractOs = (info: any) =>
+          typeof info === 'object' && info?.os ? info.os : typeof info === 'string' ? info : 'unknown';
+        return callBrowserApi<string>(
+          (cb) => {
+            const res = ext.runtime.getPlatformInfo((info: { os?: string }) => cb(extractOs(info)));
+            if (res && typeof res.then === 'function') {
+              res.then((info: any) => cb(extractOs(info))).catch(() => cb('unknown'));
+            }
+          },
+          async () => {
+            const info = await ext.runtime.getPlatformInfo();
+            return extractOs(info);
+          },
+          'unknown',
+          ext
+        );
       }
       return 'web';
     },

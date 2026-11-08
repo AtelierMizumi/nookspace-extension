@@ -91,6 +91,20 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
       });
     }
 
+    // Setup listener for cross-tab theme synchronization
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'nookspace_theme_mode' && e.newValue) {
+          const newTheme = e.newValue as ThemeMode;
+          if (['light', 'dark', 'system'].includes(newTheme)) {
+            const newResolved = newTheme === 'system' ? getSystemTheme() : newTheme;
+            applyThemeToDocument(newResolved);
+            set({ theme: newTheme, resolvedTheme: newResolved });
+          }
+        }
+      });
+    }
+
     set({ theme: savedTheme, resolvedTheme: resolved });
   },
 }));

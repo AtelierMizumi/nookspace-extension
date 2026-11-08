@@ -184,6 +184,12 @@ export class LayoutRepository {
         continue; // Disallow duplicate entries for same instance in the same breakpoint
       }
 
+      if (raw.workspaceId && raw.workspaceId !== workspaceId) {
+        throw new Error(
+          `Security Violation: Layout item ${raw.widgetInstanceId} belongs to ${raw.workspaceId}, not ${workspaceId}`
+        );
+      }
+
       const validated = WidgetLayoutInputSchema.parse({
         ...raw,
         workspaceId,

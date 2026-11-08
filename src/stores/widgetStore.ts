@@ -1,66 +1,116 @@
 import { create } from 'zustand';
-import { widgetInstanceRepo } from '../services/database/repositories/widgetInstanceRepository';
+import {
+  widgetInstanceRepo as defaultWidgetInstanceRepo,
+  WidgetInstanceRepository,
+} from '../services/database/repositories/widgetInstanceRepository';
 import { widgetRegistry } from '../features/widget-system/WidgetRegistry';
 import { WidgetInstanceEntity } from '../types/database';
 
-interface WidgetState {
+export interface WidgetState {
   instances: WidgetInstanceEntity[];
   isLoading: boolean;
+  activeWorkspaceId: string | null;
   loadWidgets: (workspaceId: string) => Promise<void>;
   addWidget: (workspaceId: string, widgetType: string, title?: string) => Promise<WidgetInstanceEntity>;
   removeWidget: (id: string, workspaceId: string) => Promise<void>;
   toggleWidget: (id: string, isEnabled: boolean, workspaceId: string) => Promise<void>;
   updateConfig: (id: string, config: Record<string, unknown>, workspaceId: string) => Promise<void>;
+  clearWidgets: () => void;
 }
 
-export const useWidgetStore = create<WidgetState>((set) => ({
-  instances: [],
-  isLoading: false,
+export interface WidgetStoreDependencies {
+  repo?: WidgetInstanceRepository;
+}
 
-  loadWidgets: async (workspaceId: string) => {
-    set({ isLoading: true });
-    try {
-      const items = await widgetInstanceRepo.getByWorkspace(workspaceId);
-      set({ instances: items, isLoading: false });
-    } catch (err) {
-      console.error('[widgetStore] Failed to load widgets:', err);
-      set({ instances: [], isLoading: false });
-    }
-  },
+export function createWidgetStore(deps: WidgetStoreDependencies = {}) {
+  const repo = deps.repo ?? defaultWidgetInstanceRepo;
+  let latestRequestId = 0;
 
-  addWidget: async (workspaceId: string, widgetType: string, title?: string) => {
-    const definition = widgetRegistry.get(widgetType);
-    const initialConfig = definition ? { ...definition.defaultConfig } : {};
-    const created = await widgetInstanceRepo.create({
-      workspaceId,
-      widgetType,
-      title: title || definition?.name,
-      config: initialConfig,
-    });
-    const items = await widgetInstanceRepo.getByWorkspace(workspaceId);
-    set({ instances: items });
-    return created;
-  },
+  return create<WidgetState>((set, get) => ({
+    instances: [],
+    isLoading: false,
+    activeWorkspaceId: null,
 
-  removeWidget: async (id: string, workspaceId: string) => {
-    await widgetInstanceRepo.delete(id);
-    const items = await widgetInstanceRepo.getByWorkspace(workspaceId);
-    set({ instances: items });
-  },
+    loadWidgets: async (workspaceId: string) => {
+      const requestId = ++latestRequestId;
+      const isDifferentWorkspace = get().activeWorkspaceId !== workspaceId;
 
-  toggleWidget: async (id: string, isEnabled: boolean, workspaceId: string) => {
-    await widgetInstanceRepo.toggleEnabled(id, isEnabled);
-    const items = await widgetInstanceRepo.getByWorkspace(workspaceId);
-    set({ instances: items });
-  },
+      // Immediately isolate and clear previous instances if switching workspace to prevent UI flash
+      set({
+        isLoading: true,
+        activeWorkspaceId: workspaceId,
+        ...(isDifferentWorkspace ? { instances: [] } : {}),
+      });
 
-  updateConfig: async (id: string, config: Record<string, unknown>, workspaceId: string) => {
-    await widgetInstanceRepo.updateConfig(id, config);
-    // Fast optimistic in-memory update
-    set((state) => ({
-      instances: state.instances.map((item) =>
-        item.id === id ? { ...item, config: { ...item.config, ...config } } : item
-      ),
-    }));
-  },
-}));
+      try {
+        const items = await repo.getByWorkspace(workspaceId);
+        // Guard against stale async responses if workspace switched while fetching
+        if (requestId === latestRequestId && get().activeWorkspaceId === workspaceId) {
+          set({ instances: items, isLoading: false });
+        }
+      } catch (err) {
+        console.error('[widgetStore] Failed to load widgets:', err);
+        if (requestId === latestRequestId && get().activeWorkspaceId === workspaceId) {
+          set({ instances: [], isLoading: false });
+        }
+      }
+    },
+
+    addWidget: async (workspaceId: string, widgetType: string, title?: string) => {
+      const definition = widgetRegistry.get(widgetType);
+      const initialConfig = definition ? { ...definition.defaultConfig } : {};
+      const created = await repo.create({
+        workspaceId,
+        widgetType,
+        title: title || definition?.name,
+        config: initialConfig,
+      });
+
+      if (get().activeWorkspaceId === workspaceId) {
+        const items = await repo.getByWorkspace(workspaceId);
+        if (get().activeWorkspaceId === workspaceId) {
+          set({ instances: items });
+        }
+      }
+      return created;
+    },
+
+    removeWidget: async (id: string, workspaceId: string) => {
+      await repo.delete(id, workspaceId);
+      if (get().activeWorkspaceId === workspaceId) {
+        const items = await repo.getByWorkspace(workspaceId);
+        if (get().activeWorkspaceId === workspaceId) {
+          set({ instances: items });
+        }
+      }
+    },
+
+    toggleWidget: async (id: string, isEnabled: boolean, workspaceId: string) => {
+      await repo.toggleEnabled(id, isEnabled, workspaceId);
+      if (get().activeWorkspaceId === workspaceId) {
+        const items = await repo.getByWorkspace(workspaceId);
+        if (get().activeWorkspaceId === workspaceId) {
+          set({ instances: items });
+        }
+      }
+    },
+
+    updateConfig: async (id: string, config: Record<string, unknown>, workspaceId: string) => {
+      await repo.updateConfig(id, config, workspaceId);
+      if (get().activeWorkspaceId === workspaceId) {
+        // Fast optimistic in-memory update
+        set((state) => ({
+          instances: state.instances.map((item) =>
+            item.id === id ? { ...item, config: { ...item.config, ...config } } : item
+          ),
+        }));
+      }
+    },
+
+    clearWidgets: () => {
+      set({ instances: [], activeWorkspaceId: null, isLoading: false });
+    },
+  }));
+}
+
+export const useWidgetStore = createWidgetStore();

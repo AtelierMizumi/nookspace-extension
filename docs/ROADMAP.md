@@ -149,41 +149,353 @@ Phase 10: Cross-Browser Release Verification (Chrome MV3 & Firefox builds, Packa
   - Full Productivity Suite test coverage consolidated to 264 passing tests across 43 test suites (100% pass rate).
   - Multi-target builds verified: Chromium MV3 (812.24 kB) and Firefox MV2 (812.33 kB). All Phase 5 milestones sealed.
 
-### Phase 6: Smart Bookmarks
-- [ ] Bookmark Group management (Add group, change color/icon, reorder).
-- [ ] Website Shortcuts (Add URL with regex validation, custom titles, auto-monogram/favicon).
-- [ ] Instant search filtering with keyboard navigation.
-- [ ] Netscape HTML & JSON bookmark import and export parser.
+### Phase 6: Smart Bookmarks (COMPLETED)
+- [x] **Milestone 6.1**: Domain Models, Zod Schemas & Security Validation:
+  - Definitive domain models in `src/types/bookmarks.ts` for `BookmarkGroupEntity` and `BookmarkEntity` aligned with Dexie storage contracts.
+  - Strict Zod validation schemas (`BookmarkSchema`, `BookmarkGroupSchema`, `CreateBookmarkSchema`, `UpdateBookmarkSchema`, `CreateBookmarkGroupSchema`, `UpdateBookmarkGroupSchema`) enforcing non-negative integer ordering, title trimming, length boundaries, and strict modification protection.
+  - Offline security validation utilities (`bookmarkSecurity.ts`) enforcing strict URL scheme allowlisting (`https:`, `http:`, `mailto:`), blocking `javascript:`, `data:`, `file:`, embedded credentials (`user:password`), and control characters without external network calls.
+  - Safe text handling treating arbitrary HTML/script characters in titles and descriptions as safe text boundaries.
+  - Unit test suite expanded with 84 dedicated bookmark security and schema tests, elevating overall test suite to 348 passing tests across 46 test suites.
+- [x] **Milestone 6.2**: Repositories & Dexie Data Layer:
+  - Persistent data access layer implementing `BookmarkRepository` and `BookmarkGroupRepository` in `src/features/bookmarks/repositories/`.
+  - Dexie Schema Version 3 upgrade adding `workspaceId` index to `bookmarks` table with defensive migration preserving historical data and enabling high-performance workspace-scoped indexed queries.
+  - Complete CRUD operations with Zod domain validation, deterministic ordering, and workspace scoping.
+  - Group association integrity enforcing that bookmarks strictly reference groups within the same workspace.
+  - Transactional Safe Deletion: Mode A (default) safely reassigns child bookmarks to Uncategorized (`groupId: null`); Mode B (explicit cascade) permanently removes child bookmarks.
+  - All-or-nothing reordering transactions for both bookmarks and groups rejecting duplicates, missing IDs, and cross-workspace access.
+  - Comprehensive unit test suite expanded with 43 repository and migration tests, bringing total test coverage to 391 passing tests across 49 test suites.
+- [x] **Milestone 6.3**: State Store & Fast In-Memory Search Engine:
+  - Local In-Memory Search Engine (`bookmarkSearchService.ts`) with multi-token AND matching across Title, URL, Domain, and Description, relevance scoring hierarchy (Title exact > Title prefix > Domain exact > Subdomain > Description), deterministic tie-breaking by `updatedAt` / `createdAt`, and sorting by Title, Creation Date (`createdAt`), Last Updated (`updatedAt`), or Manual Order (`order`).
+  - Discriminated union group filtering (`BookmarkGroupFilter`: `{ type: 'all' }`, `{ type: 'uncategorized' }`, `{ type: 'group'; groupId: string }`) providing explicit separation between All bookmarks, Uncategorized (`groupId === null`), and specific folder groups.
+  - Centralized Zustand Store (`bookmarkStore.ts`) providing full reactive CRUD operations (`createBookmark`, `updateBookmark`, `deleteBookmark`, `reorderBookmarks`, `createGroup`, `updateGroup`, `deleteGroup`, `reorderGroups`), reactive filter/search state (`searchQuery`, `groupFilter`, `activeGroupId`, `showFavoritesOnly`, `sortBy`, `sortDirection`), and multi-tab live sync via `nookspace_bookmarks_last_updated_at`.
+  - Workspace isolation guarantee with clean state evacuation upon workspace transition and atomic request tracking (`latestRequestId`) against out-of-order async responses.
+  - Comprehensive unit test suite expanded with 37 targeted tests across 2 test suites (`bookmarkSearchService.test.ts`, `bookmarkStore.test.ts`), bringing total test coverage to 428 passing tests across 51 test suites (100% pass rate).
+- [x] **Milestone 6.4**: Group / Folder Management & Reordering:
+  - Folder Lifecycle Management: Creation, rename (`renameGroup`), update, and dual-mode deletion (Mode A safe reassignment to Uncategorized `groupId: null`; Mode B cascade deletion) with automated selected filter reset.
+  - Folder Reordering: Deterministic, transaction-safe group reordering through `BookmarkGroupRepository.reorder` validating duplicate, missing, and cross-workspace IDs with zero mutation of unrelated workspaces.
+  - Bookmark Movement Engine: Atomic movement between folders (`moveBookmark`) and bulk movement (`moveBookmarks` / `BookmarkRepository.moveBulk`) with sequential target order appending, metadata preservation, `updatedAt` tracking, same-folder no-op handling, and cross-workspace verification.
+  - Folder-Scoped Reordering: Transaction-safe bookmark ordering inside specific folders and Uncategorized (`BookmarkRepository.reorder`), strictly isolating group membership from ordering.
+  - Store Integration: Workspace isolation guardrails in `bookmarkStore.ts` rejecting foreign workspace ID injection in `createBookmark` and `createGroup`.
+  - Comprehensive unit test suite expanded with 22 new tests across repository and store test suites, elevating total test coverage to 450 passing tests across 51 test suites (100% pass rate).
+- [x] **Milestone 6.5**: Smart Bookmarks Manager View & CRUD Modals:
+  - Accessible, responsive full modal container (`BookmarkManagerModal.tsx`) with integrated real-time search bar, two-column layout, and Escape key dismissal hierarchy.
+  - Interactive navigation sidebar (`FolderSidebar.tsx`) with system views (*All Bookmarks*, *Favorites*, *Uncategorized*) with dynamic count badges, user folder listing with color dots, folder reorder buttons, inline actions (rename, delete), and Add Folder control.
+  - Rich bookmark list view (`BookmarkList.tsx`) with toolbar, active breadcrumbs, result count, sort selector (`Manual`, `Title`, `Created Date`, `Last Updated`) with ascending/descending toggle, search filter pill, shimmer loading skeleton, and distinct empty states.
+  - Bookmark item card (`BookmarkItem.tsx`) with safe favicon fallback to Lucide Globe, star toggle, domain extraction, notes preview, accessible reorder buttons, drag handle, and item action controls (open in new tab via safe `window.open`, edit, move, delete).
+  - Complete suite of modal dialogs (`BookmarkDialogs.tsx`): `BookmarkFormModal` (Add/Edit bookmark with offline URL validation), `FolderFormModal` (Create/Rename folder with preset color picker), `DeleteFolderModal` (safe reassignment vs cascade options), and `MoveBookmarkModal` (folder selector).
+  - Seamless New Tab Dashboard integration (`TopNav.tsx`, `AppShell.tsx`, `entrypoints/newtab/App.tsx`) with dedicated Bookmarks button and clean open/close state.
+  - Comprehensive unit test coverage expanded with 40 new UI and integration tests across 4 test suites (`bookmarkDialogs.test.tsx`, `bookmarkFolderSidebar.test.tsx`, `bookmarkList.test.tsx`, `bookmarkManager.test.tsx`), elevating total test coverage to 490 passing tests across 55 test suites (100% pass rate).
+- [x] **Milestone 6.6**: Smart Bookmarks Widget & Dashboard Integration:
+  - Registered `SmartBookmarksWidget` into `widgetRegistry` (type: `smart-bookmarks`, category: `productivity`, default dimensions `4x3`, min dimensions `3x2`).
+  - Compact, responsive shortcut grid widget (`SmartBookmarksWidget.tsx`) with Google S2 favicons, automatic fallback to Lucide `Globe`, domain subtitles, star favorite markers, and safe external navigation (`window.open` with `noopener,noreferrer`).
+  - Source filtering: All Bookmarks, Favorites only, Uncategorized only, or specific custom folder with graceful recovery if a configured folder is deleted.
+  - In-widget configuration settings (`SmartBookmarksWidgetSettings`) allowing dynamic switching of source folder, max bookmark count (4, 6, 8, 12, 16), domain visibility, and compact density.
+  - Seamless Bookmark Manager integration: header button, empty state CTA, and custom event bridge (`EVENT_OPEN_BOOKMARK_MANAGER` / `openBookmarkManager`) opening the manager without modal duplication.
+  - Cross-tab live synchronization listening to `STORAGE_KEY_BOOKMARKS_LAST_UPDATED_AT` and strict workspace isolation.
+  - Unit test suite expanded with 18 new tests (`SmartBookmarksWidget.test.tsx` and `initialWidgets.test.tsx`), elevating total test coverage to 508 passing tests across 56 test suites (100% pass rate).
+- [x] **Milestone 6.7**: Netscape HTML & JSON Import/Export Engine:
+  - Standards-compliant Netscape Bookmark HTML exporter (`bookmarkHtmlExportService.ts`) and resilient parser (`bookmarkHtmlParser.ts`, `bookmarkHtmlImportService.ts`) supporting folder hierarchies, favicons, tags, descriptions, dates, unclosed tag auto-repair, and strict URL scheme allowlisting (`https:`, `http:`, `mailto:`).
+  - Complete NookSpace JSON backup format (V1) exporter (`bookmarkJsonExportService.ts`) and parser (`bookmarkJsonImportService.ts`) backed by strict Zod schema validation (`NookSpaceBookmarkBackupV1Schema`).
+  - Import Coordinator (`bookmarkImportCoordinator.ts`) with automatic file format detection, preflight preview statistics (valid, unsafe, duplicates), duplicate resolution policies (`skip`, `import`, `update`), and flexible import modes (Merge vs Replace).
+  - Atomic Dexie multi-table transaction (`executeImportTransaction`) guaranteeing all-or-nothing execution with automatic rollback on error, unique UUID remapping, and multi-tab live sync via `nookspace_bookmarks_last_updated_at`.
+  - Accessible, polished UI Dialog (`BookmarkImportExportDialog.tsx`) integrated into `BookmarkManagerModal.tsx` with dedicated Export and Import tabs, preflight summary grid, duplicate policy selectors, destructive replace confirmation guardrails, and import execution progress/summary.
+  - Comprehensive unit test suite expanded with 41 new tests across 6 test suites (`bookmarkHtmlExportService.test.ts`, `bookmarkHtmlImportService.test.ts`, `bookmarkJsonExportService.test.ts`, `bookmarkJsonImportService.test.ts`, `bookmarkImportCoordinator.test.ts`, `bookmarkImportExportDialog.test.tsx`), elevating total test coverage to 549 passing tests across 62 test suites (100% pass rate).
+- [x] **Milestone 6.8**: Suite Integration, Performance Audit & Final Review:
+  - Comprehensive source code audit covering all Phase 6 subsystems (M6.1 through M6.7) verifying Zod runtime schema constraints, URL scheme allowlisting, Dexie Version 3 schema indexing, atomic multi-table transaction boundaries, Zustand UI state hydration, and multi-instance widget isolation.
+  - End-to-end integration test suite (`tests/unit/bookmarks/bookmarkSuiteIntegration.test.tsx`) covering 10 distinct real-world scenarios: Create & Display, Search & Filtering, Bookmark Movement & Dual-Mode Folder Deletion, Strict Workspace Isolation, Cross-Tab Storage Synchronization, Netscape HTML Round Trip, JSON Backup/Restore Round Trip, Duplicate Handling Policies (`skip`, `import`, `update`), Simulated Mid-Transaction Rollback Recovery (Merge & Replace), and Multi-Instance Widget Fallback.
+  - Performance audit verifying sub-second responsiveness across representative datasets (100, 1,000, and 5,000 bookmarks) with multi-token search < 100ms, filter/sort < 50ms, JSON serialization < 150ms, and complete JSON schema validation < 1,000ms.
+  - Test coverage expanded to 273 bookmark domain tests and 561 total passing tests across 63 test suites (100% pass rate).
+  - Cross-browser production builds verified: Chromium MV3 (920.16 kB) and Firefox MV2 (920.25 kB). All Phase 6 milestones sealed and completed.
 
 ### Phase 7: Notes & Knowledge System
-- [ ] **Quick Notes Widget**:
-  - Autosaving note cards with color tags, search, and pin-to-top.
-- [ ] **Floating Sticky Notes Layer**:
-  - Independent movable and resizable cards on freeform canvas.
-- [ ] **Vocabulary Manager Widget**:
-  - Flashcard-like terminology table with word, reading, meaning, and review status.
-- [ ] **Resource Library Widget**:
-  - Curated links with descriptions and tags.
-- [ ] **Safe Markdown Note Editor**:
-  - AST-sanitized rich text rendering without raw HTML execution.
+- [x] **Milestone 7.0**: Technical Audit & Architecture Planning:
+  - Comprehensive source code audit covering existing `notes` table in Dexie v1, `NoteEntity` type, `QuickNotesWidget` config-based scratchpad, and Smart Bookmarks integration points.
+  - Three-layer product architecture designed: Layer A (Notes & Markdown), Layer B (Collections, Normalized Tags & System Views), Layer C (Knowledge Integrations: Bookmark ↔ Note Linking & Dashboard Widget).
+  - Evaluated Dexie Version 4 schema upgrade with table indexing and zero data loss migration for legacy notes and widget configurations.
+  - Selected AST-based Markdown architecture (`react-markdown` + `remark-gfm`) guaranteeing zero raw HTML execution, zero `dangerouslySetInnerHTML`, and strict URL scheme allowlisting (`isSafeBookmarkUrl`).
+  - Established sequential 8-milestone roadmap (M7.1 to M7.8), technical specification, risk register, and acceptance criteria.
+- [x] **Milestone 7.1**: Domain Models, Zod Schemas & Database Migration (Dexie v4):
+  - Definitive Zod schemas and TypeScript interfaces in `src/types/notes.ts` for `NoteEntity`, `NoteCollectionEntity`, `NoteTagEntity`, and `NoteBookmarkLinkEntity` along with strict input creation/update schemas.
+  - Markdown-stripping plain-text excerpt generator utility (`generateExcerpt`) normalizing up to 300 characters for instant preview without markdown parsing overhead.
+  - Dexie Schema Version 4 upgrade in `src/services/database/db.ts` with compound and multi-entry indexes (`[workspaceId+collectionId]`, `[noteId+bookmarkId]`, `*tags`), table properties (`noteCollections`, `noteTags`, `noteBookmarkLinks`), and safe automated migration backfilling legacy notes.
+  - Comprehensive unit test suites (`noteSchema.test.ts`, `noteCollectionSchema.test.ts`, `noteTagSchema.test.ts`, `noteBookmarkLinkSchema.test.ts`, and `noteVersion4Migration.test.ts`) covering 38 dedicated tests.
+  - Overall test suite reaching 599 passing tests across 68 test files (100% pass rate). Production dual builds verified: Chromium MV3 (922.81 kB) and Firefox MV2 (922.9 kB).
+- [x] **Milestone 7.2**: Notes Repositories & Data Layer:
+  - Implemented type-safe Dexie repositories: `NoteRepository`, `NoteCollectionRepository`, `NoteTagRepository`, and `NoteBookmarkLinkRepository` in `src/features/notes/repositories/`.
+  - Atomic multi-table transactions, workspace isolation guardrails, safe reassignment vs cascade collection deletion, tag rename/delete cascades across notes, and transactional reordering.
+  - Dedicated unit test suites (`noteCollectionRepository.test.ts`, `noteTagRepository.test.ts`, `noteBookmarkLinkRepository.test.ts`, `noteRepository.test.ts`) covering 26 tests (61 tests total in note domain).
+  - Elevated overall test suite to 625 passing tests across 72 test files (100% pass rate). Production dual builds verified: Chromium MV3 (922.81 kB) and Firefox MV2 (922.9 kB).
+- [x] **Milestone 7.3**: Notes State Store, Search Engine & Organization Services:
+  - Centralized Zustand store (`src/features/notes/stores/noteStore.ts`) with request token race-condition protection (`latestRequestId`), reactive filtering, cross-tab live sync via `nookspace_notes_last_updated_at`, and full CRUD/mutation actions for notes, collections, and tags.
+  - In-memory local search engine (`src/features/notes/services/noteSearchService.ts`) with multi-token AND matching across title, excerpt, content, and tags, multi-tier relevance ranking, tag filtering, archive exclusion, and multi-criteria sorting.
+  - Comprehensive unit test suites (`noteSearchService.test.ts` and `noteStore.test.ts`) covering 15 tests (76 tests total in note domain).
+  - Elevated overall test suite to 640 passing tests across 74 test files (100% pass rate). Production dual builds verified: Chromium MV3 (922.81 kB) and Firefox MV2 (922.9 kB).
+- [x] **Milestone 7.4**: Markdown Editor, Sanitization & Note Detail View:
+  - Secure Markdown preview engine (`src/features/notes/components/MarkdownRenderer.tsx`) via pure React AST component mapping, supporting headers (h1-h6), blockquotes, code blocks with syntax badge and copy button, task lists with interactive toggle callback, markdown tables, and strict offline URL allowlisting (`isSafeBookmarkUrl`) preventing arbitrary script execution without `dangerouslySetInnerHTML`.
+  - Comprehensive formatting toolbar (`src/features/notes/components/MarkdownToolbar.tsx`) and note editor (`src/features/notes/components/NoteEditor.tsx`) supporting Split, Edit-only, and Preview-only view modes, keyboard shortcuts (Ctrl+B, Ctrl+I, Tab indent), auto list continuation on Enter (`- `, `* `, `1. `, `- [ ] `), debounced auto-saving, word/character count, and tag/collection/status management.
+  - Connected note detail view (`src/features/notes/components/NoteDetailView.tsx`) with empty state and store mutations.
+  - Dedicated unit test suites (`MarkdownRenderer.test.tsx` and `NoteEditor.test.tsx`) covering 13 tests (89 tests total in note domain).
+  - Elevated overall test suite to 653 passing tests across 76 test files (100% pass rate). Production dual builds verified: Chromium MV3 (931.05 kB) and Firefox MV2 (931.14 kB).
+- [x] **Milestone 7.5**: Collections, Tags & Notes Manager UI:
+  - Accessible, responsive three-panel Notes Manager modal (`src/features/notes/components/NotesManagerModal.tsx`) featuring collapsible Sidebar (`NotesSidebar.tsx`), searchable Note List (`NotesNoteList.tsx`, `NotesNoteListItem.tsx`), and connected Note Detail Editor (`NoteDetailView.tsx`, `NoteEditor.tsx`).
+  - Organization dialogs (`src/features/notes/components/NotesDialogs.tsx`) for Collections (creation, rename, and dual deletion modes: reassign vs cascade) and Tags (creation, rename with cascade, and safe deletion).
+  - Preflight Quick Notes migration engine (`src/services/database/migrations/legacyQuickNotesMigration.ts`) with coordinator concurrency lock (`ensureQuickNotesMigration`) guaranteeing non-destructive, idempotent migration of legacy scratchpad notes.
+  - Top navigation integration in `src/components/layout/TopNav.tsx` and `AppShell.tsx` with dedicated Notes entry point and Escape key modal hierarchy.
+  - Unit and integration test suites (`NotesSidebar.test.tsx`, `NotesNoteList.test.tsx`, `NotesDialogs.test.tsx`, `NotesManagerModal.test.tsx`, `TopNavNotesIntegration.test.tsx`, and `legacyQuickNotesMigration.test.ts`) covering 22 new tests (111 notes and migration tests total).
+  - Elevated overall test suite to 675 passing tests across 82 test files (100% pass rate). Production dual builds verified: Chromium MV3 (1.02 MB) and Firefox MV2 (1.02 MB).
+- [x] **Milestone 7.6**: Bookmark ↔ Note Linking:
+  - Full bidirectional integration between Notes and Smart Bookmarks backed by `NoteBookmarkLinkRepository` and Dexie Version 4 `noteBookmarkLinks` compound index table.
+  - Linked bookmarks preview section (`src/features/notes/components/LinkedBookmarksSection.tsx`) embedded within `NoteEditor.tsx`, showcasing Google S2 favicons, domain subtitles, one-click safe external navigation via `isSafeBookmarkUrl`, and non-destructive unlinking.
+  - Searchable bookmark picker dialog (`src/features/notes/components/LinkBookmarkModal.tsx`) supporting real-time multi-criteria filtering across titles, URLs, and folder groups, with instant link/unlink status toggles.
+  - "Create Note from Bookmark" integration in `BookmarkItem.tsx` and `BookmarkManagerModal.tsx` prefilling note title and URL references, creating the junction link transactionally, and auto-navigating to the newly created note via `nookspace:open-notes-manager` event.
+  - Cascade deletion protection in `BookmarkRepository.delete` and `NoteRepository.delete` ensuring clean junction record clean-up while guaranteeing non-destructive individual link unlinking.
+  - Unit and integration test suite (`tests/unit/notes/noteBookmarkLinkUI.test.tsx`) covering 12 dedicated tests across modals, sections, store actions, shortcuts, and cascade integrity.
+  - Test suite expanded to 687 passing tests across 83 test files (100% pass rate). Production dual builds verified: Chromium MV3 (1.04 MB) and Firefox MV2 (1.04 MB).
+- [x] **Milestone 7.7**: Notes Dashboard Widget & Dashboard Integration:
+  - Implemented modular `NotesWidget` (`src/widgets/NotesWidget.tsx`) registered under `type: 'notes'` in `widgetRegistry`, seamlessly integrating the Notes & Knowledge system directly into the New Tab dashboard.
+  - Multi-mode display engine supporting Recent notes (ordered by `updatedAt` desc), Pinned notes, Favorite notes, and Collection notes (with Uncategorized notes support and collection inheritance during quick-create).
+  - Rich widget configuration interface (`NotesWidgetSettings`) with display mode selector, collection dropdown, maximum displayed notes slider (3, 5, 8, 10), excerpt preview toggle, collection label badge toggle, comfortable vs compact density, and quick-create button toggle.
+  - Quick note creation bridge in widget header allowing one-click note creation with active collection inheritance and auto-navigation to Notes Manager.
+  - One-click navigation opening the requested note directly in Notes Manager via `nookspace:open-notes-manager` custom event and typed `openNotesManager` helper.
+  - Full backward compatibility for existing `quick-notes` instances (renamed in library to `'Quick Scratchpad'` to eliminate duplication) with zero breaking changes or data loss.
+  - Dedicated unit and integration test suite (`tests/unit/widgets/NotesWidget.test.tsx`) covering 23 comprehensive tests (registration, modes, options, interactions, empty/loading/error states, workspace isolation, cross-tab storage sync, and settings modal).
+  - Test suite expanded to 711 passing tests across 84 test files (100% pass rate). Production dual builds verified: Chromium MV3 (1.05 MB) and Firefox MV2 (1.05 MB).
+- [x] **Milestone 7.8**: Suite Integration, Performance Audit & Final Review:
+  - Comprehensive source code audit covering all Phase 7 subsystems (M7.1 through M7.7) verifying Zod runtime schema constraints, Dexie Version 4 schema indexing, atomic multi-table transaction boundaries, Zustand UI state hydration, and multi-instance widget isolation.
+  - End-to-end integration test suite (`tests/unit/notes/noteSuiteIntegration.test.tsx`) covering 10 distinct real-world scenarios: Complete Note Lifecycle, Collection Lifecycle & Cascade Integrity, Tag Lifecycle & Dynamic Propagation, Bookmark ↔ Note Bidirectional Integration, Legacy Quick Notes Migration, Dashboard Notes Widget Integration, Strict Workspace Isolation, Cross-Tab Storage Synchronization, Failure Handling & Defensive Validation Recovery, and Performance Benchmark Metrics.
+  - Performance audit verifying sub-second responsiveness across representative datasets (100, 1,000, and 5,000 notes) with multi-token search < 300ms, filter/sort < 150ms, multi-token AND search on 5,000 items < 1,000ms, and plain-text excerpt generation on 5,000 items < 1,500ms.
+  - Total test suite expanded to 721 passing tests across 85 test files (100% pass rate).
+  - Cross-browser production builds verified: Chromium MV3 (1.05 MB) and Firefox MV2 (1.05 MB). All Phase 7 milestones sealed and completed.
 
-### Phase 8: Multiple Workspaces & Presets
-- [ ] Workspace state management (Create, Rename, Delete, Switch, Duplicate).
-- [ ] Workspace-specific widget collections and layout mappings.
-- [ ] Pre-packaged starter presets:
-  - "Minimalist" (Clock + Todo + Shortcuts)
-  - "Deep Study" (Pomodoro + Study Tracker + Vocabulary + Notes)
-  - "Developer" (GitHub Shortcuts + Resource Library + Todos + Sticky Notes)
-  - "Full Studio" (Complete suite)
+### Phase 8: Multiple Workspaces & Presets (COMPLETED)
+- [x] **Milestone 8.0**: Technical Audit & Architecture Planning:
+  - Comprehensive source code audit covering existing `WorkspaceEntity`, `WorkspaceRepository`, `useWorkspaceStore`, Dexie Version 4 schema, and multi-workspace indexing across all domain tables.
+  - Confirmed zero schema migration requirement for built-in presets and core multi-workspace management.
+  - Proposed 4 starter presets (Minimalist, Deep Study, Developer, Full Studio) mapped directly against 12 registered widgets.
+  - Evaluated preset application modes (Mode A: New Workspace, Mode B: Replace Dashboard) with live content preservation.
+- [x] **Milestone 8.1**: Workspace Domain & Data Architecture:
+  - Formalized reusable Zod domain schemas and TypeScript types in `src/types/workspaces.ts`: `WorkspaceSchema`, `CreateWorkspaceInputSchema`, `UpdateWorkspaceInputSchema`, `WorkspaceColorSchema`.
+  - Re-exported `WorkspaceEntity` in `src/types/database.ts` ensuring clean circular-free backward compatibility.
+  - Enhanced `WorkspaceRepository` (`src/services/database/repositories/workspaceRepository.ts`):
+    - `update(id, updates)`: strict schema validation, existence check, immutable field protection (`id`, `createdAt`, `isDefault`), and `updatedAt` tracking.
+    - `reorder(orderedIds)`: transactional reordering requiring complete permutation of all workspace IDs, duplicate prevention, and atomic Dexie commit.
+    - `delete(id)`: safe cascade deletion spanning all 15 workspace-scoped tables (`widgetInstances`, `widgetLayouts`, `notes`, `noteCollections`, `noteTags`, `noteBookmarkLinks`, `bookmarks`, `bookmarkGroups`, `todos`, `focusSessions`, `dailyGoals`, `calendarEvents`, `stickyNotes`, `vocabulary`, `resources`) within a single atomic Dexie transaction with complete rollback on failure, default workspace auto-reassignment, and settings fallback.
+    - `duplicate(id)`: atomic duplication of dashboard structure ONLY (metadata with truncated name, fresh widget instances with deep-copied configs, and remapped widget layouts across all 5 breakpoints) while strictly preserving isolation and leaving live content uncopied.
+  - Enhanced `useWorkspaceStore` (`src/stores/workspaceStore.ts`): added `updateWorkspace`, `reorderWorkspaces`, and `duplicateWorkspace` actions with dependency injection support and state rollback on repository errors.
+  - Implemented 49 dedicated unit tests across 3 new test suites: `workspaceSchema.test.ts` (20 tests), `workspaceRepository.test.ts` (19 tests), and `workspaceStore.test.ts` (10 tests).
+  - Elevated overall test suite to **770 passing tests across 88 test files (100% pass rate)**.
+  - Multi-target production builds verified: Chromium MV3 (1.06 MB) and Firefox MV2 (1.06 MB).
+- [x] **Milestone 8.2**: Workspace Switcher & Management UI:
+  - Curated, type-safe Lucide icon selector (`WorkspaceIconPicker.tsx`) offering 18 accessible workspace icons (`LayoutGrid`, `Home`, `Briefcase`, `GraduationCap`, `BookOpen`, `Code`, `Laptop`, `Terminal`, `Coffee`, `Palette`, `Lightbulb`, `Folder`, `Rocket`, `Target`, `Sparkles`, `Globe`, `Gamepad2`, `Calendar`) with `getWorkspaceIcon` fallback resolver.
+  - Curated 10-swatch workspace color picker (`WorkspaceColorPicker.tsx`) with high-contrast accessibility badges, checkmark selection indicators, and default clear action.
+  - Cascade deletion confirmation dialog (`WorkspaceDeleteDialog.tsx`) with detailed itemized impact warnings (widgets, layouts, notes, collections, tags, bookmark links, bookmarks, folders, todos, goals, focus sessions), sole-workspace deletion prevention (`count <= 1`), and active workspace fallback notification.
+  - Safe workspace duplication confirmation dialog (`WorkspaceDuplicateDialog.tsx`) detailing dashboard layout & widget duplication while guaranteeing live user content (notes, bookmarks, tasks) remains uncopied and isolated.
+  - Dual-mode workspace form modal (`WorkspaceFormModal.tsx`) for Create and Edit workflows with strict input validation (1–50 characters, trimmed, required), live character count, icon picker, and color picker.
+  - Comprehensive Workspace Manager modal (`WorkspaceManagerModal.tsx`) providing an overview of all workspaces ordered by `order`, active and default badges, boundary-safe up/down reordering controls, edit modal triggers, duplicate dialog triggers, delete dialog triggers, and integrated child dialog state management.
+  - Polished Workspace Switcher trigger and dropdown (`WorkspaceSwitcher.tsx`) integrated directly into `TopNav.tsx` displaying the active workspace's icon, color, and name, with active item checkmarks, single-click workspace switching, `customizationStore.requestWorkspaceSwitch` dirty-state protection, and shortcuts to Create and Manage workspaces.
+  - Unified barrel export in `src/features/workspaces/index.ts`.
+  - Added 26 dedicated unit tests across 5 new test suites: `workspacePickers.test.tsx` (4 tests), `workspaceDialogs.test.tsx` (4 tests), `workspaceSwitcher.test.tsx` (5 tests), `workspaceFormModal.test.tsx` (5 tests), and `workspaceManagerModal.test.tsx` (8 tests).
+  - Elevated overall test suite to **796 passing tests across 93 test files (100% pass rate)**.
+  - Multi-target production builds verified: Chromium MV3 (1.08 MB) and Firefox MV2 (1.08 MB).
+- [x] **Milestone 8.3**: Multi-Workspace Dashboard Isolation & Dynamic Seeding:
+  - Hardened Widget State Store (`src/stores/widgetStore.ts`) with `activeWorkspaceId` tracking, generational `latestRequestId` counter, immediate state isolation on workspace transitions eliminating stale widget flash, and dependency injection support via `createWidgetStore`.
+  - Hardened Layout State Store (`src/stores/layoutStore.ts`) with `activeWorkspaceId` tracking, generational `latestRequestId` counter, immediate layout clearing on workspace transitions, snapshot-based debounced save with strict workspace ownership validation, and automatic pending timer clearance on workspace switch.
+  - Added strict runtime workspace validation in `WidgetInstanceRepository` (`updateConfig`, `toggleEnabled`, `delete`) and `LayoutRepository` (`saveLayouts`) preventing cross-workspace mutation vulnerabilities with descriptive `Security Violation` exceptions.
+  - Enhanced Study Tracker store (`src/features/study-tracker/studyTrackerStore.ts`) with generational request ID guard eliminating stale query race conditions.
+  - Normalized `App.tsx` layout loading effect: removed restrictive `instances.length > 0` guard so empty workspaces and workspaces whose widgets were removed cleanly evaluate 0 layouts and render the pristine `EmptyState`.
+  - Audited and verified first-installation seed behavior and dynamic blank workspace creation: newly created workspaces start completely empty (0 widgets, 0 layouts), initialize without hardcoded workspace IDs, and allow adding and persisting widgets from scratch.
+  - Implemented 36 comprehensive integration tests across 6 dedicated test suites in `tests/integration/workspaces/` (`workspaceDashboardIsolation.test.ts`, `workspaceLayoutIsolation.test.ts`, `workspaceDynamicSeeding.test.ts`, `workspaceSwitchRaceConditions.test.ts`, `workspaceDomainIsolation.test.ts`, `workspaceCrossTabIsolation.test.ts`).
+  - Elevated overall test suite to **832 passing tests across 99 test files (100% pass rate)**.
+  - Multi-target production builds verified: Chromium MV3 (1.08 MB) and Firefox MV2 (1.08 MB).
+- [x] **Milestone 8.4**: Built-in Workspace Presets (Minimalist, Deep Study, Developer, Full Studio):
+  - Formulated type definitions and Zod validation schemas (`PresetBreakpointLayoutSchema`, `PresetWidgetDefinitionSchema`, `WorkspacePresetSchema`) with bounds enforcement, column limit checks, registered icon checks, and geometric overlap detection across all 5 breakpoints.
+  - Implemented 4 static, type-safe, built-in Workspace Presets (`minimalist`, `deep-study`, `developer`, `full-studio`) mapped to registered widgets with clean default configurations and zero personal user data.
+  - Implemented in-memory Preset Registry (`presetRegistry.ts`) with deep freeze immutability, ID lookups, category filtering, and schema validation.
+  - Added 34 unit tests across 4 test suites verifying 100% schema compliance, layout validity, zero collisions, and registry integrity.
+- [x] **Milestone 8.5**: Preset Application Engine & Workspace Creation Flow:
+  - Implemented `PresetApplicationService` (`createWorkspaceFromPreset`) with atomic Dexie transaction `[workspaces, widgetInstances, widgetLayouts]` and 100% rollback guarantee.
+  - Implemented fresh ID generation (`ws-...`, `wi-...`) and deep-cloning of configurations for complete runtime mutability.
+  - Converted preset layouts across all 5 responsive breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`) with repository validation and zero geometric overlaps.
+  - Integrated `createWorkspaceFromPreset` into `useWorkspaceStore` with active workspace transitions and settings synchronization.
+  - Enhanced `WorkspaceFormModal.tsx` with dual creation modes (Starter Presets vs Blank Workspace), preset cards, preview metadata, and pre-filled customizable inputs.
+  - Verified zero user domain data duplication, 100% source data isolation, and independent multiple instances.
+- [x] **Milestone 8.6**: Cross-Feature Synchronization & Multi-Tab Isolation:
+  - Canonical storage sync key `STORAGE_KEY_ACTIVE_WORKSPACE_ID` (`nookspace_active_workspace_id`) across tabs.
+  - Centralized `WorkspaceSyncService` and `useWorkspaceSync` hook listening to `browser.storage.onChanged` / `chrome.storage.onChanged` and window storage events with loopback protection via internal `syncExternalActiveWorkspace`.
+  - Workspace existence validation with safe fallback resolution to default workspace if deleted in another tab.
+  - Customization Studio protection: safely discards uncommitted drafts via `forceDiscardAndSwitchWorkspace` on external workspace switch, eliminating workspace data leakage.
+  - Layout debounce protection: cancels pending debounced layout saves from previous workspace via `clearPendingDebounce`.
+  - Pomodoro session ownership: wired `workspaceId` into `startTimer` and background `PomodoroCoordinator`, ensuring focus sessions retain original workspace attribution regardless of cross-tab switches.
+  - Validated multi-tab synchronization and attribution across 14 new unit and integration tests (904 total passing tests).
+- [x] **Milestone 8.7**: Workspace & Preset UI Polish, Theme Support, Accessibility & Phase 8 Final Review:
+  - Workspace Switcher UI polish: visual hierarchy, high-contrast badges, responsive truncation (`max-w-[120px] sm:max-w-[150px] md:max-w-[180px]`), `role="menu"`, `role="menuitemradio"`, checked markers, and keyboard navigation (`ArrowDown`, `ArrowUp`, `Home`, `End`).
+  - Workspace Manager UI polish: distinct active (`aria-current="true"`) and default (`Default`) badges, accessible reordering buttons with positional labels (`Move ... up`/`down`), delete protection against last remaining workspace, itemized scoped data loss warning dialog, and transparent duplicate dialog.
+  - Preset selection and creation flow polish: tactile cards with radio accessibility (`role="radio"`), pre-populated editable defaults, toggle between Starter Presets and Blank Workspace, explicit input validation association (`aria-invalid="true"` and `role="alert"`), and keyboard support.
+  - Light / Dark / System theme consistency: comprehensive token alignment (`bg-surface-elevated`, `border-surface-border`, `text-content-primary`, `text-content-secondary`), high-contrast focus rings (`focus-visible:ring-2 focus-visible:ring-primary-500`).
+  - Accessibility & keyboard navigation: lightweight Tab / Shift+Tab focus trap in `Modal.tsx`, previous active element focus restoration, Escape key dismissal, `motion-reduce:animate-none` compliance, arrow navigation across icons in `WorkspaceIconPicker.tsx` and colors in `WorkspaceColorPicker.tsx`.
+  - Verified 18 dedicated accessibility and UI polish tests in `workspaceUIPolishAccessibility.test.tsx`.
+  - Elevated overall test suite to **922 passing tests across 112 test files (100% pass rate)**.
+  - Multi-target production builds verified: Chromium MV3 (1.11 MB) and Firefox MV2 (1.11 MB).
+  - Phase 8 Multiple Workspaces & Presets successfully completed and sealed.
 
-### Phase 9: Data Integrity, Migrations & Testing
-- [ ] Full Dexie schema migration tests.
-- [ ] Comprehensive JSON Export and Import engine with Zod schema verification.
-- [ ] Destruction-safe auto-backup prior to imports.
-- [ ] Comprehensive unit and integration test coverage across all features.
+### Phase 9: Data Integrity, Migrations & Testing (Completed)
+- [x] **Milestone 9.0**: Data Integrity Audit & Backup/Import Architecture:
+  - Complete Dexie table inventory: verified all 18 tables (15 workspace-scoped + workspaces root + settings global + legacy layouts).
+  - Historical schema migration audit: verified v1 -> v2 (widgetLayouts), v2 -> v3 (bookmarks workspaceId index), v3 -> v4 (notes collections, tags, bookmark links), and runtime coordinators (legacy todos and quick notes).
+  - Entity relationship and integrity map: defined foreign key boundaries, compound keys, and cross-workspace isolation constraints.
+  - Universal Backup Format (V1) specification: self-describing versioned JSON envelope (`nookspace-backup`) with metadata, entity arrays, and export statistics.
+  - Backup versioning and migration strategy: decoupled backup format version from Dexie schema version and application version.
+  - Restore semantics: destructive replacement with pre-flight validation, automatic recovery snapshot, atomic Dexie transaction, and fallback active workspace resolution.
+  - Merge semantics: non-destructive coexistence with deep ID remapping (`workspaceId`, `instanceId`, `layoutId`, `collectionId`, `groupId`, `noteId`, `bookmarkId`, `linkId`) eliminating collisions.
+  - Destruction-safe recovery architecture: snapshot-before-mutation pipeline guaranteeing zero data loss on failed or interrupted imports.
+  - Transaction boundaries & performance analysis: expensive JSON parsing and Zod validations isolated outside Dexie transactions; verified sub-2s execution for 10,000 entities without worker overhead.
+  - Established concrete implementation roadmap for Milestones 9.1 through 9.6.
+- [x] **Milestone 9.1**: Universal JSON Export Engine:
+  - Implemented `BackupExportService` (`src/features/backup/services/backupExportService.ts`) providing full export across all 17 active database tables inside a single Dexie readonly transaction (`db.transaction('r', ...)`).
+  - Designed and implemented self-describing, versioned JSON backup envelope V1 (`NookSpaceUniversalBackupV1`, `format: 'nookspace-backup'`, `formatVersion: 1`).
+  - Implemented Web Crypto SHA-256 integrity checksum (`backupIntegrityService.ts`) with deterministic canonical serialization and verification.
+  - Implemented safe JSON serialization (`backupSerializationService.ts`) handling Unicode, markdown, Vietnamese, Japanese, and emoji while strictly detecting BigInt, functions, symbols, NaN, Infinity, and circular references.
+  - Defined Zod schemas for missing tables (`StickyNoteEntity`, `VocabularyEntity`, `ResourceEntity`, `CalendarEventEntity`, `AppSettingsEntity`, `WidgetInstanceEntity`, `WidgetLayoutEntity`) and root envelope in `backupV1Schema.ts`.
+  - Implemented browser-compatible file download utility (`downloadBackup.ts`) with Object URL lifecycle cleanup.
+  - Proven READ-ONLY GUARANTEE: exact before/after database state comparison confirms 0 writes, 0 updates, 0 deletions, and 0 migrations triggered.
+  - Added 43 dedicated unit and integration tests across 6 test suites with 100% pass rate.
+  - Performance benchmarks: Small (104 KB in ~85 ms), Medium (1 MB in ~175 ms), Large 10,000 entities (4.5 MB in ~600 ms).
+  - Elevated overall project test suite to **965 passing tests across 118 test files (100% pass rate)**.
+- [x] **Milestone 9.2**: Backup Validation & Version Upgrade Engine.
+  - Multi-stage untrusted JSON backup validation engine (`validateBackup`) covering size guards (100MB hard limit, 25MB warning), JSON syntax parsing (Blob, File, string, object), format & version detection, metadata envelope verification, and SHA-256 integrity checksum verification.
+  - Strict entity validation across all 17 database tables with bounded error collection (`maxErrors`, `maxWarnings`).
+  - Cross-reference & domain integrity validator (`validateCrossReferencesAndDomainIntegrity`) checking duplicate IDs, orphan entities, workspace containment, cross-workspace foreign key references, and dangerous bookmark/resource URL schemes (`javascript:`, `data:`, `vbscript:`).
+  - Pure in-memory version upgrade registry (`VersionUpgradeRegistry`) and legacy bookmarks adapter (`adaptLegacyBookmarksBackup`) upgrading legacy Phase 6 bookmarks to canonical V1 with deterministic workspace containment and checksum calculation.
+  - Strict Database Safety Quality Gate: Verified 0 Dexie/IndexedDB writes across all 17 tables during validation, corrupt handling, and upgrades.
+  - Performance benchmarks: Small (< 200 ms), Medium (< 350 ms), Large 600+ entities (< 600 ms).
+  - Elevated overall project test suite to **1,015 passing tests across 123 test files (100% pass rate)**.
+- [x] **Milestone 9.3**: Restore Engine & Transactional Recovery:
+  - Implemented transactional database restore engine (`restoreEngineService.ts`) executing complete replacement of all 17 active database tables inside a single Dexie read-write transaction with atomic failure rollback.
+  - Implemented Restore Preflight Checks (`restorePreflightService.ts`) rejecting partial backups (`PARTIAL_BACKUP_RESTORE_NOT_SUPPORTED`), validating compatibility, settings active workspace invariants, and preflight statistics.
+  - Implemented isolated Persistent Recovery Database (`NookSpaceRecoveryDB` in `recoveryDatabase.ts`) with tables for verified pre-restore snapshots, stateful journal records, and cross-tab restore concurrency locks with auto-expiring leases.
+  - Implemented Idempotent Rollback Service (`rollbackService.ts`) restoring previous state from persistent snapshot when transactions or post-verification fail, transitioning to `recovery_required` if rollback fails without destroying the snapshot.
+  - Implemented Post-Restore Verification (`restorePostVerification.ts`) verifying table counts, default workspace presence, settings active workspace containment, widget instance/layout integrity, and bookmark URL safety.
+  - Implemented Application Startup Recovery Coordinator (`startupRecoveryCoordinator.ts`) cleaning up abandoned operations, auto-rolling back interrupted operations from snapshot, or blocking with `recovery_required`.
+  - Implemented Runtime Store Sync (`restoreRuntimeSync.ts`) clearing and re-hydrating Zustand stores (`useWorkspaceStore`, `useWidgetStore`, `useLayoutStore`) and dispatching cross-tab notification events.
+  - Implemented accessible Restore UI modal (`RestoreModal.tsx`) with file upload, preflight metadata preview, explicit confirmation checkbox, progress stages, and destructive warning.
+  - Added 35 dedicated unit and integration tests across 7 test suites, with failure injection hooks and performance benchmarks.
+  - Elevated overall project test suite to **1,052 passing tests across 130 test files (100% pass rate)**.
+- [x] **Milestone 9.4**: Merge Import & Non-Destructive Conflict Resolution:
+  - Implemented selective, non-destructive Merge Import Engine (`mergeEngineService.ts`) adding records from Universal JSON Backups into existing or newly created workspaces without clearing tables or deleting existing data.
+  - Implemented Merge Planner & Read-Only Preview Service (`mergePlannerService.ts`) providing accurate pre-import summaries, item counts, duplicate detection, and conflict formulation with 0 database writes.
+  - Implemented Deterministic Fingerprinting Service (`mergeFingerprintService.ts`) generating normalized, lowercase, content-based fingerprints for all 17 database entity tables to accurately identify duplicate records.
+  - Implemented Deep Entity ID Remapping Engine (`mergeIdRemappingService.ts`) re-keying colliding IDs and deep-updating foreign keys across all dependencies (`workspaceId`, `collectionId`, `groupId`, `noteId`, `bookmarkId`, and layout compound keys).
+  - Implemented Dependency Analysis Service (`mergeDependencyService.ts`) ensuring referenced workspaces, collections, and groups are validated and mapped before transaction.
+  - Implemented Single Atomic Read-Write Transaction guaranteeing all-or-nothing merge with automatic abort and zero partial writes on failure.
+  - Implemented Stale Plan Protection using deterministic state tokens to reject merge execution if database contents change after preview generation.
+  - Implemented Cross-Tab Coordination via exclusive backup operation locks with heartbeat lease renewal.
+  - Implemented Accessible Merge Import Modal UI (`MergeImportModal.tsx`) with file upload, scope checkboxes, target workspace picker, conflict resolution actions, progress spinner, and post-merge summary.
+  - Added 42 new dedicated tests (unit, integration, failure injection, performance benchmarks) across 8 test suites.
+  - Performance benchmarks: Small 100 entities (~25 ms apply), Medium 1,000 entities (~100 ms apply), Large Scale 10,000 entities (~910 ms apply).
+  - Elevated overall project test suite to **1,094 passing tests across 138 test files (100% pass rate)**.
+- [x] **Milestone 9.5**: Data Migration Engine & Legacy Data Recovery:
+  - Implemented robust, modular Migration Engine Core (`src/features/migrations/`) supporting topological dependency resolution, cycle detection, and idempotent execution.
+  - Implemented Migration Registry (`migrationRegistry.ts`) ensuring unique migration IDs, strict dependency ordering, and cycle detection.
+  - Implemented Persistent Migration Journal (`migrationJournalService.ts`) on `NookSpaceRecoveryDB` table `migrationJournal` tracking `pending`, `running`, `completed`, `failed`, `recovery_required` states with start/end timestamps, duration, and processed/modified record counts.
+  - Implemented Four Migration Strategies:
+    - Schema Migration: Dexie versioned upgrades (`v1-v2-widget-layouts`, `v2-v3-bookmark-workspace`, `v3-v4-notes-knowledge`).
+    - Entity Migration: In-place field transformations (`legacy-todos`, `legacy-quick-notes`).
+    - Relationship Migration: Foreign-key and junction repair (`repair-dangling-relationships`).
+    - Data Normalization: Structural theme metadata normalization (`normalize-workspace-metadata`) strictly preserving user-authored prose, markdown, code blocks, and custom vocabulary.
+  - Implemented Read-Only Legacy Data Scanner (`legacyDataScanner.ts`) categorizing issues into `Compatible`, `Migratable`, `Recoverable`, `Unsupported`, and `Corrupted` across widget configs, deprecated layouts, orphan records, and missing fields with zero side effects.
+  - Implemented Non-Destructive Legacy Data Repair Service (`legacyDataRepairService.ts`) safely resetting orphan foreign keys to null, pruning stale layouts, and populating valid defaults without deleting user notes, bookmarks, or todos.
+  - Implemented Cross-Tab Coordination integrating with `recoveryDb.acquireLock` and heartbeat lease renewals during long-running batch operations.
+  - Implemented Migration Diagnostics Modal UI (`MigrationDiagnosticsModal.tsx`) with real-time scan triggers, issue itemization, severity badges, repair actions, and persistent journal history.
+  - Added 34 new unit and integration tests across 8 test suites (registry, scanner, repair, engine, modal UI, historical schema upgrades v1->v4, failure injection, scale benchmarks).
+  - Scale benchmarks: 100 entities (~5 ms scan, ~28 ms repair), 1,000 entities (~8 ms scan, ~84 ms repair), 10,000 entities (~38 ms scan, ~209 ms repair).
+  - Elevated overall project test suite to **1,128 passing tests across 146 test files (100% pass rate)**.
+- [x] **Milestone 9.6**: Final Integration, Data Integrity Audit & Release Readiness:
+  - Universal Lock Coordination: Verified mutual exclusion across Restore Engine, Merge Import Engine, and Migration Engine on `current_restore_lock` in `NookSpaceRecoveryDB.locks`. Added `releaseStaleLock()` and `checkLock()` with automatic expired lease reclamation and non-owner release prevention.
+  - Startup Recovery Hardening: Enhanced `startupRecoveryCoordinator.ts` to automatically purge expired locks and transition crashed or interrupted migration journal records (`running` -> `failed` with `MIGRATION_INTERRUPTED`).
+  - Stale Plan Detection Upgrade: Upgraded `computePlanToken` and `validatePlanFreshness` in `mergePlannerService.ts` to inspect record counts and boundary timestamps/IDs (`updatedAt`/`createdAt`), eliminating blind spots for in-place content modifications.
+  - Universal 17-Table Round Trip Fidelity: 100% byte and data preservation verified across Seed All 17 Tables -> Export -> Validate -> Restore -> Full Round Trip verification, preserving multilingual Unicode (Vietnamese diacritics, Japanese kanji/hiragana), Markdown tables, code blocks, and junction links.
+  - Cross-Workspace Data Isolation Audit: Verified zero data bleed across multiple workspaces with identical entity names and validated clean cascade deletion of scoped entities.
+  - Exhaustive Failure Injection Suite: Validated all 18 failure vectors (checksum corruption, schema truncation, invalid JSON, snapshot storage failure, transaction rollback, stale plan abort, post-verification abort, and startup recovery).
+  - Added 14 new dedicated integration tests across 4 test suites (`sharedExclusiveLockCoordination.test.ts`, `universalRoundTripDataFidelity.test.ts`, `crossWorkspaceDataIntegrityAudit.test.ts`, `endToEndDataIntegrityFailureInjection.test.ts`).
+  - Elevated overall project test suite to **1,142 passing tests across 150 test files (100% pass rate)**.
+  - Dual production extension packages verified: Chromium MV3 (1.25 MB) and Firefox MV2 (1.25 MB).
+  - Phase 9 Data Integrity, Migrations & Testing officially closed and certified release-ready.
 
-### Phase 10: Cross-Browser Validation & Release
-- [ ] Chromium production build & manual testing in Google Chrome.
-- [ ] Firefox production build & manual testing in Firefox.
-- [ ] Manifest and permission audit (verify minimal permissions).
-- [ ] Store asset preparation (icons, promotional graphics, README documentation).
+### Phase 10: Cross-Browser Validation & Release (Completed & Sealed)
+- [x] **Milestone 10.0**: Cross-Browser Runtime Audit & Release Validation Baseline:
+  - Host environment discovery: verified Google Chrome `156.0.8078.81`, Microsoft Edge `157.0.4341.42`, Zen Browser `1.24b` (Gecko engine); marked Brave and official Firefox as `BLOCKED` (not installed).
+  - Production build verification: confirmed dual production packages (`1.25 MB` each) with 0 TypeScript compilation errors.
+  - Follow-up verifications: verified all pairwise shared lock interactions and robust migration crash recovery with lock release.
+  - Privacy and network audit: 0 telemetry, 0 tracking, 0 unauthorized outbound calls; Google S2 favicon service identified as optional with offline vector fallback.
+  - Baseline test suite: **1,145 passing tests across 150 test suites**.
+- [x] **Milestone 10.1**: Chromium Runtime Validation & Compatibility Fixes:
+  - Chromium API Error Suppression: added safe `ext.runtime?.lastError` checks across all asynchronous extension callbacks (`storage.local`, `alarms`, `notifications`, `tabs`, `runtime`) in `browserApi.ts`.
+  - Startup Hydration Race Condition Guard: guarded `loadWidgets` in `AppShell.tsx` with `!isWorkspaceLoading`, ensuring initial widgets query only after workspace seeding completes.
+  - Cross-Tab Theme Synchronization: added window `storage` event listener in `themeStore.ts` for instant cross-tab theme updates without manual page reload.
+  - Elevated regression test suite to **1,147 passing tests across 150 test suites (100% pass rate)**.
+  - Generated full milestone report in `docs/reports/PHASE_10/M10.1_CHROMIUM_RUNTIME_VALIDATION_REPORT.md`.
+- [x] **Milestone 10.2**: Firefox / Gecko Runtime Validation & Compatibility Fixes:
+  - Gecko WebExtension Dual-Mode Adapter: implemented `callBrowserApi<T>()` in `src/services/browser/index.ts` to natively support both Gecko Promise-returning APIs (`globalThis.browser`) and Chromium callback-based APIs (`globalThis.chrome`) with single-settle idempotency and `lastError` suppression.
+  - Strict Content Security Policy (CSP) Remediation: externalized inline anti-flash script from `entrypoints/newtab/index.html` to `entrypoints/newtab/anti-flash.ts` imported in `main.tsx`, eliminating inline script CSP violations in Firefox extension pages and satisfying Mozilla AMO submission policies.
+  - Runtime Environment Categorization: explicitly distinguished Zen Browser 1.24b (`ZEN_GECKO_RUNTIME`) from missing official Firefox binaries (`FIREFOX_STABLE_RUNTIME` / `FIREFOX_DEVELOPER_RUNTIME` marked `BLOCKED`).
+  - Automated Gecko Test Suite: added `createMockGeckoBrowser()` and 6 new unit tests in `tests/unit/browserApi.test.ts` verifying native Promise handling, storage operations, alarms, notifications, tabs, and error rejection safety.
+  - Elevated project regression test suite to **1,153 passing tests across 150 test suites (100% pass rate)**.
+  - Dual production extension bundles verified at **1.25 MB** (`.output/firefox-mv2` and `.output/chrome-mv3`).
+  - Documented full findings in `docs/reports/PHASE_10/M10.2_GECKO_RUNTIME_VALIDATION_REPORT.md`.
+- [x] **Milestone 10.3**: Cross-Browser Functional Regression & Data Persistence:
+  - 17-Table Data Persistence Verification: verified complete data preservation across simulated browser restarts, tab closures, and extension reloads in all 17 active database tables with zero data corruption and multilingual Unicode fidelity.
+  - Multi-Tab Live State Synchronization: validated reactive multi-tab event propagation across all 7 operational channels (`STORAGE_KEY_ACTIVE_WORKSPACE_ID`, `nookspace_theme_mode`, `STORAGE_KEY_ENVELOPE`, `STORAGE_KEY_TODO_LAST_UPDATED_AT`, `STORAGE_KEY_BOOKMARKS_LAST_UPDATED_AT`, `STORAGE_KEY_NOTES_LAST_UPDATED_AT`, `STORAGE_KEY_LAST_DRAINED_AT`) with loopback cycle protection and stale request token guards.
+  - Workspace Isolation & Cascade Deletion: verified strict isolation across 3 active workspaces and confirmed clean cascade deletion purging scoped entities without touching sibling workspaces.
+  - Protocol Scheme Sanitation: verified strict rejection of dangerous schemes (`javascript:`, `data:`, `vbscript:`, `ftp:`) in `bookmarkSecurity.ts`.
+  - Added dedicated integration test suite `crossBrowserLifecyclePersistence.test.ts` (6 tests).
+  - Elevated regression test suite to **1,159 passing tests across 151 test suites (100% pass rate)**.
+  - Dual production extension bundles verified at **1.25 MB** (`.output/chrome-mv3` and `.output/firefox-mv2`).
+  - Documented full findings in `docs/reports/PHASE_10/M10.3_CROSS_BROWSER_REGRESSION_REPORT.md`.
+- [x] **Milestone 10.4**: Accessibility, Responsive UX & Performance Polish:
+  - Accessibility & WCAG 2.2 AA Conformance Polish:
+    - Added global reduced-motion preference rules (`@media (prefers-reduced-motion: reduce)`) in `src/styles/globals.css`.
+    - Added universal `:focus-visible` ring outline styling (`2px solid hsl(var(--ring))`) in `src/styles/globals.css`.
+    - Enhanced `src/components/ui/Dropdown.tsx` keyboard navigation: skips disabled items on `ArrowDown`/`ArrowUp`, supports `Home`/`End`, and autofocuses first enabled item on open.
+    - Implemented focus trapping (`Tab` and `Shift+Tab` boundary cycling), auto-focus on open, and focus restoration to the trigger element on close across `NotesManagerModal.tsx` and `BookmarkManagerModal.tsx`.
+    - Added explicit `aria-label`s to icon buttons in `NotesManagerModal.tsx` and `BookmarkManagerModal.tsx`.
+  - Responsive Layout & Viewport Optimization:
+    - Added `xs: '480px'` screen breakpoint to `tailwind.config.js` under `theme.extend.screens`, aligning Tailwind CSS utilities with `GridLayoutEngine.tsx`.
+    - Clamped modal dialog height in `src/components/ui/Modal.tsx` to `max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden` with `overflow-y-auto flex-1` on the body.
+    - Wrapped Preferences action buttons (`flex flex-wrap items-center gap-2`) in `entrypoints/newtab/App.tsx`.
+    - Added responsive mobile view switching between folders and bookmark list in `BookmarkManagerModal.tsx` with `className` prop support in `FolderSidebar.tsx`.
+  - Automated Accessibility Test Suite:
+    - Added `tests/unit/accessibility/accessibilityPolish.test.tsx` (8 tests).
+    - Elevated regression test suite to **1,167 passing tests across 152 test suites (100% pass rate)**.
+  - Dual production extension bundles verified at **1.25 MB** (`.output/chrome-mv3` and `.output/firefox-mv2`).
+  - Documented full findings in `docs/reports/PHASE_10/M10.4_ACCESSIBILITY_RESPONSIVE_PERFORMANCE_REPORT.md`.
+- [x] **Milestone 10.5**: Store Metadata, Privacy Documentation & Release Assets:
+  - Brand Identity & Production Icon Generation:
+    - Replaced 70-byte placeholder PNG icons with genuine, anti-aliased 32-bit ARGB production icons across all standard resolutions: 16×16 (295 B), 32×32 (552 B), 48×48 (771 B), 128×128 (3,129 B), and 512×512 (22,161 B).
+    - Verified proper manifest inclusion across both Chromium MV3 and Firefox MV2 generated packages.
+  - Store Promotional Assets & Screenshots (`docs/release/assets/`):
+    - Generated Chrome Web Store small promotional tile (`promo-small-440x280.png`, 440×280 PNG).
+    - Generated Chrome Web Store marquee banner (`promo-marquee-1400x560.png`, 1400×560 PNG).
+    - Prepared 7 authentic 1280×800 PNG feature screenshots covering Main Dashboard, Customization Studio, Productivity Suite, Smart Bookmarks, Notes & Knowledge, Multi-Workspace Management, and Backup/Restore.
+  - Privacy Disclosures & Regulatory Compliance (`docs/release/privacy/`):
+    - Published comprehensive `PRIVACY_POLICY.md` documenting local-first architecture, 17-table local data inventory, zero telemetry, and clear placeholders for developer hosting.
+    - Published `DATA_HANDLING_DISCLOSURE.md` mapping developer portal privacy questionnaires for Chrome Web Store and Mozilla Add-ons.
+    - Published `NETWORK_DISCLOSURE.md` certifying zero backend servers, zero remote code, and disclosing the domain-only Google S2 favicon service with offline vector fallback.
+    - Published `PERMISSION_JUSTIFICATIONS.md` detailing technical necessity for `storage`, `alarms`, and `notifications` under the Principle of Least Privilege.
+    - Published `PRIVACY_REVIEW_CHECKLIST.md` auditing pre-submission technical verifications and developer action items.
+  - Store Listing Copy & Requirements (`docs/release/store/`):
+    - Prepared `CHROME_WEB_STORE_LISTING.md` with character-verified title (44 chars), short description (99 chars), formatted description, and asset mappings.
+    - Prepared `FIREFOX_AMO_LISTING.md` with summary (218 chars), category selections, and dedicated reviewer reproduction instructions.
+    - Prepared `STORE_REQUIREMENTS_CHECKLIST.md` auditing store policies and packaging specifications.
+  - Distribution Packaging & Checksum Verification (`release/` & `PACKAGE_MANIFEST.md`):
+    - Packaged `nookspace-chromium-0.1.0-alpha.51.zip` (353,397 bytes, SHA-256: `32801fc2295571221d68871d38834c3013a53107e767d9c81c3aa3f12198500d`).
+    - Packaged `nookspace-firefox-0.1.0-alpha.51.zip` (353,446 bytes, SHA-256: `9d603a6b2a869c0ea6dc8855501a9c1d3ebec7995fa5fcd86f9f00f891dbc483`).
+    - Packaged `nookspace-firefox-0.1.0-alpha.51-sources.zip` (651,654 bytes, SHA-256: `49ca4b15fd45e9a3baf8d27636421b748dc5f820bbfae4691449323bf47385ef`).
+    - Published `INSTALLATION_GUIDE.md` covering Chromium unpacked loading, Firefox temporary add-on loading, data backup practices, and troubleshooting.
+  - Documented full findings in `docs/reports/PHASE_10/M10.5_STORE_METADATA_PRIVACY_RELEASE_ASSETS_REPORT.md`.
+- [x] **Milestone 10.6**: Final Release Candidate Verification & Freeze:
+  - Source Code & Documentation Reconciliation: Verified git tree @ `a6c33f3c894979fc6316acd9a0c9655087c0194b` baseline; reconciled technical manifest version `0.1.0` with git milestone label `0.1.0-alpha.51` and UI header badge `v0.1.0`.
+  - Comprehensive Automated Quality Gates: 100% clean compilation (`tsc --noEmit`), **152 / 152 test files passed, 1,167 / 1,167 tests passed (100% pass rate)**.
+  - Production Bundle & Packaging Verification: Clean multi-target builds `.output/chrome-mv3` (1.28 MB) and `.output/firefox-mv2` (1.28 MB); packaged distributable zip files in `release/chromium/` and `release/firefox/` with SHA-256 checksums recorded in `PACKAGE_MANIFEST.md`.
+  - Final Security & Privacy Audit: Certified 0 remote scripts, 0 telemetry/analytics, strict CSP `script-src 'self'` with externalized anti-flash script, safe AST-based Markdown rendering (0 `dangerouslySetInnerHTML`), strict URL scheme filtering (`['https:', 'http:', 'mailto:']`), and single-settle Promise handling on all browser API bridges.
+  - Release Candidate Decision: Formally certified `RC_READY_WITH_LIMITATIONS` and marked `RC_FROZEN` locally in `docs/release/RELEASE_CANDIDATE_MANIFEST.md`.
+  - Documented full findings in `docs/reports/PHASE_10/M10.6_FINAL_RELEASE_CANDIDATE_VERIFICATION_REPORT.md`.

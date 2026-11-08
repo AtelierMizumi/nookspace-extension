@@ -5,6 +5,12 @@ import { WorkspaceHeader } from '../../src/components/layout/WorkspaceHeader';
 import { GridLayoutEngine } from '../../src/features/layout-editor/GridLayoutEngine';
 import { CustomizationToolbar } from '../../src/features/layout-editor/CustomizationToolbar';
 import { WidgetLibraryModal } from '../../src/features/widget-system/WidgetLibraryModal';
+import { BookmarkManagerModal } from '../../src/features/bookmarks';
+import {
+  NotesManagerModal,
+  useNoteStore,
+  EVENT_OPEN_NOTES_MANAGER,
+} from '../../src/features/notes';
 import { Button } from '../../src/components/ui/Button';
 import { EmptyState } from '../../src/components/ui/EmptyState';
 import { Modal } from '../../src/components/ui/Modal';
@@ -17,12 +23,36 @@ import { useCustomizationStore } from '../../src/stores/customizationStore';
 import { widgetRegistry } from '../../src/features/widget-system/WidgetRegistry';
 import { synchronizeLayout } from '../../src/features/layout-editor/layoutUtils';
 import { Breakpoint, WidgetLayoutEntity, WidgetInstanceEntity } from '../../src/types/database';
+import { useWorkspaceSync } from '../../src/features/workspaces';
+import {
+  RestoreModal,
+  MergeImportModal,
+  checkAndHandleStartupRecovery,
+  backupExportService,
+  downloadBackupFile,
+} from '../../src/features/backup';
+import { MigrationDiagnosticsModal } from '../../src/features/migrations';
+import { db } from '../../src/services/database/db';
 // Ensure all initial widgets are registered
 import '../../src/widgets';
 
 export const App: React.FC = () => {
+  useWorkspaceSync();
+
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
+  const [isBookmarkManagerOpen, setIsBookmarkManagerOpen] = useState<boolean>(false);
+  const [isNotesManagerOpen, setIsNotesManagerOpen] = useState<boolean>(false);
+  const [isRestoreOpen, setIsRestoreOpen] = useState<boolean>(false);
+  const [isMergeOpen, setIsMergeOpen] = useState<boolean>(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState<boolean>(false);
+
+  // Check for interrupted restore operations and handle startup recovery
+  useEffect(() => {
+    checkAndHandleStartupRecovery(db).catch((err) => {
+      console.warn('[App] Startup recovery check failed:', err);
+    });
+  }, []);
 
   const { activeWorkspaceId, getActiveWorkspace } = useWorkspaceStore();
   const { instances, addWidget, removeWidget, toggleWidget, updateConfig } = useWidgetStore();
@@ -48,10 +78,46 @@ export const App: React.FC = () => {
 
   // Load layout whenever active workspace or instances change
   useEffect(() => {
-    if (activeWorkspaceId && instances.length > 0 && !isEditMode) {
+    if (activeWorkspaceId && !isEditMode) {
       loadLayouts(activeWorkspaceId, currentBreakpoint);
     }
   }, [activeWorkspaceId, instances.length, currentBreakpoint, loadLayouts, isEditMode]);
+
+  // Listen for open bookmark manager custom events triggered by widgets
+  useEffect(() => {
+    const handleOpenManager = () => {
+      setIsBookmarkManagerOpen(true);
+    };
+    window.addEventListener('nookspace:open-bookmark-manager', handleOpenManager);
+    return () => {
+      window.removeEventListener('nookspace:open-bookmark-manager', handleOpenManager);
+    };
+  }, []);
+
+  // Listen for open notes manager custom events
+  useEffect(() => {
+    const handleOpenNotes = (e: Event) => {
+      setIsNotesManagerOpen(true);
+      const customEvt = e as CustomEvent<{ noteId?: string; collectionId?: string | null }>;
+      if (customEvt.detail?.noteId) {
+        useNoteStore.getState().selectNote(customEvt.detail.noteId);
+      }
+      if (customEvt.detail?.collectionId !== undefined) {
+        if (customEvt.detail.collectionId === null) {
+          useNoteStore.getState().setViewFilter({ type: 'uncategorized' });
+        } else {
+          useNoteStore.getState().setViewFilter({
+            type: 'collection',
+            collectionId: customEvt.detail.collectionId,
+          });
+        }
+      }
+    };
+    window.addEventListener(EVENT_OPEN_NOTES_MANAGER, handleOpenNotes);
+    return () => {
+      window.removeEventListener(EVENT_OPEN_NOTES_MANAGER, handleOpenNotes);
+    };
+  }, []);
 
   const handleAddWidget = async (type: string) => {
     if (isEditMode) {
@@ -127,6 +193,8 @@ export const App: React.FC = () => {
       isEditMode={isEditMode}
       onToggleEditMode={handleToggleEditMode}
       onOpenSettings={() => setIsSettingsOpen(true)}
+      onOpenBookmarkManager={() => setIsBookmarkManagerOpen(true)}
+      onOpenNotesManager={() => setIsNotesManagerOpen(true)}
     >
       {/* Workspace Header (Time & Dynamic Greeting) */}
       <WorkspaceHeader userName="Architect" />
@@ -201,6 +269,20 @@ export const App: React.FC = () => {
         onRemoveWidget={handleRemoveWidget}
       />
 
+      {/* Smart Bookmarks Manager Modal */}
+      <BookmarkManagerModal
+        isOpen={isBookmarkManagerOpen}
+        onClose={() => setIsBookmarkManagerOpen(false)}
+        workspaceId={activeWorkspaceId}
+      />
+
+      {/* Notes & Knowledge Manager Modal */}
+      <NotesManagerModal
+        isOpen={isNotesManagerOpen}
+        onClose={() => setIsNotesManagerOpen(false)}
+        workspaceId={activeWorkspaceId}
+      />
+
       {/* Preferences Dialog */}
       <Modal
         isOpen={isSettingsOpen}
@@ -229,8 +311,77 @@ export const App: React.FC = () => {
               label="Local IndexedDB caching enabled"
             />
           </div>
+          <div className="pt-3 border-t border-border/40 space-y-2">
+            <span className="font-semibold text-foreground block">Data Integrity & Backup</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const result = await backupExportService.createFullBackup();
+                    if (result.backup) {
+                      downloadBackupFile(result);
+                    }
+                  } catch (err) {
+                    console.error('[App] Backup export failed:', err);
+                  }
+                }}
+              >
+                Export Backup
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsSettingsOpen(false);
+                  setIsMergeOpen(true);
+                }}
+              >
+                Merge Import
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsSettingsOpen(false);
+                  setIsRestoreOpen(true);
+                }}
+              >
+                Restore Backup
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsSettingsOpen(false);
+                  setIsDiagnosticsOpen(true);
+                }}
+              >
+                Diagnostics
+              </Button>
+            </div>
+          </div>
         </div>
       </Modal>
+
+      {/* Universal Restore Modal */}
+      <RestoreModal
+        isOpen={isRestoreOpen}
+        onClose={() => setIsRestoreOpen(false)}
+      />
+
+      {/* Universal Merge Import Modal */}
+      <MergeImportModal
+        isOpen={isMergeOpen}
+        onClose={() => setIsMergeOpen(false)}
+      />
+
+      {/* Database & Migration Diagnostics Modal */}
+      <MigrationDiagnosticsModal
+        isOpen={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+      />
     </AppShell>
   );
 };
