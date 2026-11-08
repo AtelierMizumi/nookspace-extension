@@ -27,9 +27,11 @@
   - Custom bookmark groups, website shortcuts with domain monograms/favicons, instant fuzzy search, HTML import/export, and JSON backup.
 - 📝 **Notes & Knowledge**:
   - Quick notes with color tags, freeform floating sticky notes, vocabulary flashcard manager, curated resource library, and safe Markdown rendering.
-- 🎨 **Customization Studio**:
+- 🎨 **Customization Studio & Wallpaper Engine**:
   - Visual drag-and-drop 12-column grid editor across 5 breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`).
-  - Dynamic themes (Light, Dark, Custom accents), widget opacity/blur sliders, and custom wallpaper support.
+  - Dynamic themes (Light, Dark, Custom accents) and widget opacity/blur sliders.
+  - **Custom Background Wallpapers**: Local image uploads (JPG, PNG, WebP up to 10MB stored in IndexedDB) and remote HTTPS image URLs.
+  - 4 Wallpaper Display Modes (`Cover`, `Contain`, `Stretch`, `Center`) with Dark Overlay intensity controls (`0%`, `25%`, `50%`, `75%`) for optimal text readability.
 - 🗂️ **Multi-Workspace Engine**:
   - Switch seamlessly between dedicated workspaces (e.g., *Study*, *Development*, *Personal*) with independent layouts and configurations.
 - 🔒 **Local-First & Privacy-Focused**:
@@ -48,7 +50,7 @@
 - **Local Database**: IndexedDB wrapped with Dexie.js
 - **Grid Layout Engine**: `react-grid-layout`
 - **Validation**: Zod
-- **Testing**: Vitest + React Testing Library (163 test files, 1,250+ unit & integration tests)
+- **Testing**: Vitest + React Testing Library (165 test files, 1,263+ unit & integration tests)
 
 ---
 
@@ -143,6 +145,7 @@ nookspace-extension/
 
 ## 📄 Documentation Links
 - [Installation Guide & User Manual](./docs/release/INSTALLATION_GUIDE.md)
+- [Search Dropdown, Custom Backgrounds & Localization Report](./docs/reports/POST_ROADMAP/SEARCH_BACKGROUND_AND_LOCALIZATION_REPORT.md)
 - [Zen Browser Compatibility Report](./docs/reports/POST_ROADMAP/ZEN_BROWSER_HOMEPAGE_COMPATIBILITY_REPORT.md)
 - [Full-Viewport Search & Localization Report](./docs/reports/POST_ROADMAP/FULL_VIEWPORT_SEARCH_AND_LOCALIZATION_REPORT.md)
 - [Product Requirements Document (PRD)](./docs/PRD.md)

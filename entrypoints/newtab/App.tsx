@@ -35,6 +35,8 @@ import { MigrationDiagnosticsModal } from '../../src/features/migrations';
 import { BrowserIntegrationSection } from '../../src/features/preferences/components/BrowserIntegrationSection';
 import { LanguageSection } from '../../src/features/preferences/components/LanguageSection';
 import { SearchEngineSection } from '../../src/features/preferences/components/SearchEngineSection';
+import { BackgroundSection } from '../../src/features/preferences/components/BackgroundSection';
+import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useTranslation } from '../../src/services/i18n';
 import { db } from '../../src/services/database/db';
 // Ensure all initial widgets are registered
@@ -51,6 +53,7 @@ export const App: React.FC = () => {
   const [isMergeOpen, setIsMergeOpen] = useState<boolean>(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState<boolean>(false);
 
+  const settings = useSettingsStore((s) => s.settings);
   const { initializeLanguage, t } = useTranslation();
 
   // Check for interrupted restore operations and handle startup recovery
@@ -204,7 +207,7 @@ export const App: React.FC = () => {
       onOpenNotesManager={() => setIsNotesManagerOpen(true)}
     >
       {/* Workspace Header (Time & Dynamic Greeting) */}
-      <WorkspaceHeader userName="Architect" />
+      <WorkspaceHeader userName={settings?.userName || t('widgets.greeting.defaultName') || 'Explorer'} />
 
       {/* Notion/Linear Style Customization Toolbar */}
       <CustomizationToolbar
@@ -336,6 +339,9 @@ export const App: React.FC = () => {
           </div>
           <div className="pt-3 border-t border-border/40">
             <SearchEngineSection />
+          </div>
+          <div className="pt-3 border-t border-border/40">
+            <BackgroundSection />
           </div>
           <div className="pt-3 border-t border-border/40">
             <BrowserIntegrationSection />

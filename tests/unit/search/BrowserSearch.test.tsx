@@ -119,4 +119,33 @@ describe('BrowserSearch Component', () => {
     fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
     expect(focusSpy).toHaveBeenCalled();
   });
+
+  it('9. pressing Escape closes the engine dropdown portal', () => {
+    render(<BrowserSearch />);
+
+    const engineBtn = screen.getByRole('button', { name: /switch search engine: google/i });
+    fireEvent.click(engineBtn);
+
+    expect(screen.getByRole('button', { name: /duckduckgo/i })).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('button', { name: /duckduckgo/i })).not.toBeInTheDocument();
+  });
+
+  it('10. clicking outside the engine dropdown portal closes it', () => {
+    render(
+      <div>
+        <div data-testid="outside-area">Outside</div>
+        <BrowserSearch />
+      </div>
+    );
+
+    const engineBtn = screen.getByRole('button', { name: /switch search engine: google/i });
+    fireEvent.click(engineBtn);
+
+    expect(screen.getByRole('button', { name: /duckduckgo/i })).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByTestId('outside-area'));
+    expect(screen.queryByRole('button', { name: /duckduckgo/i })).not.toBeInTheDocument();
+  });
 });

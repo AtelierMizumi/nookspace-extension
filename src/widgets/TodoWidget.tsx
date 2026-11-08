@@ -17,6 +17,7 @@ import { Checkbox } from '../components/ui/Checkbox';
 import { IconButton, Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../services/i18n';
 
 export interface TodoWidgetConfig {
   defaultFilter?: TodoFilterType;
@@ -52,6 +53,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
   workspaceId,
   config,
 }) => {
+  const { t } = useTranslation();
   const {
     tasks,
     status,
@@ -182,7 +184,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
         <div className="flex items-center gap-1.5 min-w-0">
           <CheckSquare className="h-4 w-4 text-primary shrink-0" />
           <span className="font-semibold text-foreground text-sm tracking-tight truncate">
-            Tasks
+            {t('widgets.todo.title')}
           </span>
           <span className="text-[11px] font-mono text-muted-foreground ml-1 px-1.5 py-0.5 rounded-full bg-secondary/60">
             {completedCount}/{totalCount}
@@ -193,7 +195,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
           <IconButton
             size="sm"
             variant="ghost"
-            aria-label={isSearchOpen ? 'Close search' : 'Search tasks'}
+            aria-label={isSearchOpen ? 'Close search' : (t('widgets.todo.searchTasksPlaceholder') || 'Search tasks')}
             onClick={() => {
               setIsSearchOpen(!isSearchOpen);
               if (isSearchOpen) setSearchQuery('');
@@ -208,10 +210,10 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
               size="sm"
               variant="ghost"
               onClick={handleClearCompleted}
-              aria-label="Clear completed tasks"
+              aria-label={t('widgets.todo.clearDone')}
               className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
             >
-              Clear Done
+              {t('widgets.todo.clearDone')}
             </Button>
           )}
         </div>
@@ -221,7 +223,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
       {isSearchOpen && (
         <div className="pt-2 animate-in fade-in duration-100 flex items-center gap-1">
           <Input
-            placeholder="Search tasks..."
+            placeholder={t('widgets.todo.searchTasksPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-6 text-xs"
@@ -235,7 +237,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
               onClick={() => setSearchQuery('')}
               className="h-6 w-6"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </IconButton>
           )}
         </div>
@@ -256,7 +258,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
             )}
             aria-label={`Filter by ${tab} tasks`}
           >
-            {tab}
+            {t(`widgets.todo.filters.${tab}`) || tab}
           </button>
         ))}
       </div>
@@ -266,7 +268,7 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
         <div className="flex items-center gap-1.5">
           <Input
             ref={inputRef}
-            placeholder="Add task... (Press Enter)"
+            placeholder={t('widgets.todo.addTaskPlaceholder')}
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             className="h-7 text-xs flex-1"
@@ -299,23 +301,23 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
           <div className="mt-2 pt-2 border-t border-border/20 grid grid-cols-2 gap-1.5 animate-in fade-in duration-100">
             {/* Priority Selector */}
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-muted-foreground">Priority:</span>
+              <span className="text-[10px] text-muted-foreground">{t('widgets.todo.priorityLabel')}</span>
               <select
                 value={selectedPriority}
                 onChange={(e) => setSelectedPriority(e.target.value as TodoPriority)}
                 className="text-[10px] h-6 px-1.5 rounded border border-border bg-card text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
                 aria-label="Select task priority"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="low">{t('widgets.todo.priorities.low')}</option>
+                <option value="medium">{t('widgets.todo.priorities.medium')}</option>
+                <option value="high">{t('widgets.todo.priorities.high')}</option>
+                <option value="urgent">{t('widgets.todo.priorities.urgent')}</option>
               </select>
             </div>
 
             {/* Quick Due Date */}
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-muted-foreground">Due:</span>
+              <span className="text-[10px] text-muted-foreground">{t('widgets.todo.dueLabel')}</span>
               <select
                 value={selectedDueDate ? 'set' : 'none'}
                 onChange={(e) => {
@@ -335,9 +337,9 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
                 className="text-[10px] h-6 px-1.5 rounded border border-border bg-card text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
                 aria-label="Select task due date"
               >
-                <option value="none">No date</option>
-                <option value="today">Today</option>
-                <option value="tomorrow">Tomorrow</option>
+                <option value="none">{t('widgets.todo.dueDates.noDate')}</option>
+                <option value="today">{t('widgets.todo.dueDates.today')}</option>
+                <option value="tomorrow">{t('widgets.todo.dueDates.tomorrow')}</option>
               </select>
             </div>
           </div>
@@ -375,13 +377,13 @@ export const TodoWidgetComponent: React.FC<WidgetProps<TodoWidgetConfig>> = ({
             <CheckSquare className="h-6 w-6 stroke-1 text-muted-foreground/40 mb-1" />
             <p className="text-[11px] font-medium">
               {activeFilter === 'completed'
-                ? 'No completed tasks yet.'
+                ? t('widgets.todo.noCompletedTasks')
                 : activeFilter === 'today'
-                ? 'No tasks due today. Enjoy your day!'
-                : 'No tasks found.'}
+                ? t('widgets.todo.noTasksToday')
+                : t('widgets.todo.noTasksFound')}
             </p>
             <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-              Type above and press Enter to add a task.
+              {t('widgets.todo.typeAboveHint')}
             </p>
           </div>
         ) : (

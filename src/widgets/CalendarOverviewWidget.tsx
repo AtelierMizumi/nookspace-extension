@@ -70,7 +70,7 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
     };
   }, [fetchData, workspaceId]);
 
-  const { formatDate, language } = useTranslation();
+  const { formatDate, language, t } = useTranslation();
 
   const monthLabel = formatDate(currentMonth, {
     month: 'short',
@@ -107,7 +107,7 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
       <div className="flex items-center justify-between gap-1 mb-2">
         <div className="flex items-center gap-1.5 font-semibold text-sm text-text-primary">
           <CalendarIcon className="w-4 h-4 text-primary" />
-          <span>Study Calendar</span>
+          <span>{t('widgets.calendar.studyCalendar')}</span>
         </div>
 
         {/* Streak Badge */}
@@ -119,7 +119,7 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
                   ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                   : 'bg-surface-hover text-text-secondary border-border/40'
               }`}
-              title={`Best Streak: ${data.streaks.bestStreak} days${
+              title={`${t('widgets.calendar.bestStreakLabel')} ${data.streaks.bestStreak} days${
                 data.streaks.isPendingToday ? ' (Pending today)' : ''
               }`}
             >
@@ -164,14 +164,14 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
         {isLoading && !data ? (
           <div className="flex flex-col items-center justify-center py-6 text-text-secondary gap-2 text-xs">
             <RotateCw className="w-4 h-4 animate-spin text-primary" />
-            <span>Loading calendar...</span>
+            <span>{t('widgets.calendar.loading')}</span>
           </div>
         ) : error && !data ? (
           <div className="flex flex-col items-center justify-center py-4 text-center gap-2">
             <AlertCircle className="w-5 h-5 text-red-500" />
             <p className="text-xs text-text-secondary">{error}</p>
             <Button size="sm" variant="outline" onClick={() => fetchData(workspaceId)}>
-              Try Again
+              {t('widgets.calendar.tryAgain') || 'Try Again'}
             </Button>
           </div>
         ) : viewMode === 'month' ? (
@@ -185,7 +185,7 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
                   onClick={goToToday}
                   className="text-[10px] px-1.5 py-0.2 rounded bg-surface-hover hover:bg-surface-active text-text-secondary hover:text-text-primary transition-all ml-1"
                 >
-                  Today
+                  {t('widgets.calendar.today')}
                 </button>
               </div>
               <div className="flex items-center gap-0.5">
@@ -250,9 +250,9 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
           /* View 2: Activity Heatmap */
           <div className="flex flex-col justify-between h-full">
             <div className="flex items-center justify-between text-xs pb-1 border-b border-border/30">
-              <span className="text-[11px] font-medium text-text-secondary">Recent 7 Weeks Activity</span>
+              <span className="text-[11px] font-medium text-text-secondary">{t('widgets.calendar.recentActivity')}</span>
               <div className="flex items-center gap-1 text-[10px] text-text-secondary">
-                <span>Best:</span>
+                <span>{t('widgets.calendar.bestStreakLabel')}</span>
                 <span className="font-semibold text-text-primary">{data?.streaks.bestStreak || 0}d</span>
               </div>
             </div>
@@ -282,13 +282,13 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
 
             {/* Heatmap Legend */}
             <div className="flex items-center justify-end gap-1.5 text-[9px] text-text-secondary pt-1">
-              <span>Less</span>
+              <span>{t('widgets.calendar.less')}</span>
               <span className="w-2.5 h-2.5 rounded-xs bg-surface-hover/60 border border-border/40" />
               <span className="w-2.5 h-2.5 rounded-xs bg-primary/25" />
               <span className="w-2.5 h-2.5 rounded-xs bg-primary/50" />
               <span className="w-2.5 h-2.5 rounded-xs bg-primary/75" />
               <span className="w-2.5 h-2.5 rounded-xs bg-primary" />
-              <span>More</span>
+              <span>{t('widgets.calendar.more')}</span>
             </div>
           </div>
         )}
@@ -297,21 +297,21 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
       {/* Day Detail Footer */}
       <div className="flex items-center justify-between text-[10px] text-text-secondary pt-2 border-t border-border/30">
         <div className="flex items-center gap-1 truncate font-mono">
-          <span>{selectedDateString || data?.referenceDateString || 'Today'}</span>
+          <span>{selectedDateString || data?.referenceDateString || t('widgets.calendar.today')}</span>
           {selectedActivity?.isActive && (
             <span className="flex items-center gap-0.5 text-emerald-500 font-sans font-medium">
               <CheckCircle2 className="w-2.5 h-2.5" />
-              <span>Active</span>
+              <span>{t('widgets.calendar.active')}</span>
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2 font-medium">
-          <span className="flex items-center gap-1 text-text-primary" title="Focus Time">
+          <span className="flex items-center gap-1 text-text-primary" title={t('widgets.calendar.focusTime')}>
             <Clock className="w-3 h-3 text-primary" />
             <span>{selectedActivity?.focusMinutes || 0}m</span>
           </span>
-          <span className="flex items-center gap-1 text-text-primary" title="Completed Todos">
+          <span className="flex items-center gap-1 text-text-primary" title={t('widgets.calendar.completedTodos')}>
             <CheckSquare className="w-3 h-3 text-blue-500" />
             <span>{selectedActivity?.completedTodos || 0}</span>
           </span>

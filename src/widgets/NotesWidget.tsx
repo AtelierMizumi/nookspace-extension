@@ -26,6 +26,7 @@ import { Modal } from '../components/ui/Modal';
 import { Tooltip } from '../components/ui/Tooltip';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../services/i18n';
 
 export type NotesDisplayMode = 'recent' | 'pinned' | 'favorites' | 'collection';
 export type NotesDensity = 'comfortable' | 'compact';
@@ -45,16 +46,26 @@ export interface NotesWidgetConfig {
 // Relative Time Helper
 // ==========================================
 
-function formatNoteTime(timestamp: number): string {
+function formatNoteTime(
+  timestamp: number,
+  t?: (key: string, params?: Record<string, any>) => string
+): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
+  if (t) {
+    if (minutes < 1) return t('widgets.notes.relativeTime.justNow');
+    if (minutes < 60) return t('widgets.notes.relativeTime.minutesAgo', { minutes });
+    if (hours < 24) return t('widgets.notes.relativeTime.hoursAgo', { hours });
+    if (days < 7) return t('widgets.notes.relativeTime.daysAgo', { days });
+  } else {
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+  }
   return new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
@@ -198,6 +209,7 @@ export const NotesWidgetSettings: React.FC<
 export const NotesWidgetComponent: React.FC<
   WidgetProps<NotesWidgetConfig>
 > = ({ workspaceId, config, onUpdateConfig }) => {
+  const { t } = useTranslation();
   const {
     notes,
     collections,
@@ -387,12 +399,12 @@ export const NotesWidgetComponent: React.FC<
           <div className="h-8 w-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-1.5">
             <Pin className="h-4 w-4" />
           </div>
-          <p className="text-xs font-medium text-foreground">No pinned notes</p>
+          <p className="text-xs font-medium text-foreground">{t('widgets.notes.noPinnedNotes')}</p>
           <p className="text-[11px] text-muted-foreground max-w-xs mt-0.5 mb-2">
-            Pin important notes in the Notes Manager to keep them quick to access.
+            {t('widgets.notes.noPinnedNotesDesc')}
           </p>
           <Button variant="ghost" size="sm" onClick={handleOpenManager} className="h-7 text-xs">
-            Open Notes Manager
+            {t('widgets.notes.openNotesManager')}
           </Button>
         </div>
       );
@@ -404,12 +416,12 @@ export const NotesWidgetComponent: React.FC<
           <div className="h-8 w-8 rounded-full bg-amber-400/10 text-amber-400 flex items-center justify-center mb-1.5">
             <Star className="h-4 w-4" />
           </div>
-          <p className="text-xs font-medium text-foreground">No favorite notes</p>
+          <p className="text-xs font-medium text-foreground">{t('widgets.notes.noFavoriteNotes')}</p>
           <p className="text-[11px] text-muted-foreground max-w-xs mt-0.5 mb-2">
-            Star notes you reference frequently to see them here.
+            {t('widgets.notes.noFavoriteNotesDesc')}
           </p>
           <Button variant="ghost" size="sm" onClick={handleOpenManager} className="h-7 text-xs">
-            Open Notes Manager
+            {t('widgets.notes.openNotesManager')}
           </Button>
         </div>
       );
@@ -420,11 +432,11 @@ export const NotesWidgetComponent: React.FC<
         <div className="h-full flex flex-col items-center justify-center text-center p-3 select-none">
           <p className="text-xs font-medium text-foreground">
             {activeCollection
-              ? `No notes in "${activeCollection.title}"`
-              : 'No uncategorized notes'}
+              ? t('widgets.notes.noNotesInCollection', { collection: activeCollection.title })
+              : t('widgets.notes.noUncategorizedNotes')}
           </p>
           <p className="text-[11px] text-muted-foreground max-w-xs mt-0.5 mb-2">
-            Add notes to this collection to view them on your dashboard.
+            {t('widgets.notes.collectionEmptyDesc')}
           </p>
           <Button
             variant="primary"
@@ -433,7 +445,7 @@ export const NotesWidgetComponent: React.FC<
             leftIcon={<Plus className="h-3 w-3" />}
             className="h-7 text-xs"
           >
-            Add Note Here
+            {t('widgets.notes.addNoteHere')}
           </Button>
         </div>
       );
@@ -444,9 +456,9 @@ export const NotesWidgetComponent: React.FC<
         <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1.5">
           <FileText className="h-4 w-4" />
         </div>
-        <p className="text-xs font-medium text-foreground">No notes yet</p>
+        <p className="text-xs font-medium text-foreground">{t('widgets.notes.noNotesYet')}</p>
         <p className="text-[11px] text-muted-foreground max-w-xs mt-0.5 mb-2">
-          Capture thoughts, documentation, and ideas in your personal workspace.
+          {t('widgets.notes.emptyNotesDesc')}
         </p>
         <Button
           variant="primary"
@@ -455,7 +467,7 @@ export const NotesWidgetComponent: React.FC<
           leftIcon={<Plus className="h-3 w-3" />}
           className="h-7 text-xs"
         >
-          Create First Note
+          {t('widgets.notes.createFirstNote')}
         </Button>
       </div>
     );
@@ -469,7 +481,7 @@ export const NotesWidgetComponent: React.FC<
         <div className="flex items-center gap-1.5 min-w-0">
           <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
           <span className="font-medium text-foreground text-xs truncate">
-            {config?.title || 'Notes & Knowledge'}
+            {config?.title || t('notesManager.title') || 'Notes & Knowledge'}
           </span>
           {renderHeaderBadge()}
         </div>
@@ -477,7 +489,7 @@ export const NotesWidgetComponent: React.FC<
         {/* Right: Actions */}
         <div className="flex items-center gap-0.5 shrink-0">
           {showQuickCreate && (
-            <Tooltip content="New Note" position="bottom">
+            <Tooltip content={t('widgets.notes.newNote')} position="bottom">
               <IconButton
                 size="sm"
                 variant="ghost"
@@ -487,31 +499,19 @@ export const NotesWidgetComponent: React.FC<
                 className="h-6 w-6 text-muted-foreground hover:text-foreground"
               >
                 {isCreatingNote ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Plus className="h-3 w-3" />
+                  <Plus className="h-3.5 w-3.5" />
                 )}
               </IconButton>
             </Tooltip>
           )}
 
-          <Tooltip content="Widget Settings" position="bottom">
+          <Tooltip content={t('widgets.notes.openNotesManager')} position="bottom">
             <IconButton
               size="sm"
               variant="ghost"
-              aria-label="Notes Widget Settings"
-              onClick={() => setIsSettingsOpen(true)}
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-            >
-              <Settings2 className="h-3 w-3" />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip content="Open Notes Manager" position="bottom">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Open Notes Manager"
+              aria-label={t('widgets.notes.openNotesManager')}
               onClick={handleOpenManager}
               className="h-6 w-6 text-muted-foreground hover:text-foreground"
             >
@@ -547,7 +547,7 @@ export const NotesWidgetComponent: React.FC<
               onClick={() => loadNotes(workspaceId)}
               className="mt-2 text-xs h-7"
             >
-              Retry
+              {t('common.retry')}
             </Button>
           </div>
         ) : displayedNotes.length === 0 ? (
@@ -599,7 +599,7 @@ export const NotesWidgetComponent: React.FC<
                           </span>
                         )}
                         <span className="text-[10px] text-muted-foreground/75 font-mono whitespace-nowrap">
-                          {formatNoteTime(note.updatedAt)}
+                          {formatNoteTime(note.updatedAt, t)}
                         </span>
                       </div>
                     </div>

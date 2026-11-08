@@ -123,6 +123,10 @@ export const LanguageCodeSchema = z.enum(['en', 'vi']);
 
 export const SearchEngineProviderSchema = z.enum(['google', 'bing', 'duckduckgo']);
 
+export const BackgroundModeSchema = z.enum(['cover', 'contain', 'stretch', 'center']);
+
+export const BackgroundOverlaySchema = z.number().min(0).max(100);
+
 export const BrowserStartupBehaviorSchema = z.enum([
   'new-tab-only',
   'browser-startup',
@@ -156,6 +160,8 @@ export const AppSettingsEntitySchema = z.object({
   fontSize: z.enum(['sm', 'md', 'lg']),
   backgroundType: z.enum(['color', 'gradient', 'image']),
   backgroundValue: z.string(),
+  backgroundMode: BackgroundModeSchema.optional(),
+  backgroundOverlay: BackgroundOverlaySchema.optional(),
   widgetOpacity: z.number().min(0).max(100),
   widgetBlur: z.number().min(0).max(100),
   activeWorkspaceId: z.string().min(1),

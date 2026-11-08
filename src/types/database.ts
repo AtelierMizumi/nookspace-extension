@@ -195,6 +195,17 @@ export type SupportedLanguage = 'en' | 'vi';
 
 export type SearchEngineProvider = 'google' | 'bing' | 'duckduckgo';
 
+export type BackgroundMode = 'cover' | 'contain' | 'stretch' | 'center';
+
+export interface CustomBackgroundImageEntity {
+  id: string; // 'custom_background_image'
+  dataUrl: string;
+  mimeType: string;
+  fileName?: string;
+  size: number;
+  updatedAt: number;
+}
+
 export type BrowserStartupBehavior =
   | 'new-tab-only'
   | 'browser-startup'
@@ -225,6 +236,8 @@ export interface AppSettingsEntity {
   fontSize: 'sm' | 'md' | 'lg';
   backgroundType: 'color' | 'gradient' | 'image';
   backgroundValue: string;
+  backgroundMode?: BackgroundMode;
+  backgroundOverlay?: number; // 0, 25, 50, 75
   widgetOpacity: number;
   widgetBlur: number;
   activeWorkspaceId: string;
