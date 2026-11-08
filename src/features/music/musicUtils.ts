@@ -130,9 +130,12 @@ export function parseMusicUrl(input: string): ParsedMusicUrlResult | null {
     }
 
     if (videoId) {
+      const embedUrl = listId
+        ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?list=${encodeURIComponent(listId)}`
+        : `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
       return {
         provider: 'youtube',
-        embedUrl: `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`,
+        embedUrl,
         cleanUrl: `https://www.youtube.com/watch?v=${videoId}`,
         defaultTitle: 'YouTube Track',
       };
@@ -184,6 +187,49 @@ export function parseMusicUrl(input: string): ParsedMusicUrlResult | null {
     };
   }
 
+  return null;
+}
+
+const SPOTIFY_TYPES = ['track', 'playlist', 'album', 'artist', 'episode', 'show'];
+
+/**
+ * Accepts Spotify content given as a full URL, a `spotify:<type>:<id>` URI,
+ * or a bare 22-character content id (treated as a track). Returns the same
+ * embed shape as parseMusicUrl or null for anything unrecognized.
+ */
+export function parseSpotifyId(input: string): ParsedMusicUrlResult | null {
+  if (!input || typeof input !== 'string') return null;
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  // spotify:<type>:<22-char id> URI
+  if (trimmed.startsWith('spotify:')) {
+    const parts = trimmed.slice('spotify:'.length).split(':');
+    if (parts.length === 2 && SPOTIFY_TYPES.includes(parts[0]) && /^[A-Za-z0-9]{22}$/.test(parts[1])) {
+      const [type, id] = parts;
+      return {
+        provider: 'spotify',
+        embedUrl: `https://open.spotify.com/embed/${type}/${encodeURIComponent(id)}`,
+        cleanUrl: `https://open.spotify.com/${type}/${id}`,
+        defaultTitle: `Spotify ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      };
+    }
+    return null;
+  }
+
+  // Full URL → reuse the allowlist parser, keeping only Spotify results
+  const parsed = parseMusicUrl(trimmed);
+  if (parsed && parsed.provider === 'spotify') return parsed;
+
+  // Bare 22-char base62 id → track
+  if (/^[A-Za-z0-9]{22}$/.test(trimmed)) {
+    return {
+      provider: 'spotify',
+      embedUrl: `https://open.spotify.com/embed/track/${encodeURIComponent(trimmed)}`,
+      cleanUrl: `https://open.spotify.com/track/${trimmed}`,
+      defaultTitle: 'Spotify Track',
+    };
+  }
   return null;
 }
 

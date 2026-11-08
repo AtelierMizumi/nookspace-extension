@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Post-Roadmap Extension (2026-11-08)
 
 ### Added
+- **Music Player v2 — Playlist + Spotify + osu! Library**:
+  - Tabbed widget (Player | Playlist | Spotify): local queue merges bundled osu! library (100 songs >70s from `/mnt/SSDStorage/osu!/Songs`, via new `npm run music` script) with device files (Dexie), with search filter, OSU/source badges and click-to-play.
+  - Correct playback order logic (`src/features/music/playback.ts`): real repeat modes (off/all/one) replacing the mislabeled autoplay toggle, shuffle with deterministic order, next/prev with stable wrap — all unit-tested.
+  - Fixed playback reset bug: changing volume no longer tears down the audio element/object URL (volume-only sync effect).
+  - Spotify tab: paste URL, `spotify:<type>:<id>` URI or bare 22-char ID (`parseSpotifyId`) to play via official iframe embed; allowlisted via existing CSP `frame-src`; presets + recent-history chips; direct-audio links play via `<audio>`.
+  - Bundled playlist loader (`src/features/music/bundledPlaylist.ts`) with defensive validation; falls back to empty when not generated.
+  - Tests: 25 music tests incl. RED→GREEN coverage for playback order, playlist validation, Spotify parsing, build-script selection; full-suite failures unchanged vs baseline (24 upstream).
+  - Fix (2026-11-09): bundled playlist loader now accepts the real generated shape `{ tracks: [...] }` (was rejecting it as non-array, empty playlist); regression + real-file integration tests added.
+  - YouTube support (2026-11-09): tab renamed "YouTube · Spotify"; accepts single videos (`watch?v=`, `youtu.be/`, shorts, live), playlist-only links (`playlist?list=` → videoseries embed), and video+playlist links keeping the `list` context; YouTube presets shown alongside Spotify.
+  - Responsive widget space (2026-11-09): semantic mins raised (Music 4×4, Calendar 4×3, Pomodoro 4×4, Todo 3×3) so new cards are usable; new `useWidgetCompact` hook (ResizeObserver, <320px) collapses Music vinyl to a small disc + hides secondary line, and shrinks Calendar day cells + internal scroll.
 - **User Identity & Supabase Authentication Integration**:
   - Official `@supabase/supabase-js` client singleton with custom extension storage adapter (`ExtensionStorageAdapter`) supporting Chromium MV3 and Firefox MV2/MV3 without cookie dependencies.
   - Auth Modal (`AuthModal.tsx`) with tabbed Login, Registration, Forgot Password, and Email Verification states.

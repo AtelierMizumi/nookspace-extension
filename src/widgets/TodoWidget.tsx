@@ -491,6 +491,6 @@ export const TodoWidget: WidgetDefinition<TodoWidgetConfig> = {
     showCategory: true,
   },
   defaultDimensions: { w: 4, h: 4 },
-  minDimensions: { w: 3, h: 2 },
+  minDimensions: { w: 3, h: 3 },
   component: TodoWidgetComponent,
 };

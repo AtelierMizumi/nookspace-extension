@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -18,6 +18,7 @@ import { Button } from '../components/ui/Button';
 import { STORAGE_KEY_LAST_DRAINED_AT } from '../features/pomodoro/storageService';
 import { STORAGE_KEY_TODO_LAST_UPDATED_AT } from '../services/database/repositories/todoRepository';
 import { useTranslation } from '../services/i18n';
+import { useWidgetCompact } from '../features/widget-system/useWidgetCompact';
 
 export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) => {
   const {
@@ -34,6 +35,9 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
     goToToday,
     fetchData,
   } = useCalendarTrackerStore();
+
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const isCompact = useWidgetCompact(rootRef, 280);
 
   // Initial fetch on mount & workspace switch
   useEffect(() => {
@@ -102,7 +106,7 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
   const selectedActivity = selectedDateString && data?.dayMap ? data.dayMap[selectedDateString] : null;
 
   return (
-    <div className="flex flex-col h-full w-full p-4 bg-surface text-text-primary rounded-xl select-none justify-between overflow-hidden">
+    <div ref={rootRef} className="flex flex-col h-full w-full p-4 bg-surface text-text-primary rounded-xl select-none justify-between overflow-hidden">
       {/* Top Header: Title, Streak Badge, Navigation & View Toggle */}
       <div className="flex items-center justify-between gap-1 mb-2">
         <div className="flex items-center gap-1.5 font-semibold text-sm text-text-primary">
@@ -207,17 +211,17 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
             </div>
 
             {/* Weekdays row */}
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-text-secondary font-medium py-1">
+            <div className={`grid grid-cols-7 text-center text-[10px] text-text-secondary font-medium ${isCompact ? 'gap-0.5 py-0.5' : 'gap-1 py-1'}`}>
               {weekLabels.map((lbl) => (
                 <span key={lbl}>{lbl}</span>
               ))}
             </div>
 
             {/* Days grid */}
-            <div className="grid grid-cols-7 gap-1 text-center text-xs">
+            <div className={`grid grid-cols-7 text-center text-xs ${isCompact ? 'gap-0.5 overflow-y-auto min-h-0' : 'gap-1'}`}>
               {data?.monthDays.map((cell, idx) => {
                 if (cell.dayNumber === null || cell.dateString === null) {
-                  return <div key={`empty-${idx}`} className="h-6 w-6 mx-auto" />;
+                  return <div key={`empty-${idx}`} className={isCompact ? 'h-5 w-5 mx-auto' : 'h-6 w-6 mx-auto'} />;
                 }
 
                 const isSelected = selectedDateString === cell.dateString;
@@ -228,7 +232,7 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
                   <button
                     key={cell.dateString}
                     onClick={() => setSelectedDate(cell.dateString)}
-                    className={`h-6 w-6 mx-auto rounded-md flex flex-col items-center justify-center text-[11px] font-medium transition-all relative ${heatClass} ${
+                    className={`${isCompact ? 'h-5 w-5' : 'h-6 w-6'} mx-auto rounded-md flex flex-col items-center justify-center text-[11px] font-medium transition-all relative ${heatClass} ${
                       cell.isToday
                         ? 'ring-1.5 ring-primary font-bold'
                         : isSelected
@@ -328,8 +332,8 @@ export const CalendarOverviewWidget: WidgetDefinition = {
   category: 'productivity',
   icon: CalendarIcon,
   defaultConfig: {},
-  defaultDimensions: { w: 4, h: 3 },
-  minDimensions: { w: 3, h: 2 },
+  defaultDimensions: { w: 4, h: 4 },
+  minDimensions: { w: 4, h: 3 },
   component: CalendarOverviewWidgetComponent,
 };
 

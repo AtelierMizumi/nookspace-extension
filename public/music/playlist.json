@@ -1,0 +1,782 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-08T19:00:14.220Z",
+  "source": "/mnt/SSDStorage/osu!/Songs",
+  "minDuration": 70,
+  "count": 100,
+  "totalMB": 515.5,
+  "tracks": [
+    {
+      "id": "001_audio.mp3",
+      "title": "MIIRO",
+      "artist": "Roselia",
+      "file": "001_audio.mp3",
+      "duration": 92,
+      "size": 2213377
+    },
+    {
+      "id": "002_audio.mp3",
+      "title": "Flames Within These Black Feathers",
+      "artist": "Foreground Eclipse",
+      "file": "002_audio.mp3",
+      "duration": 227,
+      "size": 5445719
+    },
+    {
+      "id": "003_Sentimental_Skyscraper.mp3",
+      "title": "100348",
+      "file": "003_Sentimental_Skyscraper.mp3",
+      "duration": 344,
+      "size": 8267879
+    },
+    {
+      "id": "004_audio.mp3",
+      "title": "Sidetracked Day",
+      "artist": "VINXIS",
+      "file": "004_audio.mp3",
+      "duration": 339,
+      "size": 8125170
+    },
+    {
+      "id": "005_audio.mp3",
+      "title": "new beginnings",
+      "artist": "nekodex",
+      "file": "005_audio.mp3",
+      "duration": 131,
+      "size": 3147309
+    },
+    {
+      "id": "006_Niko_Made_of_Fire.mp3",
+      "title": "10112",
+      "file": "006_Niko_Made_of_Fire.mp3",
+      "duration": 80,
+      "size": 1435024
+    },
+    {
+      "id": "007_audio.mp3",
+      "title": "Kagaribi",
+      "artist": "Junky Infinity ChouCho",
+      "file": "007_audio.mp3",
+      "duration": 315,
+      "size": 7571662
+    },
+    {
+      "id": "008_audio.mp3",
+      "title": "Chiptune & Baroque",
+      "artist": "Thaehan",
+      "file": "008_audio.mp3",
+      "duration": 82,
+      "size": 1969981
+    },
+    {
+      "id": "009_Renard_Terminal.mp3",
+      "title": "102282",
+      "file": "009_Renard_Terminal.mp3",
+      "duration": 160,
+      "size": 3847078
+    },
+    {
+      "id": "010_audio.mp3",
+      "title": "Kick Me",
+      "artist": "Sleeping With Sirens",
+      "file": "010_audio.mp3",
+      "duration": 152,
+      "size": 3669262
+    },
+    {
+      "id": "011_audio.mp3",
+      "title": "LOUDER",
+      "artist": "Roselia",
+      "file": "011_audio.mp3",
+      "duration": 215,
+      "size": 3446908
+    },
+    {
+      "id": "012_Komissar_Chipstream.mp3",
+      "title": "104784",
+      "file": "012_Komissar_Chipstream.mp3",
+      "duration": 161,
+      "size": 3869741
+    },
+    {
+      "id": "013_boomer.mp3",
+      "title": "104867",
+      "file": "013_boomer.mp3",
+      "duration": 271,
+      "size": 6516535
+    },
+    {
+      "id": "014_audio.mp3",
+      "title": "Koinu",
+      "artist": "nowisee",
+      "file": "014_audio.mp3",
+      "duration": 266,
+      "size": 6648771
+    },
+    {
+      "id": "015_audio.mp3",
+      "title": "Resolution",
+      "artist": "Tomatsu Haruka",
+      "file": "015_audio.mp3",
+      "duration": 290,
+      "size": 6968554
+    },
+    {
+      "id": "016_MISTAKE.mp3",
+      "title": "105245",
+      "file": "016_MISTAKE.mp3",
+      "duration": 222,
+      "size": 5332113
+    },
+    {
+      "id": "017_audio.mp3",
+      "title": "Wild Side (TV Size)",
+      "artist": "ALI",
+      "file": "017_audio.mp3",
+      "duration": 89,
+      "size": 2142248
+    },
+    {
+      "id": "018_sky_blue.mp3",
+      "title": "106010",
+      "file": "018_sky_blue.mp3",
+      "duration": 180,
+      "size": 4330892
+    },
+    {
+      "id": "019_Heterochromia_Iridis.mp3",
+      "title": "106443",
+      "file": "019_Heterochromia_Iridis.mp3",
+      "duration": 137,
+      "size": 3237439
+    },
+    {
+      "id": "020_audio.mp3",
+      "title": "TRAUMATIC SYNDROME -Lenboxx Remix-",
+      "artist": "Adust Rain",
+      "file": "020_audio.mp3",
+      "duration": 217,
+      "size": 5198720
+    },
+    {
+      "id": "021_audio.mp3",
+      "title": "Ringing Bloom",
+      "artist": "Roselia",
+      "file": "021_audio.mp3",
+      "duration": 335,
+      "size": 8043915
+    },
+    {
+      "id": "022_audio.mp3",
+      "title": "Tokoyo Omohikane no Kami",
+      "artist": "UNDEAD CORPORATION",
+      "file": "022_audio.mp3",
+      "duration": 246,
+      "size": 5898284
+    },
+    {
+      "id": "023_audio.mp3",
+      "title": "Lost In Time",
+      "artist": "Celldweller",
+      "file": "023_audio.mp3",
+      "duration": 444,
+      "size": 10651106
+    },
+    {
+      "id": "024_audio.mp3",
+      "title": "Chronostasis",
+      "artist": "Kurokotei",
+      "file": "024_audio.mp3",
+      "duration": 149,
+      "size": 2387799
+    },
+    {
+      "id": "025_audio.mp3",
+      "title": "Anoyo-iki no Bus ni Notte Saraba",
+      "artist": "TUYU",
+      "file": "025_audio.mp3",
+      "duration": 196,
+      "size": 4700263
+    },
+    {
+      "id": "026_audio.mp3",
+      "title": "Destruction",
+      "artist": "Foreground Eclipse",
+      "file": "026_audio.mp3",
+      "duration": 193,
+      "size": 4622714
+    },
+    {
+      "id": "027_Anisakis.mp3",
+      "title": "107216",
+      "file": "027_Anisakis.mp3",
+      "duration": 138,
+      "size": 3322694
+    },
+    {
+      "id": "028_MY_FIRST_STORY_ALONE.mp3",
+      "title": "ALONE",
+      "artist": "MY FIRST STORY",
+      "file": "028_MY_FIRST_STORY_ALONE.mp3",
+      "duration": 181,
+      "size": 4344961
+    },
+    {
+      "id": "029_audio1.mp3",
+      "title": "Kakusei",
+      "artist": "Superfly",
+      "file": "029_audio1.mp3",
+      "duration": 255,
+      "size": 6132249
+    },
+    {
+      "id": "030_audio.mp3",
+      "title": "Kanadeai",
+      "artist": "Itowokashi",
+      "file": "030_audio.mp3",
+      "duration": 233,
+      "size": 5605048
+    },
+    {
+      "id": "031_audio.mp3",
+      "title": "When It Falls (feat Casey Lee Williams) (TV Size)",
+      "artist": "Jeff Williams",
+      "file": "031_audio.mp3",
+      "duration": 81,
+      "size": 1943810
+    },
+    {
+      "id": "032_audio.mp3",
+      "title": "Relive",
+      "artist": "nonoc",
+      "file": "032_audio.mp3",
+      "duration": 94,
+      "size": 2268890
+    },
+    {
+      "id": "033_audio.mp3",
+      "title": "Namikare",
+      "artist": "TUYU",
+      "file": "033_audio.mp3",
+      "duration": 250,
+      "size": 4280401
+    },
+    {
+      "id": "034_audio.mp3",
+      "title": "utopia",
+      "artist": "AliA",
+      "file": "034_audio.mp3",
+      "duration": 265,
+      "size": 6368444
+    },
+    {
+      "id": "035_audio.mp3",
+      "title": "impulse",
+      "artist": "AliA",
+      "file": "035_audio.mp3",
+      "duration": 207,
+      "size": 4982091
+    },
+    {
+      "id": "036_U.N._Owen_was_her.mp3",
+      "title": "113458",
+      "file": "036_U.N._Owen_was_her.mp3",
+      "duration": 226,
+      "size": 3613708
+    },
+    {
+      "id": "037_K.O.K.O.R.O.mp3",
+      "title": "114220",
+      "file": "037_K.O.K.O.R.O.mp3",
+      "duration": 79,
+      "size": 1896181
+    },
+    {
+      "id": "038_audio.mp3",
+      "title": "Wings of Courage -Sora o Koete- (K@keru Dnb Remix)",
+      "artist": "Kawada Mami",
+      "file": "038_audio.mp3",
+      "duration": 272,
+      "size": 6520240
+    },
+    {
+      "id": "039_AXION1.mp3",
+      "title": "115193",
+      "file": "039_AXION1.mp3",
+      "duration": 135,
+      "size": 3251379
+    },
+    {
+      "id": "040_audio.mp3",
+      "title": "Otome no Route wa Hitotsu Janai!",
+      "artist": "angela",
+      "file": "040_audio.mp3",
+      "duration": 240,
+      "size": 5751984
+    },
+    {
+      "id": "041_audio.mp3",
+      "title": "What's the POPIPA!",
+      "artist": "Poppin'Party",
+      "file": "041_audio.mp3",
+      "duration": 278,
+      "size": 6677102
+    },
+    {
+      "id": "042_audio.mp3",
+      "title": "Ray",
+      "artist": "PassCode",
+      "file": "042_audio.mp3",
+      "duration": 226,
+      "size": 5424901
+    },
+    {
+      "id": "043_audio.mp3",
+      "title": "Scattered and Lost",
+      "artist": "Lena Raine",
+      "file": "043_audio.mp3",
+      "duration": 353,
+      "size": 8483701
+    },
+    {
+      "id": "044_audio.mp3",
+      "title": "Urban Constellations",
+      "artist": "Dirty Androids",
+      "file": "044_audio.mp3",
+      "duration": 122,
+      "size": 2938594
+    },
+    {
+      "id": "045_audio.mp3",
+      "title": "Tempestissimo",
+      "artist": "t+pazolite",
+      "file": "045_audio.mp3",
+      "duration": 137,
+      "size": 3292761
+    },
+    {
+      "id": "046_audio.mp3",
+      "title": "Sorochinskaya Yarmarka",
+      "artist": "Zmey Gorynich",
+      "file": "046_audio.mp3",
+      "duration": 237,
+      "size": 5693900
+    },
+    {
+      "id": "047_audio.mp3",
+      "title": "Redo (TV Size)",
+      "artist": "Suzuki Konomi",
+      "file": "047_audio.mp3",
+      "duration": 90,
+      "size": 2163499
+    },
+    {
+      "id": "048_Elemental_Creation_Gitadora.mp3",
+      "title": "119447",
+      "file": "048_Elemental_Creation_Gitadora.mp3",
+      "duration": 130,
+      "size": 2602055
+    },
+    {
+      "id": "049_audio.mp3",
+      "title": "ANIMA",
+      "artist": "ReoNa",
+      "file": "049_audio.mp3",
+      "duration": 267,
+      "size": 6413514
+    },
+    {
+      "id": "050_Oroka_na_Ketsumatsu.mp3",
+      "title": "124323",
+      "file": "050_Oroka_na_Ketsumatsu.mp3",
+      "duration": 369,
+      "size": 8858913
+    },
+    {
+      "id": "051_audio.mp3",
+      "title": "Doro no Bunzai de Watashi dake no Taisetsu o Ubaouda nante",
+      "artist": "TUYU",
+      "file": "051_audio.mp3",
+      "duration": 192,
+      "size": 4616844
+    },
+    {
+      "id": "052_audio.mp3",
+      "title": "Countdown",
+      "artist": "Imy",
+      "file": "052_audio.mp3",
+      "duration": 226,
+      "size": 6217397
+    },
+    {
+      "id": "053_audio.mp3",
+      "title": "LIKE IT! LOVE IT!",
+      "artist": "Yuki Setsuna (CV Kusunoki Tomori)",
+      "file": "053_audio.mp3",
+      "duration": 108,
+      "size": 2599184
+    },
+    {
+      "id": "054_Dark_PHOENiX.mp3",
+      "title": "126354",
+      "file": "054_Dark_PHOENiX.mp3",
+      "duration": 198,
+      "size": 4752195
+    },
+    {
+      "id": "055_audio.mp3",
+      "title": "Murasa",
+      "artist": "UNDEAD CORPORATION",
+      "file": "055_audio.mp3",
+      "duration": 202,
+      "size": 4838757
+    },
+    {
+      "id": "056_audio.mp3",
+      "title": "Tenshin -Trigger ver-",
+      "artist": "I love you Orchestra",
+      "file": "056_audio.mp3",
+      "duration": 125,
+      "size": 2991795
+    },
+    {
+      "id": "057_15_Bloodthirsty_Nightmare_Lullaby.mp3",
+      "title": "129202",
+      "file": "057_15_Bloodthirsty_Nightmare_Lullaby.mp3",
+      "duration": 198,
+      "size": 4752195
+    },
+    {
+      "id": "058_audio.mp3",
+      "title": "Telecaster B-boy (Long Ver)",
+      "artist": "Three feat Kagamine Len",
+      "file": "058_audio.mp3",
+      "duration": 166,
+      "size": 3997715
+    },
+    {
+      "id": "059_Ascension_to_Heaven.mp3",
+      "title": "Ascension to Heaven",
+      "artist": "xi",
+      "file": "059_Ascension_to_Heaven.mp3",
+      "duration": 164,
+      "size": 3933466
+    },
+    {
+      "id": "060_audio.mp3",
+      "title": "Sakebe",
+      "artist": "Numakura Manami",
+      "file": "060_audio.mp3",
+      "duration": 248,
+      "size": 5963559
+    },
+    {
+      "id": "061_audio.mp3",
+      "title": "Kigurumi Sungeki",
+      "artist": "Chikamori Kayako",
+      "file": "061_audio.mp3",
+      "duration": 186,
+      "size": 4475853
+    },
+    {
+      "id": "062_audio.mp3",
+      "title": "Thrill, Risk, Heartless",
+      "artist": "LiSA",
+      "file": "062_audio.mp3",
+      "duration": 254,
+      "size": 6108263
+    },
+    {
+      "id": "063_audio.mp3",
+      "title": "Relapped Foxification",
+      "artist": "Sonny Shimoda & Shoebill",
+      "file": "063_audio.mp3",
+      "duration": 318,
+      "size": 7622578
+    },
+    {
+      "id": "064_audio.mp3",
+      "title": "Makka na Sora o Mita Darou ka",
+      "artist": "BUMP OF CHICKEN",
+      "file": "064_audio.mp3",
+      "duration": 237,
+      "size": 5689842
+    },
+    {
+      "id": "065_audio.mp3",
+      "title": "lullaby (feat KIRA) (uet Remix)",
+      "artist": "HISATOMI",
+      "file": "065_audio.mp3",
+      "duration": 317,
+      "size": 7640376
+    },
+    {
+      "id": "066_13._Homestuck_Negastrife.mp3",
+      "title": "133278",
+      "file": "066_13._Homestuck_Negastrife.mp3",
+      "duration": 389,
+      "size": 9439792
+    },
+    {
+      "id": "067_audio.mp3",
+      "title": "Science Adventure Series Songs Compilation",
+      "artist": "Various Artists",
+      "file": "067_audio.mp3",
+      "duration": 650,
+      "size": 15041149
+    },
+    {
+      "id": "068_tumblr_mgn8apW3t41rsm9j2o1.mp3",
+      "title": "134151",
+      "file": "068_tumblr_mgn8apW3t41rsm9j2o1.mp3",
+      "duration": 267,
+      "size": 6413828
+    },
+    {
+      "id": "069_audio.mp3",
+      "title": "Get Back to 64bit Cities",
+      "artist": "Camellia",
+      "file": "069_audio.mp3",
+      "duration": 284,
+      "size": 6819212
+    },
+    {
+      "id": "070_audio.mp3",
+      "title": "Manemane Psychotropic",
+      "artist": "MARETU feat Hatsune Miku",
+      "file": "070_audio.mp3",
+      "duration": 214,
+      "size": 5138019
+    },
+    {
+      "id": "071_Renard_Smoke_Tower.mp3",
+      "title": "135596",
+      "file": "071_Renard_Smoke_Tower.mp3",
+      "duration": 238,
+      "size": 5720629
+    },
+    {
+      "id": "072_it_s_fucking_nothing.mp3",
+      "title": "135876",
+      "file": "072_it_s_fucking_nothing.mp3",
+      "duration": 690,
+      "size": 16561841
+    },
+    {
+      "id": "073_MJDD.mp3",
+      "title": "136065",
+      "file": "073_MJDD.mp3",
+      "duration": 212,
+      "size": 5096979
+    },
+    {
+      "id": "074_06_worldwide_choppers.mp3",
+      "title": "137377",
+      "file": "074_06_worldwide_choppers.mp3",
+      "duration": 327,
+      "size": 6532219
+    },
+    {
+      "id": "075_audio.mp3",
+      "title": "Owaranai Marionette",
+      "artist": "Kusunoki Arisu (CV Horinaka Yuki)",
+      "file": "075_audio.mp3",
+      "duration": 253,
+      "size": 4052443
+    },
+    {
+      "id": "076_audio.mp3",
+      "title": "Hanatachi ni Kibou o (2020 Remaster)",
+      "artist": "Sound piercer feat DAZBEE",
+      "file": "076_audio.mp3",
+      "duration": 173,
+      "size": 4154157
+    },
+    {
+      "id": "077_For_UltraPlayers.mp3",
+      "title": "137969",
+      "file": "077_For_UltraPlayers.mp3",
+      "duration": 121,
+      "size": 2905860
+    },
+    {
+      "id": "078_audio.mp3",
+      "title": "My Love",
+      "artist": "Raphlesia & BilliumMoto",
+      "file": "078_audio.mp3",
+      "duration": 224,
+      "size": 5386782
+    },
+    {
+      "id": "079_Crack_Traxxxx.mp3",
+      "title": "139525",
+      "file": "079_Crack_Traxxxx.mp3",
+      "duration": 119,
+      "size": 2861874
+    },
+    {
+      "id": "080_audio.mp3",
+      "title": "Outlaw no Shoushin",
+      "artist": "Zips feat Kagamine Len",
+      "file": "080_audio.mp3",
+      "duration": 203,
+      "size": 4873979
+    },
+    {
+      "id": "081_zz.mp3",
+      "title": "143397",
+      "file": "081_zz.mp3",
+      "duration": 201,
+      "size": 4829208
+    },
+    {
+      "id": "082_audio_0.900x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "082_audio_0.900x.mp3",
+      "duration": 295,
+      "size": 6564016
+    },
+    {
+      "id": "083_audio_0.950x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "083_audio_0.950x.mp3",
+      "duration": 279,
+      "size": 6227547
+    },
+    {
+      "id": "084_audio_1.050x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "084_audio_1.050x.mp3",
+      "duration": 253,
+      "size": 5664126
+    },
+    {
+      "id": "085_audio_1.100x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "085_audio_1.100x.mp3",
+      "duration": 241,
+      "size": 5408775
+    },
+    {
+      "id": "086_audio_1.150x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "086_audio_1.150x.mp3",
+      "duration": 231,
+      "size": 5184659
+    },
+    {
+      "id": "087_audio_1.200x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "087_audio_1.200x.mp3",
+      "duration": 221,
+      "size": 4978561
+    },
+    {
+      "id": "088_audio_1.250x_1.040x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "088_audio_1.250x_1.040x.mp3",
+      "duration": 204,
+      "size": 4641094
+    },
+    {
+      "id": "089_audio_1.250x.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "089_audio_1.250x.mp3",
+      "duration": 212,
+      "size": 4791883
+    },
+    {
+      "id": "090_audio.mp3",
+      "title": "Gate Openerz",
+      "artist": "DJ Sharpnel",
+      "file": "090_audio.mp3",
+      "duration": 265,
+      "size": 4915470
+    },
+    {
+      "id": "091_audio.mp3",
+      "title": "FIRE BIRD",
+      "artist": "Roselia",
+      "file": "091_audio.mp3",
+      "duration": 325,
+      "size": 7800073
+    },
+    {
+      "id": "092_fm6.mp3",
+      "title": "145215",
+      "file": "092_fm6.mp3",
+      "duration": 246,
+      "size": 4923298
+    },
+    {
+      "id": "093_audio.mp3",
+      "title": "Stella-rium (Asterisk MAKINA Remix)",
+      "artist": "Kano",
+      "file": "093_audio.mp3",
+      "duration": 334,
+      "size": 8011141
+    },
+    {
+      "id": "094_audio.mp3",
+      "title": "Unknown Mother-Goose",
+      "artist": "FantasticYouth",
+      "file": "094_audio.mp3",
+      "duration": 286,
+      "size": 4608333
+    },
+    {
+      "id": "095_audio.mp3",
+      "title": "Higurashi Moratorium",
+      "artist": "TOTAL OBJECTION",
+      "file": "095_audio.mp3",
+      "duration": 216,
+      "size": 5184972
+    },
+    {
+      "id": "096_audio.mp3",
+      "title": "Yuugure One Room",
+      "artist": "40mP feat chano",
+      "file": "096_audio.mp3",
+      "duration": 149,
+      "size": 3581889
+    },
+    {
+      "id": "097_audio.mp3",
+      "title": "Clattanoia (TV Size)",
+      "artist": "OxT",
+      "file": "097_audio.mp3",
+      "duration": 90,
+      "size": 2163488
+    },
+    {
+      "id": "098_Cheshire_s_dance.mp3",
+      "title": "148003",
+      "file": "098_Cheshire_s_dance.mp3",
+      "duration": 182,
+      "size": 4729208
+    },
+    {
+      "id": "099_audio.mp3",
+      "title": "Matasaburo",
+      "artist": "Yorushika",
+      "file": "099_audio.mp3",
+      "duration": 228,
+      "size": 5462477
+    },
+    {
+      "id": "100_Because_Maybe_Part_2.mp3",
+      "title": "149471",
+      "file": "100_Because_Maybe_Part_2.mp3",
+      "duration": 1322,
+      "size": 21160754
+    }
+  ]
+}

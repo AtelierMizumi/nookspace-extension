@@ -51,7 +51,7 @@ describe('MusicWidget Component & Settings (Local Audio Player)', () => {
     expect(formatTime(NaN)).toBe('0:00');
   });
 
-  it('2. renders default Music Player widget elements without any YouTube dependency', async () => {
+  it('2. renders default Music Player widget elements with Player/Playlist/YouTube tabs but no iframe by default', async () => {
     const onUpdateConfig = vi.fn();
 
     render(
@@ -70,9 +70,8 @@ describe('MusicWidget Component & Settings (Local Audio Player)', () => {
     expect(screen.getByText('No audio tracks yet')).toBeInTheDocument();
     expect(screen.getByText('Play')).toBeInTheDocument();
 
-    // Verify NO YouTube elements or IFrames exist
+    // Player tab shows vinyl; no embed iframe until user loads a link
     expect(screen.queryByTitle(/youtube/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/youtube/i)).not.toBeInTheDocument();
   });
 
   it('3. renders animated vinyl record with paused state initially and running state when playing', async () => {
@@ -150,7 +149,7 @@ describe('MusicWidget Component & Settings (Local Audio Player)', () => {
     await waitFor(() => {
       expect(screen.getByText('track_beta')).toBeInTheDocument();
       expect(onUpdateConfig).toHaveBeenCalledWith(
-        expect.objectContaining({ activeTrackId: tracks[1].id })
+        expect.objectContaining({ activeTrackId: `local=${tracks[1].id}` })
       );
     });
 
@@ -247,7 +246,7 @@ describe('MusicWidget Component & Settings (Local Audio Player)', () => {
         instanceId="inst-music-1"
         workspaceId="ws-1"
         isEditMode={false}
-        config={{ ...DEFAULT_MUSIC_CONFIG, activeTrackId: tracks[0].id }}
+        config={{ ...DEFAULT_MUSIC_CONFIG, activeTrackId: `local=${tracks[0].id}` }}
         onUpdateConfig={vi.fn()}
         onRemove={vi.fn()}
       />
@@ -260,5 +259,92 @@ describe('MusicWidget Component & Settings (Local Audio Player)', () => {
     unmount();
 
     expect(revokeSpy).toHaveBeenCalled();
+  });
+
+  it('8. renders Player/Playlist/Spotify tabs and switches to Playlist', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify([{ id: '1', title: 'osu beat', artist: 'Roselia', file: '001_audio.mp3', duration: 95 }]), { status: 200 })
+    );
+
+    render(
+      <MusicWidgetComponent
+        instanceId="inst-music-1"
+        workspaceId="ws-1"
+        isEditMode={false}
+        config={DEFAULT_MUSIC_CONFIG}
+        onUpdateConfig={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Player')).toBeInTheDocument();
+    expect(screen.getByText('Playlist')).toBeInTheDocument();
+    expect(screen.getByText('YouTube · Spotify')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Playlist'));
+
+    await waitFor(() => {
+      expect(screen.getByText('osu beat')).toBeInTheDocument();
+    });
+    expect(screen.getByText('OSU')).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it('9. Spotify tab renders an embed iframe from loaded config and updates config on Load', async () => {
+    const onUpdateConfig = vi.fn();
+    render(
+      <MusicWidgetComponent
+        instanceId="inst-music-1"
+        workspaceId="ws-1"
+        isEditMode={false}
+        config={{
+          ...DEFAULT_MUSIC_CONFIG,
+          activeTab: 'spotify',
+          spotifyEmbedUrl: 'https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT',
+          spotifyUrl: 'https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT',
+          spotifyTitle: 'Spotify Track',
+          spotifyProvider: 'spotify',
+        }}
+        onUpdateConfig={onUpdateConfig}
+        onRemove={vi.fn()}
+      />
+    );
+
+    await waitFor(() => {
+      const iframe = document.querySelector('iframe') as HTMLIFrameElement | null;
+      expect(iframe).not.toBeNull();
+      expect(iframe?.src).toContain('open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT');
+    });
+
+    // Loading a new link pushes the parsed embed into config
+    const input = screen.getByLabelText('YouTube / Spotify link or ID');
+    fireEvent.change(input, { target: { value: 'https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT' } });
+    fireEvent.click(screen.getByText('Load'));
+
+    expect(onUpdateConfig).toHaveBeenCalledWith(
+      expect.objectContaining({ spotifyEmbedUrl: 'https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT' })
+    );
+  });
+
+  it('10. Spotify tab shows invalid error for junk input and accepts bare IDs', () => {
+    render(
+      <MusicWidgetComponent
+        instanceId="inst-music-1"
+        workspaceId="ws-1"
+        isEditMode={false}
+        config={{ ...DEFAULT_MUSIC_CONFIG, activeTab: 'spotify' }}
+        onUpdateConfig={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    );
+
+    const input = screen.getByLabelText('YouTube / Spotify link or ID');
+    fireEvent.change(input, { target: { value: 'not a link at all' } });
+    fireEvent.click(screen.getByText('Load'));
+    expect(screen.getByText('Unsupported or invalid YouTube / Spotify link.')).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: '4cOdK2wGLETKBW3PvgPWqT' } });
+    fireEvent.click(screen.getByText('Load'));
+    expect(screen.queryByText('Unsupported or invalid YouTube / Spotify link.')).not.toBeInTheDocument();
   });
 });

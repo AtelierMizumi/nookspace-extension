@@ -79,4 +79,38 @@ describe('Music Utilities & Allowlist Parser', () => {
       expect(parsed?.embedUrl).toBe(preset.embedUrl);
     }
   });
+
+  it('9. parseSpotifyId accepts bare Spotify IDs and spotify: URIs', async () => {
+    const { parseSpotifyId } = await import('../../../src/features/music/musicUtils');
+    // Bare 22-char ID → treated as a track
+    const bare = parseSpotifyId('4cOdK2wGLETKBW3PvgPWqT');
+    expect(bare).not.toBeNull();
+    expect(bare?.provider).toBe('spotify');
+    expect(bare?.embedUrl).toBe('https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT');
+    // spotify: URI with explicit type
+    const uri = parseSpotifyId('spotify:playlist:37i9dQZF1DXcBWIGoYBM5M');
+    expect(uri?.embedUrl).toBe('https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M');
+    // Full URL still works
+    const url = parseSpotifyId('https://open.spotify.com/album/1DFixLWuPkv3KT3TnV35m3');
+    expect(url?.embedUrl).toBe('https://open.spotify.com/embed/album/1DFixLWuPkv3KT3TnV35m3');
+    // Junk rejected
+    expect(parseSpotifyId('hello')).toBeNull();
+    expect(parseSpotifyId('spotify:track:!!!')).toBeNull();
+  });
+
+  it('10. parses playlist-only YouTube URLs via videoseries embed', () => {
+    const res = parseMusicUrl('https://www.youtube.com/playlist?list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+    expect(res).not.toBeNull();
+    expect(res?.provider).toBe('youtube');
+    expect(res?.embedUrl).toBe('https://www.youtube.com/embed/videoseries?list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+    expect(res?.cleanUrl).toBe('https://www.youtube.com/playlist?list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+  });
+
+  it('11. keeps playlist context when a watch URL carries both video and list params', () => {
+    const res = parseMusicUrl('https://www.youtube.com/watch?v=jfKfPfyJRdk&list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+    expect(res?.provider).toBe('youtube');
+    expect(res?.embedUrl).toBe('https://www.youtube.com/embed/jfKfPfyJRdk?list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+    const short = parseMusicUrl('https://youtu.be/jfKfPfyJRdk?list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+    expect(short?.embedUrl).toBe('https://www.youtube.com/embed/jfKfPfyJRdk?list=PLf9LQoGJQYw5mQ78WkZ9Kz8k78nm2tWP');
+  });
 });

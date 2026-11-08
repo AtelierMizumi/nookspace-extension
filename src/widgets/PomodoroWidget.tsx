@@ -388,7 +388,7 @@ export const PomodoroWidget: WidgetDefinition = {
   icon: TimerIcon,
   defaultConfig: {},
   defaultDimensions: { w: 4, h: 4 },
-  minDimensions: { w: 3, h: 3 },
+  minDimensions: { w: 4, h: 4 },
   component: PomodoroWidgetComponent,
 };
 

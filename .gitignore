@@ -31,3 +31,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# OSU bundled music — generate via `npm run music` (binaries, ~500MB)
+public/music/*.mp3
