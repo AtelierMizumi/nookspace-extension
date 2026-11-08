@@ -224,7 +224,30 @@
 
 ---
 
+23. **User Identity, Supabase Authentication & Shared Workspaces Architecture (Post-Roadmap Extension)**:
+    - **Dual Operating Modes**:
+      - *Personal Mode*: 100% local-first, zero cloud account required, private Dexie.js IndexedDB storage.
+      - *Shared Mode*: Cloud-synchronized collaborative features enabled when authenticated via Supabase.
+    - **Infrastructure & Client (`src/infrastructure/supabase/`)**:
+      - Singleton `@supabase/supabase-js` client configured with environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`).
+      - Extension Storage Adapter (`ExtensionStorageAdapter`) utilizing `browserApi.storage.local` with fallback to in-memory storage, avoiding cookie limitations in extension service workers and background scripts.
+    - **User Identity & Account Management (`src/features/account/`)**:
+      - `authService.ts`: Encapsulates sign up, sign in with password, sign out, password reset, and session listeners.
+      - `profileService.ts`: CRUD operations for user profiles (`public.user_profiles`).
+      - `avatarStorageService.ts`: Uploads avatar images to Supabase Storage bucket `avatars` with client-side mime/size checks (5MB limit) and folder isolation (`avatars/{userId}/...`).
+      - UI Components: Accessible, portal-rendered `AuthModal.tsx` and `ProfileModal.tsx` with full focus retention, keyboard navigation, and bilingual localization.
+    - **Shared Workspaces & Virtual Study Room (`src/features/shared-workspace/`)**:
+      - `sharedWorkspaceService.ts`: Create rooms with unique 6-character uppercase codes, join rooms via atomic RPC `public.join_shared_workspace(code)`, fetch memberships, and manage members.
+      - `studyPresenceService.ts`: Real-time presence reporting (`IN_FOCUS`, `ON_BREAK`, `IDLE`), current activity title, and focus minutes with Supabase Realtime channel broadcast.
+      - `sharedWorkspaceStore.ts`: Zustand store managing workspace list, active workspace, presence entries, and live subscriptions.
+      - UI Components: `SharedWorkspaceModal.tsx` and `VirtualStudyRoomModal.tsx` with live peers grid, room stats, and seamless 1-click switching back to Personal Mode.
+    - **Database Migrations (`supabase/migrations/`)**:
+      - `20261108000000_account_profiles.sql`: User profiles table with auto-trigger on `auth.users` insert and RLS.
+      - `20261108010000_storage_avatars.sql`: Supabase Storage bucket `avatars` and user-isolated folder policies.
+      - `20261108020000_shared_workspaces.sql`: Shared workspaces, memberships, presence tracking, and RPC join function.
+
+---
+
 ## Next Steps
-All Phases 0 through 10 are completely delivered, validated, and sealed.
-- **Phase 10 (Cross-Browser Validation & Release Preparation)**: ALL MILESTONES (10.0, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6) COMPLETED.
-- **Current State**: `RC_FROZEN` locally awaiting developer store dashboard submission when external developer credentials/hosting URLs are provisioned.
+All Phases 0 through 10 and the Post-Roadmap Account & Shared Workspaces Foundation are implemented, tested, and sealed.
+- **Current State**: Post-roadmap enhancements compiled and verified locally. Ready for user SQL migration execution in Supabase and production deployment.

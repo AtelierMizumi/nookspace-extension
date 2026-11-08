@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { IconButton } from './Button';
@@ -35,8 +36,13 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const titleId = useId();
   const descId = useId();
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -62,7 +68,7 @@ export const Modal: React.FC<ModalProps> = ({
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           e.preventDefault();
-          onClose();
+          onCloseRef.current();
         } else if (e.key === 'Tab' && modalRef.current) {
           const focusable = Array.from(
             modalRef.current.querySelectorAll<HTMLElement>(
@@ -110,18 +116,18 @@ export const Modal: React.FC<ModalProps> = ({
         }
       };
     }
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={description ? descId : undefined}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
     >
       {/* Backdrop */}
       <div
@@ -134,7 +140,7 @@ export const Modal: React.FC<ModalProps> = ({
         ref={modalRef}
         tabIndex={-1}
         className={cn(
-          'relative w-full z-50 rounded-xl border border-border bg-card text-card-foreground shadow-2xl outline-none max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden',
+          'relative w-full z-50 my-auto rounded-xl border border-border bg-card text-card-foreground shadow-2xl outline-none max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden',
           'animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none',
           sizeStyles[size],
           className
@@ -179,6 +185,12 @@ export const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 };
 
 export const Dialog = Modal;

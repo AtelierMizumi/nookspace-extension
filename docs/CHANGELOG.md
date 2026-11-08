@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - Post-Roadmap Extension (2026-11-08)
+
+### Added
+- **User Identity & Supabase Authentication Integration**:
+  - Official `@supabase/supabase-js` client singleton with custom extension storage adapter (`ExtensionStorageAdapter`) supporting Chromium MV3 and Firefox MV2/MV3 without cookie dependencies.
+  - Auth Modal (`AuthModal.tsx`) with tabbed Login, Registration, Forgot Password, and Email Verification states.
+  - Safe error handling, password masking toggle, client-side input validation, and password confirmation matching.
+  - User Profile & Account Settings modal (`ProfileModal.tsx`) with avatar preview, display name, bio, and sign-out controls.
+  - Preserved Core Dual Operating Mode: 100% offline Personal Mode (Dexie.js IndexedDB) vs Authenticated Shared Mode (Supabase).
+- **Avatar Upload to Supabase Storage (Option 3)**:
+  - Custom Supabase Storage bucket integration (`avatars`) with public read access and RLS isolated user folder uploads (`avatars/{userId}/...`).
+  - `avatarStorageService.ts` with file validation (5MB max limit, PNG/JPEG/WEBP/GIF), automatic file naming, upload progress handling, and public URL generation.
+  - File picker trigger with camera overlay and remove/revert capability in `ProfileModal.tsx`.
+- **Shared Workspaces (Option 1)**:
+  - Domain models, database migrations (`shared_workspaces`, `shared_workspace_members`), and `sharedWorkspaceService.ts`.
+  - Create shared workspace with name, description, color, and unique 6-character uppercase alphanumeric join code.
+  - Join shared workspace by code with atomic Supabase RPC (`join_shared_workspace(code)`) and member list query.
+  - Dual Mode Switcher: 1-click toggle between Personal Mode and Shared Room with visual indicator badge in `TopNav.tsx`.
+- **Virtual Study Room & Live Pomodoro Presence Sync (Option 2)**:
+  - `studyRoomPresence` realtime tracking with statuses: `IN_FOCUS` 🟢, `ON_BREAK` 🟡, `IDLE` ⚪.
+  - Supabase Realtime channel subscription with automatic heartbeats, status toggle, activity title updating, and daily focus minutes.
+  - Live Peers Grid with animated presence indicators, participant badges, and room focus analytics.
+  - `TopNav.tsx` active room indicator button with 1-click shortcut to the Virtual Study Room modal.
+- **SQL Migrations & Infrastructure Documentation (Option 5)**:
+  - `supabase/migrations/20261108000000_account_profiles.sql`: User profiles table with auto-create trigger and secure RLS.
+  - `supabase/migrations/20261108010000_storage_avatars.sql`: Storage bucket setup with isolated user folder RLS policies.
+  - `supabase/migrations/20261108020000_shared_workspaces.sql`: Shared workspaces, memberships, study room presence, and RPC functions.
+  - Bilingual localization parity (100% English & Vietnamese) for all account, shared workspace, and study room UI.
+
 ## [0.1.0-alpha.51] - 2026-11-08
 
 ### Added

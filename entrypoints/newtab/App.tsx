@@ -39,6 +39,8 @@ import { BackgroundSection } from '../../src/features/preferences/components/Bac
 import { UserGuideModal } from '../../src/features/user-guide';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useTranslation } from '../../src/services/i18n';
+import { useAuthStore } from '../../src/features/account';
+import { useSharedWorkspaceStore, SharedRoomDashboard } from '../../src/features/shared-workspace';
 import { db } from '../../src/services/database/db';
 // Ensure all initial widgets are registered
 import '../../src/widgets';
@@ -61,12 +63,16 @@ export const App: React.FC = () => {
   // Check for interrupted restore operations and handle startup recovery
   useEffect(() => {
     initializeLanguage();
+    useAuthStore.getState().initialize().catch((err) => {
+      console.warn('[App] Supabase auth initialize failed:', err);
+    });
     checkAndHandleStartupRecovery(db).catch((err) => {
       console.warn('[App] Startup recovery check failed:', err);
     });
   }, [initializeLanguage]);
 
   const { activeWorkspaceId, getActiveWorkspace } = useWorkspaceStore();
+  const activeSharedWs = useSharedWorkspaceStore((s) => s.activeSharedWorkspace);
   const { instances, addWidget, removeWidget, toggleWidget, updateConfig } = useWidgetStore();
   const {
     layouts,
@@ -202,78 +208,84 @@ export const App: React.FC = () => {
 
   return (
     <AppShell
-      isEditMode={isEditMode}
+      isEditMode={isEditMode && !activeSharedWs}
       onToggleEditMode={handleToggleEditMode}
       onOpenSettings={() => setIsSettingsOpen(true)}
       onOpenBookmarkManager={() => setIsBookmarkManagerOpen(true)}
       onOpenNotesManager={() => setIsNotesManagerOpen(true)}
       onOpenUserGuide={() => setIsUserGuideOpen(true)}
     >
-      {/* Workspace Header (Time & Dynamic Greeting) */}
-      <WorkspaceHeader userName={settings?.userName || t('widgets.greeting.defaultName') || 'Explorer'} />
+      {activeSharedWs ? (
+        <SharedRoomDashboard />
+      ) : (
+        <>
+          {/* Workspace Header (Time & Dynamic Greeting) */}
+          <WorkspaceHeader userName={settings?.userName || t('widgets.greeting.defaultName') || 'Explorer'} />
 
-      {/* Notion/Linear Style Customization Toolbar */}
-      <CustomizationToolbar
-        onAddWidget={() => setIsLibraryOpen(true)}
-        activeBreakpoint={currentBreakpoint}
-      />
+          {/* Notion/Linear Style Customization Toolbar */}
+          <CustomizationToolbar
+            onAddWidget={() => setIsLibraryOpen(true)}
+            activeBreakpoint={currentBreakpoint}
+          />
 
-      {/* Grid Engine Dashboard Viewport */}
-      <section className="flex-1 w-full pb-8">
-        {visibleInstances.length === 0 ? (
-          <EmptyState
-            icon={<LayoutGrid className="h-6 w-6 text-primary" />}
-            title={t('appShell.emptyWorkspaceTitle') || 'Your Workspace is Empty'}
-            description={
-              t('appShell.emptyWorkspaceDesc') ||
-              'Add widgets from the library to build your personal productivity dashboard.'
-            }
-            action={
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={() => setIsLibraryOpen(true)}
-              >
-                {t('appShell.addFirstWidget') || 'Add Your First Widget'}
-              </Button>
-            }
-            className="my-12 py-16"
-          />
-        ) : (
-          <GridLayoutEngine
-            workspaceId={activeWorkspaceId}
-            widgets={visibleInstances}
-            layouts={activeLayouts}
-            currentBreakpoint={currentBreakpoint}
-            isDraggable={isEditMode}
-            isResizable={isEditMode}
-            isEditMode={isEditMode}
-            onLayoutChange={isEditMode ? updateEditingLayouts : updateLayoutsInMemory}
-            onDragStop={() => {
-              if (!isEditMode) {
-                debouncedSaveLayouts(activeWorkspaceId);
-              }
-            }}
-            onResizeStop={() => {
-              if (!isEditMode) {
-                debouncedSaveLayouts(activeWorkspaceId);
-              }
-            }}
-            onBreakpointChange={(newBp) => loadLayouts(activeWorkspaceId, newBp)}
-            onUpdateConfig={(instanceId, newConfig) =>
-              updateConfig(instanceId, newConfig, activeWorkspaceId)
-            }
-            onRemove={handleRemoveWidget}
-            onToggleEnabled={(instanceId) => {
-              const target = instances.find((i) => i.id === instanceId);
-              if (target) {
-                toggleWidget(instanceId, !target.isEnabled, activeWorkspaceId);
-              }
-            }}
-          />
-        )}
-      </section>
+          {/* Grid Engine Dashboard Viewport */}
+          <section className="flex-1 w-full pb-8">
+            {visibleInstances.length === 0 ? (
+              <EmptyState
+                icon={<LayoutGrid className="h-6 w-6 text-primary" />}
+                title={t('appShell.emptyWorkspaceTitle') || 'Your Workspace is Empty'}
+                description={
+                  t('appShell.emptyWorkspaceDesc') ||
+                  'Add widgets from the library to build your personal productivity dashboard.'
+                }
+                action={
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    onClick={() => setIsLibraryOpen(true)}
+                  >
+                    {t('appShell.addFirstWidget') || 'Add Your First Widget'}
+                  </Button>
+                }
+                className="my-12 py-16"
+              />
+            ) : (
+              <GridLayoutEngine
+                workspaceId={activeWorkspaceId}
+                widgets={visibleInstances}
+                layouts={activeLayouts}
+                currentBreakpoint={currentBreakpoint}
+                isDraggable={isEditMode}
+                isResizable={isEditMode}
+                isEditMode={isEditMode}
+                onLayoutChange={isEditMode ? updateEditingLayouts : updateLayoutsInMemory}
+                onDragStop={() => {
+                  if (!isEditMode) {
+                    debouncedSaveLayouts(activeWorkspaceId);
+                  }
+                }}
+                onResizeStop={() => {
+                  if (!isEditMode) {
+                    debouncedSaveLayouts(activeWorkspaceId);
+                  }
+                }}
+                onBreakpointChange={(newBp) => loadLayouts(activeWorkspaceId, newBp)}
+                onUpdateConfig={(instanceId, newConfig) =>
+                  updateConfig(instanceId, newConfig, activeWorkspaceId)
+                }
+                onRemove={handleRemoveWidget}
+                onToggleEnabled={(instanceId) => {
+                  const target = instances.find((i) => i.id === instanceId);
+                  if (target) {
+                    toggleWidget(instanceId, !target.isEnabled, activeWorkspaceId);
+                  }
+                }}
+              />
+            )}
+          </section>
+        </>
+      )}
 
       {/* Widget Library Modal */}
       <WidgetLibraryModal

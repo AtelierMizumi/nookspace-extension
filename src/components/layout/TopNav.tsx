@@ -9,6 +9,8 @@ import {
   Bookmark,
   FileText,
   HelpCircle,
+  BookOpen,
+  LogOut,
 } from 'lucide-react';
 import { Button, IconButton } from '../ui/Button';
 import { Dropdown, DropdownItem } from '../ui/Dropdown';
@@ -22,6 +24,8 @@ import {
   WorkspaceManagerModal,
   WorkspaceFormModal,
 } from '../../features/workspaces';
+import { AccountMenu } from '../../features/account';
+import { useSharedWorkspaceStore } from '../../features/shared-workspace';
 
 export interface TopNavProps {
   isEditMode?: boolean;
@@ -44,6 +48,9 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const { resolvedTheme, setTheme } = useThemeStore();
   const { createWorkspace, createWorkspaceFromPreset } = useWorkspaceStore();
+  const activeSharedWs = useSharedWorkspaceStore((s) => s.activeSharedWorkspace);
+  const openStudyRoom = useSharedWorkspaceStore((s) => s.openStudyRoom);
+  const leaveCurrentRoom = useSharedWorkspaceStore((s) => s.leaveCurrentRoom);
 
   const [isWorkspaceManagerOpen, setIsWorkspaceManagerOpen] = useState(false);
   const [isWorkspaceCreateOpen, setIsWorkspaceCreateOpen] = useState(false);
@@ -107,11 +114,32 @@ export const TopNav: React.FC<TopNavProps> = ({
             </Badge>
           </div>
 
-          {/* Workspace Switcher */}
-          <WorkspaceSwitcher
-            onOpenManager={() => setIsWorkspaceManagerOpen(true)}
-            onOpenCreate={() => setIsWorkspaceCreateOpen(true)}
-          />
+          {/* Workspace Switcher OR Shared Room Active Banner */}
+          {activeSharedWs ? (
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="max-w-[130px] truncate">{activeSharedWs.name}</span>
+                <span className="text-[10px] opacity-75 font-mono">({activeSharedWs.joinCode})</span>
+              </div>
+              <Tooltip content={t('sharedWorkspace.leaveRoomTooltip') || 'Rời phòng và quay về Không gian cá nhân'} position="bottom">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={leaveCurrentRoom}
+                  className="h-7 px-2 text-[11px] text-destructive hover:bg-destructive/10 border-destructive/30"
+                  leftIcon={<LogOut className="h-3 w-3" />}
+                >
+                  <span className="hidden sm:inline">{t('sharedWorkspace.leaveRoom') || 'Rời phòng'}</span>
+                </Button>
+              </Tooltip>
+            </div>
+          ) : (
+            <WorkspaceSwitcher
+              onOpenManager={() => setIsWorkspaceManagerOpen(true)}
+              onOpenCreate={() => setIsWorkspaceCreateOpen(true)}
+            />
+          )}
         </div>
 
         {/* Right: Add Widget, Customize, Theme, Settings */}
@@ -218,6 +246,9 @@ export const TopNav: React.FC<TopNavProps> = ({
               <Settings className="h-4 w-4" />
             </IconButton>
           </Tooltip>
+
+          {/* Account Profile / Identity */}
+          <AccountMenu />
         </div>
       </header>
 
