@@ -21,6 +21,7 @@ import { getWorkspaceIcon } from './WorkspaceIconPicker';
 import { WorkspaceFormModal } from './WorkspaceFormModal';
 import { WorkspaceDuplicateDialog } from './WorkspaceDuplicateDialog';
 import { WorkspaceDeleteDialog } from './WorkspaceDeleteDialog';
+import { useTranslation } from '../../../services/i18n';
 
 export interface WorkspaceManagerModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
   onClose,
   onOpenCreate,
 }) => {
+  const { t } = useTranslation();
   const {
     workspaces,
     activeWorkspaceId,
@@ -150,10 +152,10 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
         title={
           <div className="flex items-center gap-2 text-foreground font-semibold">
             <Layers className="h-5 w-5 text-primary" />
-            <span>Manage Workspaces</span>
+            <span>{t('workspaces.manageTitle')}</span>
           </div>
         }
-        description="Organize, customize, reorder, or duplicate your workspaces."
+        description={t('workspaces.organizeDesc')}
         size="lg"
         footer={
           <div className="flex items-center justify-between w-full">
@@ -164,10 +166,10 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
               className="gap-1.5 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>New Workspace</span>
+              <span>{t('workspaces.newWorkspace')}</span>
             </Button>
             <Button variant="primary" size="sm" onClick={onClose} className="focus-visible:ring-2 focus-visible:ring-primary">
-              Done
+              {t('common.done')}
             </Button>
           </div>
         }
@@ -175,7 +177,7 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
         <div className="space-y-2 py-1 max-h-[60vh] overflow-y-auto pr-1">
           {sortedWorkspaces.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground text-sm">
-              No workspaces found.
+              {t('workspaces.noWorkspaces')}
             </div>
           ) : (
             sortedWorkspaces.map((workspace, index) => {
@@ -245,18 +247,18 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
                         {isActive && (
                           <Badge variant="default" size="sm" className="gap-1 px-1.5 py-0 text-[10px]">
                             <Check className="h-3 w-3" />
-                            Active
+                            {t('workspaces.activeBadge')}
                           </Badge>
                         )}
                         {workspace.isDefault && (
                           <Badge variant="secondary" size="sm" className="gap-1 px-1.5 py-0 text-[10px]">
                             <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                            Default
+                            {t('workspaces.defaultBadge')}
                           </Badge>
                         )}
                       </div>
                       <span className="text-[11px] text-muted-foreground truncate">
-                        {workspace.isDefault ? 'Default workspace' : 'Custom dashboard workspace'}
+                        {workspace.isDefault ? t('workspaces.defaultDesc') : t('workspaces.customDesc')}
                       </span>
                     </div>
                   </div>
@@ -271,11 +273,11 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
                         aria-label={`Switch to ${workspace.name}`}
                         className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary"
                       >
-                        Switch
+                        {t('workspaces.switchTo')}
                       </Button>
                     )}
 
-                    <Tooltip content="Edit workspace" position="top">
+                    <Tooltip content={t('workspaces.editWorkspace')} position="top">
                       <IconButton
                         size="sm"
                         variant="ghost"
@@ -287,7 +289,7 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
                       </IconButton>
                     </Tooltip>
 
-                    <Tooltip content="Duplicate workspace" position="top">
+                    <Tooltip content={t('workspaces.duplicateWorkspace')} position="top">
                       <IconButton
                         size="sm"
                         variant="ghost"
@@ -302,8 +304,8 @@ export const WorkspaceManagerModal: React.FC<WorkspaceManagerModalProps> = ({
                     <Tooltip
                       content={
                         sortedWorkspaces.length <= 1
-                          ? 'Cannot delete the only workspace'
-                          : 'Delete workspace'
+                          ? t('workspaces.cannotDeleteOnly')
+                          : t('workspaces.deleteWorkspace')
                       }
                       position="top"
                     >

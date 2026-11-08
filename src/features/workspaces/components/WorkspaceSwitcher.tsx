@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button';
 import { useWorkspaceStore } from '../../../stores/workspaceStore';
 import { useCustomizationStore } from '../../../stores/customizationStore';
 import { getWorkspaceIcon } from './WorkspaceIconPicker';
+import { useTranslation } from '../../../services/i18n';
 
 export interface WorkspaceSwitcherProps {
   onOpenManager?: () => void;
@@ -17,6 +18,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
   onOpenCreate,
   className,
 }) => {
+  const { t } = useTranslation();
   const { workspaces, activeWorkspaceId, setActiveWorkspace } = useWorkspaceStore();
   const requestWorkspaceSwitch = useCustomizationStore((s) => s.requestWorkspaceSwitch);
 
@@ -69,14 +71,14 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
     }),
     {
       id: 'create-workspace-action',
-      label: <span className="text-xs">Create Workspace...</span>,
+      label: <span className="text-xs">{t('workspaces.createWorkspaceAction')}</span>,
       icon: <Plus className="h-3.5 w-3.5 text-muted-foreground" />,
       separatorAfter: false,
       onClick: onOpenCreate,
     },
     {
       id: 'manage-workspaces-action',
-      label: <span className="text-xs">Manage Workspaces...</span>,
+      label: <span className="text-xs">{t('workspaces.manageWorkspacesAction')}</span>,
       icon: <Layers className="h-3.5 w-3.5 text-muted-foreground" />,
       separatorAfter: false,
       onClick: onOpenManager,
@@ -88,12 +90,14 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
       <Dropdown
         items={dropdownItems}
         align="left"
-        menuAriaLabel="Switch workspace"
+        menuAriaLabel={t('workspaces.switchWorkspace')}
         trigger={
           <Button
             variant="ghost"
             size="sm"
-            aria-label={`Current workspace: ${activeWorkspace?.name || 'Personal Space'}. Switch workspace.`}
+            aria-label={t('workspaces.currentWorkspacePrompt', {
+              name: activeWorkspace?.name || 'Personal Space',
+            })}
             className="h-8 gap-2 px-2.5 text-xs font-medium text-foreground hover:bg-secondary/70 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div

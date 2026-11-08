@@ -76,6 +76,7 @@ function formatNoteTime(
 export const NotesWidgetSettings: React.FC<
   WidgetSettingsProps<NotesWidgetConfig>
 > = ({ config, onSaveConfig, onClose }) => {
+  const { t } = useTranslation();
   const collections = useNoteStore((s) => s.collections);
 
   const [mode, setMode] = useState<NotesDisplayMode>(config?.mode || 'recent');
@@ -113,26 +114,26 @@ export const NotesWidgetSettings: React.FC<
     <div className="space-y-4 text-xs select-none">
       {/* 1. Mode Selector */}
       <div className="space-y-1.5">
-        <label className="font-medium text-foreground block">Display Mode</label>
+        <label className="font-medium text-foreground block">{t('widgets.notes.displayMode')}</label>
         <select
           value={mode}
           onChange={(e) => setMode(e.target.value as NotesDisplayMode)}
           className="w-full p-2 rounded-lg border border-border bg-background text-foreground text-xs focus:ring-1 focus:ring-primary focus:outline-none"
         >
-          <option value="recent">Recent Notes (Default)</option>
-          <option value="pinned">Pinned Notes</option>
-          <option value="favorites">Favorite Notes</option>
-          <option value="collection">Collection Notes</option>
+          <option value="recent">{t('widgets.notes.recentNotes')}</option>
+          <option value="pinned">{t('widgets.notes.pinnedNotes')}</option>
+          <option value="favorites">{t('widgets.notes.favoriteNotes')}</option>
+          <option value="collection">{t('widgets.notes.collectionNotes')}</option>
         </select>
         <p className="text-[11px] text-muted-foreground">
-          Choose which subset of notes to present on your dashboard.
+          {t('widgets.notes.modeDesc')}
         </p>
       </div>
 
       {/* 2. Collection Picker (Only when mode === 'collection') */}
       {mode === 'collection' && (
         <div className="space-y-1.5 animate-in fade-in duration-150">
-          <label className="font-medium text-foreground block">Select Collection</label>
+          <label className="font-medium text-foreground block">{t('widgets.notes.selectCollection')}</label>
           <select
             value={collectionId || 'uncategorized'}
             onChange={(e) =>
@@ -140,7 +141,7 @@ export const NotesWidgetSettings: React.FC<
             }
             className="w-full p-2 rounded-lg border border-border bg-background text-foreground text-xs focus:ring-1 focus:ring-primary focus:outline-none"
           >
-            <option value="uncategorized">📁 Uncategorized Notes</option>
+            <option value="uncategorized">📁 {t('widgets.notes.uncategorizedBadge')}</option>
             {collections.map((col) => (
               <option key={col.id} value={col.id}>
                 📁 {col.title}
@@ -152,16 +153,16 @@ export const NotesWidgetSettings: React.FC<
 
       {/* 3. Items Limit */}
       <div className="space-y-1.5">
-        <label className="font-medium text-foreground block">Maximum Displayed Notes</label>
+        <label className="font-medium text-foreground block">{t('widgets.notes.maxNotes')}</label>
         <select
           value={maxItems}
           onChange={(e) => setMaxItems(Number(e.target.value))}
           className="w-full p-2 rounded-lg border border-border bg-background text-foreground text-xs focus:ring-1 focus:ring-primary focus:outline-none"
         >
-          <option value={3}>3 Notes</option>
-          <option value={5}>5 Notes (Default)</option>
-          <option value={8}>8 Notes</option>
-          <option value={10}>10 Notes</option>
+          <option value={3}>3</option>
+          <option value={5}>5</option>
+          <option value={8}>8</option>
+          <option value={10}>10</option>
         </select>
       </div>
 
@@ -170,32 +171,32 @@ export const NotesWidgetSettings: React.FC<
         <Switch
           checked={showExcerpts}
           onCheckedChange={setShowExcerpts}
-          label="Show note excerpt preview"
+          label={t('widgets.notes.showExcerpts')}
         />
         <Switch
           checked={showCollectionLabel}
           onCheckedChange={setShowCollectionLabel}
-          label="Show collection badge"
+          label={t('widgets.notes.showCollectionLabel')}
         />
         <Switch
           checked={showQuickCreate}
           onCheckedChange={setShowQuickCreate}
-          label="Show quick-create button in header"
+          label={t('widgets.notes.showQuickCreate')}
         />
         <Switch
           checked={density === 'compact'}
           onCheckedChange={(compact) => setDensity(compact ? 'compact' : 'comfortable')}
-          label="Compact note list density"
+          label={t('widgets.notes.compactDensity')}
         />
       </div>
 
       {/* Footer Controls */}
       <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
         <Button variant="ghost" size="sm" onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button variant="primary" size="sm" onClick={handleSave}>
-          Save Settings
+          {t('common.saveSettings')}
         </Button>
       </div>
     </div>
@@ -348,7 +349,7 @@ export const NotesWidgetComponent: React.FC<
       return (
         <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 text-amber-500">
           <Pin className="h-2.5 w-2.5 fill-current" />
-          <span>Pinned</span>
+          <span>{t('widgets.notes.pinnedBadge')}</span>
         </Badge>
       );
     }
@@ -356,7 +357,7 @@ export const NotesWidgetComponent: React.FC<
       return (
         <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 text-amber-400">
           <Star className="h-2.5 w-2.5 fill-current" />
-          <span>Favorites</span>
+          <span>{t('widgets.notes.favoritesBadge')}</span>
         </Badge>
       );
     }
@@ -379,14 +380,14 @@ export const NotesWidgetComponent: React.FC<
       return (
         <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 text-muted-foreground">
           <Folder className="h-2.5 w-2.5" />
-          <span>Uncategorized</span>
+          <span>{t('widgets.notes.uncategorizedBadge')}</span>
         </Badge>
       );
     }
     return (
       <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 text-muted-foreground">
         <Clock className="h-2.5 w-2.5" />
-        <span>Recent</span>
+        <span>{t('widgets.notes.recentBadge')}</span>
       </Badge>
     );
   };

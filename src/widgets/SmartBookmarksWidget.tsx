@@ -27,6 +27,7 @@ import { Modal } from '../components/ui/Modal';
 import { Tooltip } from '../components/ui/Tooltip';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../services/i18n';
 
 export type SmartBookmarksSource = 'all' | 'favorites' | 'uncategorized' | 'folder';
 
@@ -75,6 +76,7 @@ const BookmarkFavicon: React.FC<{ url: string; title: string }> = ({ url, title 
 export const SmartBookmarksWidgetSettings: React.FC<
   WidgetSettingsProps<SmartBookmarksConfig>
 > = ({ config, onSaveConfig, onClose }) => {
+  const { t } = useTranslation();
   const groups = useBookmarkStore((s) => s.groups);
 
   const [source, setSource] = useState<SmartBookmarksSource>(config?.source || 'all');
@@ -114,7 +116,7 @@ export const SmartBookmarksWidgetSettings: React.FC<
       {/* 1. Source Category / Folder */}
       <div>
         <label htmlFor="sb-source-select" className="font-medium text-foreground block mb-1.5">
-          Display Bookmarks From
+          {t('bookmarks.displayFrom')}
         </label>
         <select
           id="sb-source-select"
@@ -122,11 +124,11 @@ export const SmartBookmarksWidgetSettings: React.FC<
           onChange={(e) => handleSourceChange(e.target.value)}
           className="w-full h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
-          <option value="all">All Bookmarks</option>
-          <option value="favorites">Favorites Only (Starred)</option>
-          <option value="uncategorized">Uncategorized</option>
+          <option value="all">{t('bookmarks.allBookmarksOption')}</option>
+          <option value="favorites">{t('bookmarks.favoritesOption')}</option>
+          <option value="uncategorized">{t('bookmarks.uncategorized')}</option>
           {groups.length > 0 && (
-            <optgroup label="Folders">
+            <optgroup label={t('bookmarks.folders')}>
               {groups.map((g) => (
                 <option key={g.id} value={`folder:${g.id}`}>
                   {g.title}
@@ -140,7 +142,7 @@ export const SmartBookmarksWidgetSettings: React.FC<
       {/* 2. Maximum Visible Items */}
       <div>
         <label htmlFor="sb-max-items-select" className="font-medium text-foreground block mb-1.5">
-          Maximum Visible Bookmarks
+          {t('bookmarks.maxVisible')}
         </label>
         <select
           id="sb-max-items-select"
@@ -148,11 +150,11 @@ export const SmartBookmarksWidgetSettings: React.FC<
           onChange={(e) => setMaxItems(Number(e.target.value))}
           className="w-full h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
-          <option value={4}>4 Bookmarks</option>
-          <option value={6}>6 Bookmarks</option>
-          <option value={8}>8 Bookmarks (Default)</option>
-          <option value={12}>12 Bookmarks</option>
-          <option value={16}>16 Bookmarks</option>
+          <option value={4}>4</option>
+          <option value={6}>6</option>
+          <option value={8}>8</option>
+          <option value={12}>12</option>
+          <option value={16}>16</option>
         </select>
       </div>
 
@@ -161,22 +163,22 @@ export const SmartBookmarksWidgetSettings: React.FC<
         <Switch
           checked={showDomain}
           onCheckedChange={setShowDomain}
-          label="Show domain label below title"
+          label={t('bookmarks.showDomain')}
         />
         <Switch
           checked={compactDensity}
           onCheckedChange={setCompactDensity}
-          label="Compact tile density"
+          label={t('bookmarks.compactDensity')}
         />
       </div>
 
       {/* Footer Controls */}
       <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
         <Button variant="ghost" size="sm" onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button variant="primary" size="sm" onClick={handleSave}>
-          Save Settings
+          {t('common.saveSettings')}
         </Button>
       </div>
     </div>
@@ -190,6 +192,7 @@ export const SmartBookmarksWidgetSettings: React.FC<
 export const SmartBookmarksWidgetComponent: React.FC<
   WidgetProps<SmartBookmarksConfig>
 > = ({ workspaceId, config, onUpdateConfig }) => {
+  const { t } = useTranslation();
   const {
     bookmarks,
     groups,
@@ -301,7 +304,7 @@ export const SmartBookmarksWidgetComponent: React.FC<
       return (
         <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0">
           <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400" />
-          <span>Favorites</span>
+          <span>{t('bookmarks.favorites')}</span>
         </Badge>
       );
     }
@@ -309,7 +312,7 @@ export const SmartBookmarksWidgetComponent: React.FC<
       return (
         <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 text-muted-foreground">
           <Folder className="h-2.5 w-2.5" />
-          <span>Uncategorized</span>
+          <span>{t('bookmarks.uncategorized')}</span>
         </Badge>
       );
     }

@@ -44,7 +44,7 @@ export const ClockWidgetComponent: React.FC<WidgetProps<ClockConfig>> = ({ confi
       <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
         <span className="flex items-center gap-1.5">
           <ClockIcon className="h-3.5 w-3.5 text-primary" />
-          Time & Date
+          {t('widgets.clock.timeAndDate')}
         </span>
         <span className="text-[11px]">{date}</span>
       </div>
@@ -56,8 +56,8 @@ export const ClockWidgetComponent: React.FC<WidgetProps<ClockConfig>> = ({ confi
       </div>
 
       <div className="text-[10px] text-muted-foreground/80 flex items-center justify-between">
-        <span>Format: {format24h ? '24-hour' : '12-hour'}</span>
-        <span>Local Time</span>
+        <span>{format24h ? t('widgets.clock.format24') : t('widgets.clock.format12')}</span>
+        <span>{t('widgets.clock.localTime')}</span>
       </div>
     </div>
   );
@@ -68,6 +68,7 @@ export const ClockWidgetSettings: React.FC<WidgetSettingsProps<ClockConfig>> = (
   onSaveConfig,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [showSeconds, setShowSeconds] = useState(config?.showSeconds ?? true);
   const [format24h, setFormat24h] = useState(config?.format24h ?? false);
 
@@ -81,21 +82,21 @@ export const ClockWidgetSettings: React.FC<WidgetSettingsProps<ClockConfig>> = (
         <Switch
           checked={showSeconds}
           onCheckedChange={setShowSeconds}
-          label="Display seconds in clock"
+          label={t('widgets.clock.displaySeconds')}
         />
         <Switch
           checked={format24h}
           onCheckedChange={setFormat24h}
-          label="Use 24-hour time format"
+          label={t('widgets.clock.use24h')}
         />
       </div>
 
       <div className="flex justify-end gap-2 pt-3 border-t border-border/40">
         <Button variant="ghost" size="sm" onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button variant="primary" size="sm" onClick={handleSave}>
-          Save Settings
+          {t('common.saveSettings')}
         </Button>
       </div>
     </div>

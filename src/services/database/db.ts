@@ -18,6 +18,7 @@ import {
   DailyGoalEntity,
   CalendarEventEntity,
   AppSettingsEntity,
+  LocalAudioTrackEntity,
 } from '../../types/database';
 
 export class NookSpaceDB extends Dexie {
@@ -39,6 +40,7 @@ export class NookSpaceDB extends Dexie {
   dailyGoals!: Table<DailyGoalEntity, string>;
   calendarEvents!: Table<CalendarEventEntity, string>;
   settings!: Table<AppSettingsEntity, string>;
+  audioTracks!: Table<LocalAudioTrackEntity, string>;
 
   constructor(dbName: string = 'NookSpaceDB') {
     super(dbName);
@@ -158,13 +160,14 @@ export class NookSpaceDB extends Dexie {
         }
       });
 
-    // Version 4 Schema: Notes & Knowledge System (Collections, Normalized Tags, Bookmark Links, Enhanced Notes)
+    // Version 4 Schema: Notes & Knowledge System (Collections, Normalized Tags, Bookmark Links, Enhanced Notes, Local Audio)
     this.version(4)
       .stores({
         notes: 'id, workspaceId, collectionId, isPinned, isFavorite, isArchived, *tags, order, updatedAt',
         noteCollections: 'id, workspaceId, order',
         noteTags: 'id, workspaceId, name',
         noteBookmarkLinks: 'id, workspaceId, noteId, bookmarkId, [noteId+bookmarkId]',
+        audioTracks: 'id, order, createdAt, lastPlayedAt',
       })
       .upgrade(async (tx) => {
         const notesTable = tx.table('notes');

@@ -227,6 +227,40 @@ export const browserApi: BrowserApi = {
         window.open(url, '_blank', 'noopener,noreferrer');
       }
     },
+    async navigateCurrentTab(url: string): Promise<void> {
+      const lower = url.trim().toLowerCase();
+      if (
+        lower.startsWith('javascript:') ||
+        lower.startsWith('data:') ||
+        lower.startsWith('file:') ||
+        lower.startsWith('vbscript:')
+      ) {
+        return;
+      }
+
+      const ext = getExtensionGlobal();
+      if (ext?.tabs?.update) {
+        try {
+          await callBrowserApi<any>(
+            (cb) => ext.tabs.update({ url }, cb),
+            () => ext.tabs.update({ url }),
+            null,
+            ext
+          );
+          return;
+        } catch {
+          // Fall through to window.location
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          window.location.assign(url);
+        } catch {
+          window.location.href = url;
+        }
+      }
+    },
   },
 
   runtime: {

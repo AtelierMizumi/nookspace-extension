@@ -11,6 +11,8 @@ import { StudyTrackerWidget } from './StudyTrackerWidget';
 import { DailyGoalsWidget } from './DailyGoalsWidget';
 import { SmartBookmarksWidget } from './SmartBookmarksWidget';
 import { NotesWidget } from './NotesWidget';
+import { MusicWidget } from './MusicWidget';
+import { FlashcardWidget } from './FlashcardWidget';
 
 export function registerInitialWidgets(): void {
   widgetRegistry.register(ClockWidget);
@@ -25,6 +27,8 @@ export function registerInitialWidgets(): void {
   widgetRegistry.register(DailyGoalsWidget);
   widgetRegistry.register(SmartBookmarksWidget);
   widgetRegistry.register(NotesWidget);
+  widgetRegistry.register(MusicWidget);
+  widgetRegistry.register(FlashcardWidget);
 }
 
 // Auto-register on import
@@ -44,4 +48,6 @@ export {
   DailyGoalsWidget,
   SmartBookmarksWidget,
   NotesWidget,
+  MusicWidget,
+  FlashcardWidget,
 };

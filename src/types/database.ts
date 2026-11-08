@@ -101,6 +101,19 @@ export interface StickyNoteEntity {
   updatedAt: number;
 }
 
+export interface LocalAudioTrackEntity {
+  id: string;
+  name: string;
+  artist?: string;
+  mimeType: string;
+  fileSize: number;
+  duration?: number;
+  blob: Blob;
+  createdAt: number;
+  lastPlayedAt?: number;
+  order: number;
+}
+
 export interface BookmarkGroupEntity {
   id: string;
   workspaceId: string;
@@ -132,11 +145,21 @@ export interface VocabularyEntity {
   workspaceId?: string;
   word: string;
   reading?: string;
+  romanization?: string;
   meaning: string;
+  partOfSpeech?: string;
   exampleSentence?: string;
   exampleTranslation?: string;
   category: string;
+  sourceLanguage?: string;
+  targetLanguage?: string;
+  difficulty?: string;
+  topic?: string;
+  note?: string;
   status: 'new' | 'learning' | 'mastered';
+  difficultyRating?: 'easy' | 'good' | 'hard';
+  lastReviewedAt?: number;
+  reviewCount?: number;
   createdAt: number;
   updatedAt: number;
 }

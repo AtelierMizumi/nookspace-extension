@@ -8,6 +8,7 @@ import {
   Plus,
   Bookmark,
   FileText,
+  HelpCircle,
 } from 'lucide-react';
 import { Button, IconButton } from '../ui/Button';
 import { Dropdown, DropdownItem } from '../ui/Dropdown';
@@ -29,6 +30,7 @@ export interface TopNavProps {
   onOpenWidgetLibrary?: () => void;
   onOpenBookmarkManager?: () => void;
   onOpenNotesManager?: () => void;
+  onOpenUserGuide?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -38,6 +40,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenWidgetLibrary,
   onOpenBookmarkManager,
   onOpenNotesManager,
+  onOpenUserGuide,
 }) => {
   const { resolvedTheme, setTheme } = useThemeStore();
   const { createWorkspace, createWorkspaceFromPreset } = useWorkspaceStore();
@@ -189,6 +192,20 @@ export const TopNav: React.FC<TopNavProps> = ({
               </IconButton>
             }
           />
+
+          {onOpenUserGuide && (
+            <Tooltip content={t('topNav.userGuide')} position="bottom">
+              <IconButton
+                size="sm"
+                variant="outline"
+                aria-label={t('topNav.userGuide')}
+                onClick={onOpenUserGuide}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </IconButton>
+            </Tooltip>
+          )}
 
           <Tooltip content={t('preferences.title')} position="bottom">
             <IconButton

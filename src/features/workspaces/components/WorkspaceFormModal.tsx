@@ -10,6 +10,7 @@ import { WorkspaceEntity } from '../../../types/workspaces';
 import { getAllPresets } from '../presets/presetRegistry';
 import { WorkspacePreset } from '../presets/types';
 import { cn } from '../../../utils/cn';
+import { useTranslation } from '../../../services/i18n';
 
 export interface WorkspaceFormModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
   onSubmitCreate,
   onSubmitEdit,
 }) => {
+  const { t } = useTranslation();
   const [createMode, setCreateMode] = useState<'preset' | 'blank'>('preset');
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -141,7 +143,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
       onClose={() => {
         if (!isSubmitting) onClose();
       }}
-      title={isEdit ? 'Edit Workspace' : 'Create New Workspace'}
+      title={isEdit ? t('workspaces.editTitle') : t('workspaces.createTitle')}
       description={
         isEdit
           ? 'Update workspace name, icon, and accent color.'
@@ -151,7 +153,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
           <Button variant="ghost" size="sm" onClick={onClose} disabled={isSubmitting}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -162,11 +164,11 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
           >
             {isSubmitting
               ? isEdit
-                ? 'Saving...'
-                : 'Creating...'
+                ? t('workspaces.saving')
+                : t('workspaces.creating')
               : isEdit
-              ? 'Save Changes'
-              : 'Create Workspace'}
+              ? t('workspaces.saveChanges')
+              : t('workspaces.createTitle')}
           </Button>
         </div>
       }
@@ -190,7 +192,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
               )}
             >
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span>Starter Presets</span>
+              <span>{t('workspaces.starterPresets')}</span>
             </button>
             <button
               type="button"
@@ -205,7 +207,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
               )}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span>Blank Workspace</span>
+              <span>{t('workspaces.blankWorkspace')}</span>
             </button>
           </div>
         )}
@@ -214,7 +216,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
         {!isEdit && createMode === 'preset' && (
           <div className="space-y-2">
             <label id="presets-label" className="font-medium text-foreground block text-xs">
-              Select Preset
+              {t('workspaces.selectPreset')}
             </label>
             <div
               role="radiogroup"
@@ -301,7 +303,7 @@ export const WorkspaceFormModal: React.FC<WorkspaceFormModalProps> = ({
         {/* 1. Name Input */}
         <div>
           <label htmlFor="workspace-name-input" className="font-medium text-foreground block mb-1.5">
-            Workspace Name <span className="text-destructive" aria-hidden="true">*</span>
+            {t('workspaces.workspaceName')} <span className="text-destructive" aria-hidden="true">*</span>
           </label>
           <Input
             id="workspace-name-input"

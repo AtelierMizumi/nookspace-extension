@@ -30,6 +30,7 @@ export interface BrowserApi {
   };
   tabs: {
     create: (url: string) => Promise<void>;
+    navigateCurrentTab: (url: string) => Promise<void>;
   };
   runtime: {
     getPlatform: () => Promise<string>;

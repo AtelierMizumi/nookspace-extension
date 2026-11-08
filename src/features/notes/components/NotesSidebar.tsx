@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { NoteCollectionEntity, NoteTagEntity, NoteEntity } from '../../../types/notes';
 import { NoteViewFilter } from '../services/noteSearchService';
+import { useTranslation } from '../../../services/i18n';
 
 export interface NotesSidebarProps {
   notes: NoteEntity[];
@@ -46,6 +47,7 @@ export function NotesSidebar({
   onOpenEditTag,
   onOpenDeleteTag,
 }: NotesSidebarProps) {
+  const { t } = useTranslation();
   // Counts
   const activeNotes = notes.filter((n) => !n.isArchived);
   const allCount = activeNotes.length;
@@ -88,7 +90,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-blue-500" />
-            <span>All Notes</span>
+            <span>{t('notesManager.allNotes')}</span>
           </div>
           <span className={countBadgeClass(viewFilter.type === 'all' && selectedTag === null)}>
             {allCount}
@@ -105,7 +107,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Pin className="w-4 h-4 text-amber-500" />
-            <span>Pinned</span>
+            <span>{t('notesManager.pinned')}</span>
           </div>
           <span className={countBadgeClass(viewFilter.type === 'pinned')}>
             {pinnedCount}
@@ -122,7 +124,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-yellow-500" />
-            <span>Favorites</span>
+            <span>{t('notesManager.favorites')}</span>
           </div>
           <span className={countBadgeClass(viewFilter.type === 'favorites')}>
             {favoritesCount}
@@ -139,7 +141,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Inbox className="w-4 h-4 text-slate-400" />
-            <span>Uncategorized</span>
+            <span>{t('notesManager.uncategorized')}</span>
           </div>
           <span className={countBadgeClass(viewFilter.type === 'uncategorized')}>
             {uncategorizedCount}
@@ -156,7 +158,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Archive className="w-4 h-4 text-purple-500" />
-            <span>Archived</span>
+            <span>{t('notesManager.archived')}</span>
           </div>
           <span className={countBadgeClass(viewFilter.type === 'archived')}>
             {archivedCount}
@@ -167,12 +169,12 @@ export function NotesSidebar({
       {/* 2. Collections Section */}
       <div className="space-y-1">
         <div className="flex items-center justify-between px-2 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          <span>Collections</span>
+          <span>{t('notesManager.collections')}</span>
           <button
             type="button"
             onClick={onOpenCreateCollection}
             className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-            title="Create Collection"
+            title={t('notesManager.newCollection')}
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -217,7 +219,7 @@ export function NotesSidebar({
                         onOpenEditCollection(col);
                       }}
                       className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                      title="Edit"
+                      title={t('common.edit')}
                     >
                       <Edit2 className="w-3 h-3" />
                     </button>
@@ -228,7 +230,7 @@ export function NotesSidebar({
                         onOpenDeleteCollection(col);
                       }}
                       className="p-0.5 rounded text-slate-400 hover:text-red-500"
-                      title="Delete"
+                      title={t('common.delete')}
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -243,12 +245,12 @@ export function NotesSidebar({
       {/* 3. Tags Section */}
       <div className="space-y-1">
         <div className="flex items-center justify-between px-2 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          <span>Tags</span>
+          <span>{t('notesManager.tags')}</span>
           <button
             type="button"
             onClick={onOpenCreateTag}
             className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-            title="Create Tag"
+            title={t('notesManager.newTag')}
           >
             <Plus className="w-3.5 h-3.5" />
           </button>

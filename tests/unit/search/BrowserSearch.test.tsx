@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserSearch } from '../../../src/features/search/BrowserSearch';
 import { useSettingsStore } from '../../../src/stores/settingsStore';
+import { browserApi } from '../../../src/services/browser';
 
 describe('BrowserSearch Component', () => {
   beforeEach(() => {
@@ -147,5 +148,19 @@ describe('BrowserSearch Component', () => {
 
     fireEvent.mouseDown(screen.getByTestId('outside-area'));
     expect(screen.queryByRole('button', { name: /duckduckgo/i })).not.toBeInTheDocument();
+  });
+
+  it('11. submitting query without onNavigate prop navigates the current tab via browserApi', () => {
+    const navSpy = vi.spyOn(browserApi.tabs, 'navigateCurrentTab').mockResolvedValue();
+    render(<BrowserSearch />);
+
+    const input = screen.getByPlaceholderText(/search or enter a website address/i);
+    fireEvent.change(input, { target: { value: 'same tab search test' } });
+    fireEvent.submit(input.closest('form')!);
+
+    expect(navSpy).toHaveBeenCalledWith(
+      expect.stringContaining('https://www.google.com/search?q=same+tab+search+test')
+    );
+    navSpy.mockRestore();
   });
 });

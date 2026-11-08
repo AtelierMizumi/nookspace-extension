@@ -4,6 +4,7 @@ import { BookmarkEntity, BookmarkGroupEntity } from '../../../types/bookmarks';
 import { BookmarkGroupFilter } from '../services/bookmarkSearchService';
 import { Button, IconButton } from '../../../components/ui/Button';
 import { Tooltip } from '../../../components/ui/Tooltip';
+import { useTranslation } from '../../../services/i18n';
 import {
   Bookmark,
   Star,
@@ -47,6 +48,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   onReorderGroups,
   className,
 }) => {
+  const { t } = useTranslation();
   const totalCount = bookmarks.length;
   const favoritesCount = bookmarks.filter((b) => b.isFavorite).length;
   const uncategorizedCount = bookmarks.filter((b) => b.groupId === null).length;
@@ -94,7 +96,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
         >
           <div className="flex items-center gap-2 truncate">
             <Bookmark className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">All Bookmarks</span>
+            <span className="truncate">{t('bookmarks.allBookmarks')}</span>
           </div>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -117,7 +119,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
         >
           <div className="flex items-center gap-2 truncate">
             <Star className={`h-3.5 w-3.5 shrink-0 ${isFavoritesSelected ? 'fill-current' : 'text-amber-400'}`} />
-            <span className="truncate">Favorites</span>
+            <span className="truncate">{t('bookmarks.favorites')}</span>
           </div>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -140,7 +142,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
         >
           <div className="flex items-center gap-2 truncate">
             <Inbox className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Uncategorized</span>
+            <span className="truncate">{t('bookmarks.uncategorized')}</span>
           </div>
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -157,9 +159,9 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
       {/* Folders Section Header */}
       <div className="flex items-center justify-between px-2 mb-1.5">
         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-          Folders
+          {t('bookmarks.folders')}
         </span>
-        <Tooltip content="Create new folder">
+        <Tooltip content={t('bookmarks.newFolder')}>
           <IconButton
             size="sm"
             variant="ghost"

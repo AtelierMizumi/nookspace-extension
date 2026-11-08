@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, LayoutGrid } from 'lucide-react';
+import { Plus, LayoutGrid, HelpCircle } from 'lucide-react';
 import { AppShell } from '../../src/components/layout/AppShell';
 import { WorkspaceHeader } from '../../src/components/layout/WorkspaceHeader';
 import { GridLayoutEngine } from '../../src/features/layout-editor/GridLayoutEngine';
@@ -36,6 +36,7 @@ import { BrowserIntegrationSection } from '../../src/features/preferences/compon
 import { LanguageSection } from '../../src/features/preferences/components/LanguageSection';
 import { SearchEngineSection } from '../../src/features/preferences/components/SearchEngineSection';
 import { BackgroundSection } from '../../src/features/preferences/components/BackgroundSection';
+import { UserGuideModal } from '../../src/features/user-guide';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useTranslation } from '../../src/services/i18n';
 import { db } from '../../src/services/database/db';
@@ -52,6 +53,7 @@ export const App: React.FC = () => {
   const [isRestoreOpen, setIsRestoreOpen] = useState<boolean>(false);
   const [isMergeOpen, setIsMergeOpen] = useState<boolean>(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState<boolean>(false);
+  const [isUserGuideOpen, setIsUserGuideOpen] = useState<boolean>(false);
 
   const settings = useSettingsStore((s) => s.settings);
   const { initializeLanguage, t } = useTranslation();
@@ -205,6 +207,7 @@ export const App: React.FC = () => {
       onOpenSettings={() => setIsSettingsOpen(true)}
       onOpenBookmarkManager={() => setIsBookmarkManagerOpen(true)}
       onOpenNotesManager={() => setIsNotesManagerOpen(true)}
+      onOpenUserGuide={() => setIsUserGuideOpen(true)}
     >
       {/* Workspace Header (Time & Dynamic Greeting) */}
       <WorkspaceHeader userName={settings?.userName || t('widgets.greeting.defaultName') || 'Explorer'} />
@@ -346,6 +349,34 @@ export const App: React.FC = () => {
           <div className="pt-3 border-t border-border/40">
             <BrowserIntegrationSection />
           </div>
+          <div className="pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/20">
+              <div className="flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <HelpCircle className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-foreground block">
+                    {t('userGuide.title')}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground block">
+                    {t('userGuide.subtitle')}
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsSettingsOpen(false);
+                  setIsUserGuideOpen(true);
+                }}
+                className="text-xs h-7 shrink-0"
+              >
+                {t('userGuide.openGuideBtn')}
+              </Button>
+            </div>
+          </div>
           <div className="pt-3 border-t border-border/40 space-y-2">
             <span className="font-semibold text-foreground block">
               {t('preferences.backup.title')}
@@ -418,6 +449,12 @@ export const App: React.FC = () => {
       <MigrationDiagnosticsModal
         isOpen={isDiagnosticsOpen}
         onClose={() => setIsDiagnosticsOpen(false)}
+      />
+
+      {/* Comprehensive In-App User Guide Modal */}
+      <UserGuideModal
+        isOpen={isUserGuideOpen}
+        onClose={() => setIsUserGuideOpen(false)}
       />
     </AppShell>
   );

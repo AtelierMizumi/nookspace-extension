@@ -18,8 +18,10 @@ import { DailyGoalType } from '../types/dailyGoals';
 import { Button } from '../components/ui/Button';
 import { STORAGE_KEY_LAST_DRAINED_AT } from '../features/pomodoro/storageService';
 import { STORAGE_KEY_TODO_LAST_UPDATED_AT } from '../services/database/repositories/todoRepository';
+import { useTranslation } from '../services/i18n';
 
 export const DailyGoalsWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) => {
+  const { t } = useTranslation();
   const {
     summary,
     isLoading,
@@ -155,7 +157,7 @@ export const DailyGoalsWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }
           {!isEditing ? (
             <button
               onClick={handleStartEditing}
-              title="Edit Targets"
+              title={t('widgets.dailyGoals.editTargets')}
               className="p-1 text-text-secondary hover:text-text-primary hover:bg-surface-hover rounded-md transition-all"
             >
               <Edit2 className="w-3.5 h-3.5" />
@@ -164,14 +166,14 @@ export const DailyGoalsWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }
             <div className="flex items-center gap-1">
               <button
                 onClick={handleSaveEditing}
-                title="Save Targets"
+                title={t('widgets.dailyGoals.saveTargets')}
                 className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-all"
               >
                 <Save className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={handleCancelEditing}
-                title="Cancel"
+                title={t('common.cancel')}
                 className="p-1 text-text-secondary hover:text-text-primary hover:bg-surface-hover rounded-md transition-all"
               >
                 <X className="w-3.5 h-3.5" />
@@ -186,14 +188,14 @@ export const DailyGoalsWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }
         {isLoading && !summary ? (
           <div className="flex flex-col items-center justify-center py-6 text-text-secondary gap-2 text-xs">
             <RotateCw className="w-4 h-4 animate-spin text-primary" />
-            <span>Loading goals...</span>
+            <span>{t('common.loading')}</span>
           </div>
         ) : error && !summary ? (
           <div className="flex flex-col items-center justify-center py-4 text-center gap-2">
             <AlertCircle className="w-5 h-5 text-red-500" />
             <p className="text-xs text-text-secondary">{error}</p>
             <Button size="sm" variant="outline" onClick={() => fetchGoals(workspaceId)}>
-              Try Again
+              {t('widgets.studyTracker.tryAgain')}
             </Button>
           </div>
         ) : !summary || summary.goals.length === 0 ? (
@@ -236,14 +238,14 @@ export const DailyGoalsWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }
                 className="flex items-center gap-1 text-[10px] text-text-secondary hover:text-text-primary"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>Reset Defaults</span>
+                <span>{t('widgets.dailyGoals.resetDefaults')}</span>
               </button>
               <div className="flex gap-1.5">
                 <Button size="sm" variant="ghost" onClick={handleCancelEditing} className="h-6 text-xs px-2">
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button size="sm" onClick={handleSaveEditing} className="h-6 text-xs px-2">
-                  Save
+                  {t('common.save')}
                 </Button>
               </div>
             </div>

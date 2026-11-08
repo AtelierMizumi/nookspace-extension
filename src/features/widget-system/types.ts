@@ -26,6 +26,7 @@ export interface WidgetSettingsProps<TConfig = Record<string, unknown>> {
   config: TConfig;
   onSaveConfig: (newConfig: Partial<TConfig>) => void;
   onClose: () => void;
+  workspaceId?: string;
 }
 
 export interface WidgetDefinition<TConfig = Record<string, unknown>> {

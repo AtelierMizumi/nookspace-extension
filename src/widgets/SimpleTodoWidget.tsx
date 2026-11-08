@@ -4,6 +4,7 @@ import { WidgetDefinition, WidgetProps } from '../features/widget-system/types';
 import { Checkbox } from '../components/ui/Checkbox';
 import { IconButton } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { useTranslation } from '../services/i18n';
 
 interface TodoItem {
   id: string;
@@ -19,6 +20,7 @@ export const SimpleTodoWidgetComponent: React.FC<WidgetProps<TodoConfig>> = ({
   config,
   onUpdateConfig,
 }) => {
+  const { t } = useTranslation();
   const [newTitle, setNewTitle] = useState('');
 
   const tasks: TodoItem[] = config?.tasks || [
@@ -55,7 +57,7 @@ export const SimpleTodoWidgetComponent: React.FC<WidgetProps<TodoConfig>> = ({
       <div className="flex items-center justify-between pb-2 border-b border-border/40">
         <span className="flex items-center gap-1.5 font-medium text-foreground">
           <CheckSquare className="h-3.5 w-3.5 text-primary" />
-          Tasks Preview
+          {t('widgets.todo.title')}
         </span>
         <span className="text-[10px] text-muted-foreground font-mono">
           {completedCount}/{tasks.length}
@@ -64,7 +66,7 @@ export const SimpleTodoWidgetComponent: React.FC<WidgetProps<TodoConfig>> = ({
 
       <form onSubmit={handleAddTask} className="my-2 flex items-center gap-1.5">
         <Input
-          placeholder="Add task..."
+          placeholder={t('widgets.todo.newTaskPlaceholder')}
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           className="h-7 text-xs"
@@ -72,7 +74,7 @@ export const SimpleTodoWidgetComponent: React.FC<WidgetProps<TodoConfig>> = ({
         <IconButton
           size="sm"
           variant="secondary"
-          aria-label="Add task"
+          aria-label={t('widgets.todo.title')}
           type="submit"
           className="h-7 w-7 shrink-0"
         >
@@ -82,7 +84,7 @@ export const SimpleTodoWidgetComponent: React.FC<WidgetProps<TodoConfig>> = ({
 
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
         {tasks.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground text-center py-4">All tasks completed! 🎉</p>
+          <p className="text-[11px] text-muted-foreground text-center py-4">{t('widgets.todo.noTasks')}</p>
         ) : (
           tasks.map((task) => (
             <div

@@ -20,9 +20,11 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Switch } from '../components/ui/Switch';
 import { Input } from '../components/ui/Input';
+import { useTranslation } from '../services/i18n';
 
 export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) => {
   usePomodoroSync();
+  const { t } = useTranslation();
 
   const {
     activeTimerState,
@@ -97,7 +99,11 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
           {(['focus', 'shortBreak', 'longBreak'] as PomodoroMode[]).map((mode) => {
             const isActive = currentMode === mode;
             const label =
-              mode === 'focus' ? 'Focus' : mode === 'shortBreak' ? 'Short Break' : 'Long Break';
+              mode === 'focus'
+                ? t('widgets.pomodoro.focus')
+                : mode === 'shortBreak'
+                ? t('widgets.pomodoro.shortBreak')
+                : t('widgets.pomodoro.longBreak');
             return (
               <button
                 key={mode}
@@ -124,7 +130,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
             setIsSettingsOpen(true);
           }}
           className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-surface-hover transition-colors"
-          title="Pomodoro Settings"
+          title={t('widgets.pomodoro.settingsTitle')}
         >
           <Settings className="w-4 h-4" />
         </button>
@@ -282,7 +288,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
                 disabled={isLoading}
                 className="gap-1.5 px-6"
               >
-                <Play className="w-4 h-4" /> Start
+                <Play className="w-4 h-4" /> {t('widgets.pomodoro.start')}
               </Button>
               <Button
                 variant="ghost"
@@ -303,13 +309,13 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
       <Modal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        title="Pomodoro Settings"
+        title={t('widgets.pomodoro.settingsTitle')}
       >
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="text-xs font-medium text-text-secondary block mb-1">
-                Focus (mins)
+                {t('widgets.pomodoro.focusDuration')}
               </label>
               <Input
                 type="number"
@@ -321,7 +327,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
             </div>
             <div>
               <label className="text-xs font-medium text-text-secondary block mb-1">
-                Short Break (mins)
+                {t('widgets.pomodoro.shortBreakDuration')}
               </label>
               <Input
                 type="number"
@@ -333,7 +339,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
             </div>
             <div>
               <label className="text-xs font-medium text-text-secondary block mb-1">
-                Long Break (mins)
+                {t('widgets.pomodoro.longBreakDuration')}
               </label>
               <Input
                 type="number"
@@ -352,7 +358,7 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
               ) : (
                 <VolumeX className="w-4 h-4 text-text-secondary" />
               )}
-              <span className="text-sm font-medium text-text-primary">Notification Sound & Alerts</span>
+              <span className="text-sm font-medium text-text-primary">{t('widgets.pomodoro.soundNotification')}</span>
             </div>
             <Switch
               checked={soundEnabled}
@@ -362,10 +368,10 @@ export const PomodoroWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) 
 
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" size="sm" onClick={() => setIsSettingsOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" size="sm" onClick={handleSaveSettings}>
-              Save Settings
+              {t('common.saveSettings')}
             </Button>
           </div>
         </div>

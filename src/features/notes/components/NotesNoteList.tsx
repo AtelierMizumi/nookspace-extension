@@ -16,6 +16,7 @@ import { NoteEntity, NoteCollectionEntity } from '../../../types/notes';
 import { NoteSortField, SortDirection, NoteViewFilter } from '../services/noteSearchService';
 import { NotesNoteListItem } from './NotesNoteListItem';
 import { Button } from '../../../components/ui/Button';
+import { useTranslation } from '../../../services/i18n';
 
 export interface NotesNoteListProps {
   notes: NoteEntity[];
@@ -56,8 +57,9 @@ export function NotesNoteList({
   onToggleArchive,
   onDeleteNote,
 }: NotesNoteListProps) {
+  const { t } = useTranslation();
   // Title derivation
-  let viewTitle = 'All Notes';
+  let viewTitle = t('notesManager.allNotes');
   let viewIcon = <FileText className="w-4 h-4 text-blue-500" />;
 
   if (selectedTag) {
@@ -66,24 +68,24 @@ export function NotesNoteList({
   } else {
     switch (viewFilter.type) {
       case 'pinned':
-        viewTitle = 'Pinned Notes';
+        viewTitle = t('notesManager.pinnedNotes');
         viewIcon = <Pin className="w-4 h-4 text-amber-500" />;
         break;
       case 'favorites':
-        viewTitle = 'Favorite Notes';
+        viewTitle = t('notesManager.favoriteNotes');
         viewIcon = <Star className="w-4 h-4 text-yellow-500" />;
         break;
       case 'uncategorized':
-        viewTitle = 'Uncategorized';
+        viewTitle = t('notesManager.uncategorized');
         viewIcon = <Inbox className="w-4 h-4 text-slate-400" />;
         break;
       case 'archived':
-        viewTitle = 'Archived Notes';
+        viewTitle = t('notesManager.archivedNotes');
         viewIcon = <Archive className="w-4 h-4 text-purple-500" />;
         break;
       case 'collection': {
         const col = collections.find((c) => c.id === viewFilter.collectionId);
-        viewTitle = col ? col.title : 'Collection';
+        viewTitle = col ? col.title : t('notesManager.collection');
         viewIcon = <Folder className="w-4 h-4 text-blue-500" />;
         break;
       }
@@ -114,10 +116,10 @@ export function NotesNoteList({
             size="sm"
             onClick={onCreateNote}
             className="flex items-center gap-1 h-7 text-xs px-2.5"
-            title="Create Note"
+            title={t('notesManager.newNote')}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New</span>
+            <span>{t('notesManager.new')}</span>
           </Button>
         </div>
 
@@ -128,7 +130,7 @@ export function NotesNoteList({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search title, content, tags..."
+            placeholder={t('notesManager.searchPlaceholderShort')}
             className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs placeholder-slate-400 focus:ring-1 focus:ring-blue-500 outline-none"
           />
           {searchQuery && (
@@ -145,16 +147,16 @@ export function NotesNoteList({
         {/* Sort Controls */}
         <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
           <div className="flex items-center gap-1">
-            <span>Sort:</span>
+            <span>{t('notesManager.sort')}</span>
             <select
               value={sortBy}
               onChange={(e) => onSortByChange(e.target.value as NoteSortField)}
               className="bg-transparent border-0 text-[11px] font-medium text-slate-700 dark:text-slate-300 focus:ring-0 p-0 cursor-pointer"
             >
-              <option value="updatedAt">Modified</option>
-              <option value="createdAt">Created</option>
-              <option value="title">Title</option>
-              <option value="order">Order</option>
+              <option value="updatedAt">{t('notesManager.sortByModified')}</option>
+              <option value="createdAt">{t('notesManager.sortByCreated')}</option>
+              <option value="title">{t('notesManager.sortByTitle')}</option>
+              <option value="order">{t('notesManager.sortByOrder')}</option>
             </select>
           </div>
 

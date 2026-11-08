@@ -5,7 +5,9 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { SearchEngineProvider } from '../../types/database';
 import { SEARCH_ENGINES } from './types';
 import { resolveSearchOrUrl } from './searchUtils';
+import { getNativeOmniboxShortcut, attemptNativeSearchHandoff } from './searchHandoffAdapter';
 import { useTranslation } from '../../services/i18n';
+import { browserApi } from '../../services/browser';
 
 export interface BrowserSearchProps {
   className?: string;
@@ -17,6 +19,7 @@ export const BrowserSearch: React.FC<BrowserSearchProps> = ({
   onNavigate,
 }) => {
   const [query, setQuery] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [isEngineDropdownOpen, setIsEngineDropdownOpen] = useState(false);
   const [menuCoords, setMenuCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
@@ -116,7 +119,7 @@ export const BrowserSearch: React.FC<BrowserSearchProps> = ({
     if (onNavigate) {
       onNavigate(result.url);
     } else {
-      window.location.href = result.url;
+      browserApi.tabs.navigateCurrentTab(result.url);
     }
   };
 
@@ -221,6 +224,11 @@ export const BrowserSearch: React.FC<BrowserSearchProps> = ({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => {
+            setIsInputFocused(true);
+            attemptNativeSearchHandoff();
+          }}
+          onBlur={() => setIsInputFocused(false)}
           onKeyDown={handleInputKeyDown}
           placeholder={t('search.placeholder') || 'Search or enter a website address...'}
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none min-w-0"
@@ -245,10 +253,24 @@ export const BrowserSearch: React.FC<BrowserSearchProps> = ({
           </button>
         )}
 
-        {/* Keyboard Shortcut Indicator */}
+        {/* Native Browser Omnibox Handoff & Keyboard Shortcut Indicator */}
         {!query && (
-          <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-muted-foreground/60 px-1.5 py-0.5 rounded border border-border/40 select-none">
-            <span>/</span>
+          <div className="flex items-center gap-1.5 select-none shrink-0">
+            {isInputFocused ? (
+              <div
+                title={t('search.nativeHandoffExplanation') || 'Press shortcut to focus browser address bar'}
+                className="flex items-center gap-1 text-[10px] text-muted-foreground/80 px-2 py-0.5 rounded-md bg-muted/60 border border-border/50 animate-in fade-in duration-150"
+              >
+                <span className="hidden sm:inline">{t('search.nativeHandoffHint') || 'Native Omnibox:'}</span>
+                <kbd className="font-mono font-semibold px-1 py-0.2 rounded bg-background border border-border/60 text-foreground text-[10px]">
+                  {getNativeOmniboxShortcut()}
+                </kbd>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-muted-foreground/60 px-1.5 py-0.5 rounded border border-border/40">
+                <span>/</span>
+              </div>
+            )}
           </div>
         )}
       </form>

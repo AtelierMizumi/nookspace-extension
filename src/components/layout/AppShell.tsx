@@ -14,6 +14,7 @@ export interface AppShellProps {
   onOpenSettings?: () => void;
   onOpenBookmarkManager?: () => void;
   onOpenNotesManager?: () => void;
+  onOpenUserGuide?: () => void;
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
@@ -23,6 +24,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   onOpenSettings,
   onOpenBookmarkManager,
   onOpenNotesManager,
+  onOpenUserGuide,
 }) => {
   const { initializeTheme } = useThemeStore();
   const { settings, customBackgroundUrl, loadSettings } = useSettingsStore();
@@ -114,6 +116,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           onOpenWidgetLibrary={() => setIsLibraryOpen(true)}
           onOpenBookmarkManager={onOpenBookmarkManager}
           onOpenNotesManager={onOpenNotesManager}
+          onOpenUserGuide={onOpenUserGuide}
         />
 
         <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col">

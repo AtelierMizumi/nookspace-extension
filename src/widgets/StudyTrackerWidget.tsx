@@ -13,10 +13,12 @@ import { WidgetDefinition, WidgetProps } from '../features/widget-system/types';
 import { useStudyTrackerStore } from '../features/study-tracker/studyTrackerStore';
 import { StudyTimeRange } from '../types/studyTracker';
 import { Button } from '../components/ui/Button';
+import { useTranslation } from '../services/i18n';
 
 import { STORAGE_KEY_LAST_DRAINED_AT } from '../features/pomodoro/storageService';
 
 export const StudyTrackerWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) => {
+  const { t } = useTranslation();
   const { stats, timeRange, isLoading, error, setTimeRange, fetchStats } = useStudyTrackerStore();
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export const StudyTrackerWidgetComponent: React.FC<WidgetProps> = ({ workspaceId
       <div className="flex items-center justify-between gap-1 mb-3">
         <div className="flex items-center gap-1.5 font-semibold text-sm text-text-primary">
           <BookOpen className="w-4 h-4 text-primary" />
-          <span>Study Tracker</span>
+          <span>{t('widgets.studyTracker.title')}</span>
         </div>
 
         <div className="flex items-center gap-1 bg-surface-hover/50 p-0.5 rounded-lg text-xs">
@@ -97,7 +99,7 @@ export const StudyTrackerWidgetComponent: React.FC<WidgetProps> = ({ workspaceId
           <AlertCircle className="w-6 h-6 text-danger mb-2" />
           <span className="text-xs text-danger mb-2">{error}</span>
           <Button size="sm" variant="outline" onClick={() => fetchStats(workspaceId)}>
-            Try Again
+            {t('widgets.studyTracker.tryAgain')}
           </Button>
         </div>
       ) : isLoading && !stats ? (

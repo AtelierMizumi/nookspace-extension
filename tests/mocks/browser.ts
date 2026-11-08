@@ -64,6 +64,9 @@ export function createMockBrowser() {
         createdTabs.push(options);
         if (callback) callback();
       }),
+      update: vi.fn((options: { url: string }, callback?: () => void) => {
+        if (callback) callback();
+      }),
     },
     runtime: {
       getPlatformInfo: vi.fn((callback: (info: { os: string }) => void) => {
@@ -151,6 +154,9 @@ export function createMockGeckoBrowser() {
     tabs: {
       create: vi.fn(async (options: { url: string; active?: boolean }) => {
         createdTabs.push(options);
+        return { id: 101, ...options };
+      }),
+      update: vi.fn(async (options: { url: string }) => {
         return { id: 101, ...options };
       }),
     },
