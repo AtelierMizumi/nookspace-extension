@@ -21,6 +21,7 @@ import { useWidgetStore } from '../../stores/widgetStore';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { synchronizeLayout } from './layoutUtils';
 import { Breakpoint, WidgetLayoutEntity } from '../../types/database';
+import { useTranslation } from '../../services/i18n';
 
 export interface CustomizationToolbarProps {
   isEditMode?: boolean;
@@ -37,6 +38,8 @@ export interface CustomizationToolbarProps {
 }
 
 export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props) => {
+  const { t } = useTranslation();
+
   // Store hooks
   const storeIsEditMode = useCustomizationStore((s) => s.isEditMode);
   const storeHasUnsavedChanges = useCustomizationStore((s) => s.hasUnsavedChanges);
@@ -196,7 +199,7 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
             leftIcon={<Sliders className="h-3.5 w-3.5 text-primary" />}
             className="text-xs h-8 shadow-2xs font-medium"
           >
-            Customize
+            {t('customization.customizeLayout') || 'Customize'}
           </Button>
         </Tooltip>
       </aside>
@@ -224,17 +227,19 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
             </span>
             <span className="flex items-center gap-1">
               <Sparkles className="h-3.5 w-3.5" />
-              <span className="font-semibold">Editing Dashboard</span>
+              <span className="font-semibold">
+                {t('customization.editingDashboard') || 'Editing Dashboard'}
+              </span>
             </span>
           </div>
 
           {hasUnsavedChanges ? (
             <Badge variant="warning" size="sm" className="text-[10px] py-0 px-2 font-medium">
-              Changes are not saved yet
+              {t('customization.unsavedChanges') || 'Changes are not saved yet'}
             </Badge>
           ) : (
             <Badge variant="secondary" size="sm" className="text-[10px] py-0 px-2 font-normal text-muted-foreground">
-              No changes
+              {t('customization.noChanges') || 'No changes'}
             </Badge>
           )}
 
@@ -267,7 +272,7 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               leftIcon={<Plus className="h-3.5 w-3.5 text-primary" />}
               className="h-8 text-xs font-medium"
             >
-              Add Widget
+              {t('customization.addWidget') || 'Add Widget'}
             </Button>
           </Tooltip>
 
@@ -281,7 +286,7 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               leftIcon={<RotateCcw className="h-3.5 w-3.5 text-muted-foreground" />}
               className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
-              Reset Layout
+              {t('customization.resetLayout') || 'Reset Layout'}
             </Button>
           </Tooltip>
 
@@ -295,7 +300,7 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               leftIcon={<X className="h-3.5 w-3.5 text-muted-foreground" />}
               className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive"
             >
-              Cancel
+              {t('customization.cancel') || 'Cancel'}
             </Button>
           </Tooltip>
 
@@ -316,7 +321,7 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               }
               className="h-8 text-xs font-medium min-w-[76px]"
             >
-              {isSaving ? 'Saving...' : 'Done'}
+              {isSaving ? (t('customization.saving') || 'Saving...') : (t('common.done') || 'Done')}
             </Button>
           </Tooltip>
         </div>
@@ -326,8 +331,8 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
       <Modal
         isOpen={isDiscardConfirmOpen}
         onClose={() => setIsDiscardConfirmOpen(false)}
-        title="Discard changes?"
-        description="Your unsaved dashboard changes will be discarded."
+        title={t('customization.discardTitle') || 'Discard changes?'}
+        description={t('customization.discardDesc') || 'Your unsaved dashboard changes will be discarded.'}
         footer={
           <div className="flex items-center justify-end gap-2 w-full">
             <Button
@@ -335,14 +340,14 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               size="sm"
               onClick={() => setIsDiscardConfirmOpen(false)}
             >
-              Keep Editing
+              {t('customization.keepEditingBtn') || 'Keep Editing'}
             </Button>
             <Button
               variant="destructive"
               size="sm"
               onClick={executeCancel}
             >
-              Discard Changes
+              {t('customization.discardConfirmBtn') || 'Discard Changes'}
             </Button>
           </div>
         }
@@ -356,8 +361,8 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
       <Modal
         isOpen={isResetConfirmOpen}
         onClose={() => setIsResetConfirmOpen(false)}
-        title="Reset layout to default?"
-        description="Rearrange widgets back to standard packing across all 5 responsive breakpoints."
+        title={t('customization.resetTitle') || 'Reset layout to default?'}
+        description={t('customization.resetDesc') || 'Rearrange widgets back to standard packing across all 5 responsive breakpoints.'}
         footer={
           <div className="flex items-center justify-end gap-2 w-full">
             <Button
@@ -365,14 +370,14 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               size="sm"
               onClick={() => setIsResetConfirmOpen(false)}
             >
-              Keep Current Layout
+              {t('customization.keepEditingBtn') || 'Keep Current Layout'}
             </Button>
             <Button
               variant="primary"
               size="sm"
               onClick={executeReset}
             >
-              Reset Layout
+              {t('customization.resetConfirmBtn') || 'Reset Layout'}
             </Button>
           </div>
         }
@@ -394,8 +399,8 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
       <Modal
         isOpen={isUnsavedPromptOpen}
         onClose={closeUnsavedPrompt}
-        title="Unsaved changes in workspace"
-        description="You have unsaved changes in your dashboard layout."
+        title={t('customization.switchWarningTitle') || 'Unsaved changes in workspace'}
+        description={t('customization.switchWarningDesc') || 'You have unsaved changes in your dashboard layout.'}
         footer={
           <div className="flex items-center justify-end gap-2 w-full">
             <Button
@@ -403,14 +408,14 @@ export const CustomizationToolbar: React.FC<CustomizationToolbarProps> = (props)
               size="sm"
               onClick={closeUnsavedPrompt}
             >
-              Keep Editing
+              {t('customization.keepEditingBtn') || 'Keep Editing'}
             </Button>
             <Button
               variant="destructive"
               size="sm"
               onClick={handleConfirmWorkspaceSwitch}
             >
-              Discard & Switch
+              {t('customization.discardAndSwitchBtn') || 'Discard & Switch'}
             </Button>
           </div>
         }

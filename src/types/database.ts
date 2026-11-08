@@ -191,6 +191,32 @@ export interface CalendarEventEntity {
   updatedAt: number;
 }
 
+export type SupportedLanguage = 'en' | 'vi';
+
+export type SearchEngineProvider = 'google' | 'bing' | 'duckduckgo';
+
+export type BrowserStartupBehavior =
+  | 'new-tab-only'
+  | 'browser-startup'
+  | 'both'
+  | 'keep-browser-defaults'
+  | 'open-on-startup'
+  | 'preserve-browser-startup';
+
+export type StartupSetupStatus =
+  | 'not-configured'
+  | 'manual-verification-required'
+  | 'verified';
+
+export type DetectedBrowserFamily =
+  | 'chrome'
+  | 'edge'
+  | 'brave'
+  | 'coccoc'
+  | 'firefox'
+  | 'zen'
+  | 'other';
+
 export interface AppSettingsEntity {
   id: string; // 'current_settings'
   theme: 'light' | 'dark' | 'system';
@@ -204,4 +230,15 @@ export interface AppSettingsEntity {
   activeWorkspaceId: string;
   userName?: string;
   updatedAt: number;
+
+  // Language Preferences
+  language?: SupportedLanguage;
+
+  // Search Engine Preferences
+  searchEngine?: SearchEngineProvider;
+
+  // Browser Startup & Integration Preferences
+  startupBehavior?: BrowserStartupBehavior;
+  startupSetupStatus?: StartupSetupStatus;
+  startupSetupBrowser?: DetectedBrowserFamily;
 }

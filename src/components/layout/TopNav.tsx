@@ -15,6 +15,7 @@ import { Badge } from '../ui/Badge';
 import { Tooltip } from '../ui/Tooltip';
 import { useThemeStore } from '../../stores/themeStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
+import { useTranslation } from '../../services/i18n';
 import {
   WorkspaceSwitcher,
   WorkspaceManagerModal,
@@ -63,22 +64,24 @@ export const TopNav: React.FC<TopNavProps> = ({
     setIsWorkspaceCreateOpen(false);
   };
 
+  const { t } = useTranslation();
+
   const themeDropdownItems: DropdownItem[] = [
     {
       id: 'theme-light',
-      label: 'Light Mode',
+      label: t('topNav.lightTheme'),
       icon: <Sun className="h-4 w-4 text-amber-500" />,
       onClick: () => setTheme('light'),
     },
     {
       id: 'theme-dark',
-      label: 'Dark Mode',
+      label: t('topNav.darkTheme'),
       icon: <Moon className="h-4 w-4 text-indigo-400" />,
       onClick: () => setTheme('dark'),
     },
     {
       id: 'theme-system',
-      label: 'System Preference',
+      label: t('topNav.systemTheme'),
       icon: <Monitor className="h-4 w-4 text-muted-foreground" />,
       onClick: () => setTheme('system'),
     },
@@ -111,31 +114,31 @@ export const TopNav: React.FC<TopNavProps> = ({
         {/* Right: Add Widget, Customize, Theme, Settings */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {onOpenNotesManager && (
-            <Tooltip content="Notes & Knowledge" position="bottom">
+            <Tooltip content={t('topNav.notes')} position="bottom">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onOpenNotesManager}
-                aria-label="Notes & Knowledge"
+                aria-label={t('topNav.notes')}
                 leftIcon={<FileText className="h-3.5 w-3.5 text-primary" />}
                 className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
               >
-                <span className="hidden md:inline">Notes</span>
+                <span className="hidden md:inline">{t('topNav.notes')}</span>
               </Button>
             </Tooltip>
           )}
 
           {onOpenBookmarkManager && (
-            <Tooltip content="Smart Bookmarks" position="bottom">
+            <Tooltip content={t('topNav.bookmarks')} position="bottom">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onOpenBookmarkManager}
-                aria-label="Smart Bookmarks"
+                aria-label={t('topNav.bookmarks')}
                 leftIcon={<Bookmark className="h-3.5 w-3.5 text-primary" />}
                 className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
               >
-                <span className="hidden md:inline">Bookmarks</span>
+                <span className="hidden md:inline">{t('topNav.bookmarks')}</span>
               </Button>
             </Tooltip>
           )}
@@ -145,24 +148,24 @@ export const TopNav: React.FC<TopNavProps> = ({
               variant="secondary"
               size="sm"
               onClick={onOpenWidgetLibrary}
-              aria-label="Add Widget"
+              aria-label={t('topNav.addWidget')}
               leftIcon={<Plus className="h-3.5 w-3.5" />}
               className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
             >
-              <span className="hidden sm:inline">Add Widget</span>
+              <span className="hidden sm:inline">{t('topNav.addWidget')}</span>
             </Button>
           )}
 
-          <Tooltip content={isEditMode ? 'Exit Customization' : 'Customize Workspace'} position="bottom">
+          <Tooltip content={isEditMode ? t('topNav.doneEditing') : t('topNav.editLayout')} position="bottom">
             <Button
               variant={isEditMode ? 'primary' : 'outline'}
               size="sm"
               onClick={onToggleEditMode}
-              aria-label={isEditMode ? 'Done Customizing' : 'Customize Workspace'}
+              aria-label={isEditMode ? t('topNav.doneEditing') : t('topNav.editLayout')}
               leftIcon={<LayoutGrid className="h-3.5 w-3.5" />}
               className="h-8 px-2 sm:px-2.5 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
             >
-              <span className="hidden sm:inline">{isEditMode ? 'Done' : 'Customize'}</span>
+              <span className="hidden sm:inline">{isEditMode ? t('topNav.doneEditing') : t('common.edit')}</span>
             </Button>
           </Tooltip>
 
@@ -187,11 +190,11 @@ export const TopNav: React.FC<TopNavProps> = ({
             }
           />
 
-          <Tooltip content="Preferences" position="bottom">
+          <Tooltip content={t('preferences.title')} position="bottom">
             <IconButton
               size="sm"
               variant="outline"
-              aria-label="Settings"
+              aria-label={t('preferences.title')}
               onClick={onOpenSettings}
               className="h-8 w-8 text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary"
             >

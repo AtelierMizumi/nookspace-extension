@@ -3,6 +3,7 @@ import { Clock as ClockIcon } from 'lucide-react';
 import { WidgetDefinition, WidgetProps, WidgetSettingsProps } from '../features/widget-system/types';
 import { Switch } from '../components/ui/Switch';
 import { Button } from '../components/ui/Button';
+import { useTranslation } from '../services/i18n';
 
 interface ClockConfig {
   showSeconds?: boolean;
@@ -10,6 +11,7 @@ interface ClockConfig {
 }
 
 export const ClockWidgetComponent: React.FC<WidgetProps<ClockConfig>> = ({ config }) => {
+  const { formatDate, formatTime, t } = useTranslation();
   const [time, setTime] = useState<string>('');
   const [date, setDate] = useState<string>('');
 
@@ -20,7 +22,7 @@ export const ClockWidgetComponent: React.FC<WidgetProps<ClockConfig>> = ({ confi
     const update = () => {
       const now = new Date();
       setTime(
-        now.toLocaleTimeString([], {
+        formatTime(now, {
           hour: '2-digit',
           minute: '2-digit',
           second: showSeconds ? '2-digit' : undefined,
@@ -28,14 +30,14 @@ export const ClockWidgetComponent: React.FC<WidgetProps<ClockConfig>> = ({ confi
         })
       );
       setDate(
-        now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
+        formatDate(now, { weekday: 'short', month: 'short', day: 'numeric' })
       );
     };
 
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [showSeconds, format24h]);
+  }, [showSeconds, format24h, formatDate, formatTime]);
 
   return (
     <div className="h-full flex flex-col justify-between select-none">

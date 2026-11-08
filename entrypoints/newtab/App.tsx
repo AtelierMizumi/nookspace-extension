@@ -32,6 +32,10 @@ import {
   downloadBackupFile,
 } from '../../src/features/backup';
 import { MigrationDiagnosticsModal } from '../../src/features/migrations';
+import { BrowserIntegrationSection } from '../../src/features/preferences/components/BrowserIntegrationSection';
+import { LanguageSection } from '../../src/features/preferences/components/LanguageSection';
+import { SearchEngineSection } from '../../src/features/preferences/components/SearchEngineSection';
+import { useTranslation } from '../../src/services/i18n';
 import { db } from '../../src/services/database/db';
 // Ensure all initial widgets are registered
 import '../../src/widgets';
@@ -47,12 +51,15 @@ export const App: React.FC = () => {
   const [isMergeOpen, setIsMergeOpen] = useState<boolean>(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState<boolean>(false);
 
+  const { initializeLanguage, t } = useTranslation();
+
   // Check for interrupted restore operations and handle startup recovery
   useEffect(() => {
+    initializeLanguage();
     checkAndHandleStartupRecovery(db).catch((err) => {
       console.warn('[App] Startup recovery check failed:', err);
     });
-  }, []);
+  }, [initializeLanguage]);
 
   const { activeWorkspaceId, getActiveWorkspace } = useWorkspaceStore();
   const { instances, addWidget, removeWidget, toggleWidget, updateConfig } = useWidgetStore();
@@ -210,8 +217,11 @@ export const App: React.FC = () => {
         {visibleInstances.length === 0 ? (
           <EmptyState
             icon={<LayoutGrid className="h-6 w-6 text-primary" />}
-            title="Your Workspace is Empty"
-            description="Add widgets from the library to build your personal productivity dashboard."
+            title={t('appShell.emptyWorkspaceTitle') || 'Your Workspace is Empty'}
+            description={
+              t('appShell.emptyWorkspaceDesc') ||
+              'Add widgets from the library to build your personal productivity dashboard.'
+            }
             action={
               <Button
                 variant="primary"
@@ -219,7 +229,7 @@ export const App: React.FC = () => {
                 leftIcon={<Plus className="h-4 w-4" />}
                 onClick={() => setIsLibraryOpen(true)}
               >
-                Add Your First Widget
+                {t('appShell.addFirstWidget') || 'Add Your First Widget'}
               </Button>
             }
             className="my-12 py-16"
@@ -287,32 +297,53 @@ export const App: React.FC = () => {
       <Modal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        title="Preferences"
-        description="Configure workspace settings and behavior."
+        title={t('preferences.title')}
+        description={t('preferences.description')}
         footer={
           <Button variant="primary" size="sm" onClick={() => setIsSettingsOpen(false)}>
-            Close
+            {t('common.close')}
           </Button>
         }
       >
         <div className="space-y-4 text-xs">
           <div>
-            <label className="font-medium text-foreground block mb-1">Active Workspace</label>
+            <label className="font-medium text-foreground block mb-1">
+              {t('preferences.activeWorkspace')}
+            </label>
             <Input value={currentWorkspace?.name || 'Personal Space'} readOnly disabled />
           </div>
           <div>
-            <label className="font-medium text-foreground block mb-1">Grid Breakpoint</label>
-            <Input value={`Current: ${currentBreakpoint.toUpperCase()}`} readOnly disabled />
+            <label className="font-medium text-foreground block mb-1">
+              {t('preferences.gridBreakpoint')}
+            </label>
+            <Input
+              value={t('preferences.currentBreakpoint', {
+                breakpoint: currentBreakpoint.toUpperCase(),
+              })}
+              readOnly
+              disabled
+            />
           </div>
           <div className="pt-2">
             <Switch
               checked={true}
               onCheckedChange={() => {}}
-              label="Local IndexedDB caching enabled"
+              label={t('preferences.localCacheLabel')}
             />
           </div>
+          <div className="pt-3 border-t border-border/40">
+            <LanguageSection />
+          </div>
+          <div className="pt-3 border-t border-border/40">
+            <SearchEngineSection />
+          </div>
+          <div className="pt-3 border-t border-border/40">
+            <BrowserIntegrationSection />
+          </div>
           <div className="pt-3 border-t border-border/40 space-y-2">
-            <span className="font-semibold text-foreground block">Data Integrity & Backup</span>
+            <span className="font-semibold text-foreground block">
+              {t('preferences.backup.title')}
+            </span>
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="secondary"
@@ -328,7 +359,7 @@ export const App: React.FC = () => {
                   }
                 }}
               >
-                Export Backup
+                {t('preferences.backup.exportBtn')}
               </Button>
               <Button
                 variant="secondary"
@@ -338,7 +369,7 @@ export const App: React.FC = () => {
                   setIsMergeOpen(true);
                 }}
               >
-                Merge Import
+                {t('preferences.backup.mergeBtn')}
               </Button>
               <Button
                 variant="secondary"
@@ -348,7 +379,7 @@ export const App: React.FC = () => {
                   setIsRestoreOpen(true);
                 }}
               >
-                Restore Backup
+                {t('preferences.backup.restoreBtn')}
               </Button>
               <Button
                 variant="outline"
@@ -358,7 +389,7 @@ export const App: React.FC = () => {
                   setIsDiagnosticsOpen(true);
                 }}
               >
-                Diagnostics
+                {t('preferences.backup.diagnosticsBtn')}
               </Button>
             </div>
           </div>

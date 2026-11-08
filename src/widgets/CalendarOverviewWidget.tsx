@@ -17,6 +17,7 @@ import { useCalendarTrackerStore } from '../features/calendar-tracker/calendarTr
 import { Button } from '../components/ui/Button';
 import { STORAGE_KEY_LAST_DRAINED_AT } from '../features/pomodoro/storageService';
 import { STORAGE_KEY_TODO_LAST_UPDATED_AT } from '../services/database/repositories/todoRepository';
+import { useTranslation } from '../services/i18n';
 
 export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspaceId }) => {
   const {
@@ -69,12 +70,17 @@ export const CalendarOverviewWidgetComponent: React.FC<WidgetProps> = ({ workspa
     };
   }, [fetchData, workspaceId]);
 
-  const monthLabel = currentMonth.toLocaleDateString([], {
+  const { formatDate, language } = useTranslation();
+
+  const monthLabel = formatDate(currentMonth, {
     month: 'short',
     year: 'numeric',
   });
 
-  const weekLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const weekLabels =
+    language === 'vi'
+      ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+      : ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   const getHeatmapColorClass = (level: number, isSelected: boolean) => {
     switch (level) {

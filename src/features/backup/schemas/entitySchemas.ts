@@ -119,6 +119,35 @@ export const CalendarEventEntitySchema = z
     path: ['endDate'],
   });
 
+export const LanguageCodeSchema = z.enum(['en', 'vi']);
+
+export const SearchEngineProviderSchema = z.enum(['google', 'bing', 'duckduckgo']);
+
+export const BrowserStartupBehaviorSchema = z.enum([
+  'new-tab-only',
+  'browser-startup',
+  'both',
+  'keep-browser-defaults',
+  'open-on-startup',
+  'preserve-browser-startup',
+]);
+
+export const StartupSetupStatusSchema = z.enum([
+  'not-configured',
+  'manual-verification-required',
+  'verified',
+]);
+
+export const DetectedBrowserFamilySchema = z.enum([
+  'chrome',
+  'edge',
+  'brave',
+  'coccoc',
+  'firefox',
+  'zen',
+  'other',
+]);
+
 export const AppSettingsEntitySchema = z.object({
   id: z.literal('current_settings'),
   theme: z.enum(['light', 'dark', 'system']),
@@ -132,4 +161,9 @@ export const AppSettingsEntitySchema = z.object({
   activeWorkspaceId: z.string().min(1),
   userName: z.string().optional(),
   updatedAt: z.number().int().nonnegative(),
+  language: LanguageCodeSchema.optional(),
+  searchEngine: SearchEngineProviderSchema.optional(),
+  startupBehavior: BrowserStartupBehaviorSchema.optional(),
+  startupSetupStatus: StartupSetupStatusSchema.optional(),
+  startupSetupBrowser: DetectedBrowserFamilySchema.optional(),
 });

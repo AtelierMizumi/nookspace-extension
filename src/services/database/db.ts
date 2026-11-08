@@ -431,6 +431,9 @@ export class NookSpaceDB extends Dexie {
       widgetBlur: 10,
       activeWorkspaceId: 'ws-default-personal',
       userName: 'Explorer',
+      searchEngine: 'google',
+      startupBehavior: 'new-tab-only',
+      startupSetupStatus: 'not-configured',
       updatedAt: now,
     };
 

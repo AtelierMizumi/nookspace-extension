@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { WidgetDefinition, WidgetProps, WidgetSettingsProps } from '../features/widget-system/types';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { useTranslation } from '../services/i18n';
 
 interface GreetingConfig {
   customName?: string;
 }
 
 export const GreetingWidgetComponent: React.FC<WidgetProps<GreetingConfig>> = ({ config }) => {
-  const [greeting, setGreeting] = useState<string>('Hello');
+  const { t } = useTranslation();
+  const [hour, setHour] = useState<number>(() => new Date().getHours());
   const displayName = config?.customName || 'Architect';
 
-  React.useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) setGreeting('Good morning');
-    else if (hour >= 12 && hour < 18) setGreeting('Good afternoon');
-    else setGreeting('Good evening');
+  useEffect(() => {
+    setHour(new Date().getHours());
   }, []);
+
+  const greeting =
+    hour >= 5 && hour < 12
+      ? t('widgets.greeting.morning')
+      : hour >= 12 && hour < 18
+      ? t('widgets.greeting.afternoon')
+      : hour >= 18 && hour < 22
+      ? t('widgets.greeting.evening')
+      : t('widgets.greeting.night');
 
   return (
     <div className="h-full flex flex-col justify-between select-none">
@@ -31,7 +39,7 @@ export const GreetingWidgetComponent: React.FC<WidgetProps<GreetingConfig>> = ({
           {greeting}, <span className="font-semibold text-primary">{displayName}</span>
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Have an intentional, productive session today.
+          {t('widgets.greeting.tagline')}
         </p>
       </div>
 

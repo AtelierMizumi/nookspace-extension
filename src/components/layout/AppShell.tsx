@@ -4,6 +4,7 @@ import { WidgetLibraryModal } from '../../features/widget-system/WidgetLibraryMo
 import { useThemeStore } from '../../stores/themeStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { useWidgetStore } from '../../stores/widgetStore';
+import { useTranslation } from '../../services/i18n';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -38,8 +39,10 @@ export const AppShell: React.FC<AppShellProps> = ({
     }
   }, [activeWorkspaceId, isWorkspaceLoading, loadWidgets]);
 
+  const { t } = useTranslation();
+
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors selection:bg-neutral-800 selection:text-white">
+    <div className="min-h-screen min-h-[100dvh] w-full flex flex-col bg-background text-foreground transition-colors selection:bg-neutral-800 selection:text-white overflow-x-hidden box-border">
       <TopNav
         isEditMode={isEditMode}
         onToggleEditMode={onToggleEditMode}
@@ -49,12 +52,12 @@ export const AppShell: React.FC<AppShellProps> = ({
         onOpenNotesManager={onOpenNotesManager}
       />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col">
         {children}
       </main>
 
-      <footer className="w-full py-4 text-center text-[11px] text-muted-foreground/80 border-t border-border/30">
-        NookSpace ✦ Local-First Productivity Workspace
+      <footer className="w-full py-3.5 text-center text-[11px] text-muted-foreground/80 border-t border-border/30 select-none">
+        {t('appShell.footer') || 'NookSpace ✦ Local-First Productivity Workspace'}
       </footer>
 
       {/* Global Widget Library Modal */}

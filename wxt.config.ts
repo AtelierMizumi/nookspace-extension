@@ -14,6 +14,9 @@ export default defineConfig({
     },
     ...(browser === 'firefox'
       ? {
+          chrome_settings_overrides: {
+            homepage: 'newtab.html',
+          },
           browser_specific_settings: {
             gecko: {
               id: 'nookspace@local-dev',
